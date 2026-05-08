@@ -1,0 +1,15 @@
+# Example crontab entries for a-share-etf-rotation.
+#
+# A shares close at 15:00 China time. Run data refresh and signal generation
+# after the market close, leaving a little buffer for data sources to update.
+#
+# Edit crontab with:
+#   crontab -e
+#
+# Replace /opt/a-share-etf-rotation with your actual project path.
+
+# Run every day at 15:30.
+30 15 * * * /opt/a-share-etf-rotation/scripts/update_signal.sh
+
+# Run every Friday at 15:40.
+40 15 * * 5 /opt/a-share-etf-rotation/scripts/update_signal.sh

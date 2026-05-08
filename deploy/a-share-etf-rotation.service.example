@@ -1,0 +1,26 @@
+# Example systemd service for a-share-etf-rotation.
+#
+# Install example:
+#   sudo cp deploy/a-share-etf-rotation.service.example /etc/systemd/system/a-share-etf-rotation.service
+#
+# Before starting the service, replace:
+#   WorkingDirectory=/opt/a-share-etf-rotation
+#   ExecStart=/opt/a-share-etf-rotation/.venv/bin/python ...
+#   User=ubuntu
+#
+# Use the real project path and the Linux user that owns the project files.
+
+[Unit]
+Description=A Share ETF Rotation Streamlit Web UI
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/a-share-etf-rotation
+ExecStart=/opt/a-share-etf-rotation/.venv/bin/python -m streamlit run app.py --server.address 0.0.0.0 --server.port 8501 --server.headless true
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
