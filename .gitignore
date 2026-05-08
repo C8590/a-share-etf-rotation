@@ -17,6 +17,8 @@ output/*
 
 backup/
 
+.streamlit/
+
 config/current_position.yaml
 config/live_observation.yaml
 
