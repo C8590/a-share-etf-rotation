@@ -1,0 +1,40 @@
+strategy_name: balanced
+
+backtest:
+  start_date: "20190101"
+  end_date: null
+  initial_cash: 10000
+
+fee_config:
+  commission_rate: 0.00005
+  min_commission: 0.1
+  stamp_tax_rate: 0.0
+  slippage_rate: 0.00005
+
+strategy:
+  strategy_type: rotation
+  frequency: biweekly
+  rebalance_frequency: biweekly
+  signal_weekday: 4
+  momentum_period: 20
+  momentum_window: 20
+  ma_period: 200
+  ma_window: 200
+  max_positions: 2
+  sell_rank_threshold: 3
+  execution_price: open
+  lot_size: 100
+  enable_lot_rounding: true
+  min_effective_etf_count: 5
+  etf_pool_selection: all
+  selected_symbols: []
+  enable_cash_etf_fallback: true
+  cash_etf_symbol: "511880"
+  enable_market_filter: false
+  enable_trend_filter: true
+  market_filter_symbol: "510300"
+  market_filter_ma_window: 200
+  enable_min_momentum_filter: true
+  min_momentum_threshold: 0
+  max_industry_etf_weight: null
+  max_drawdown_stop: null
