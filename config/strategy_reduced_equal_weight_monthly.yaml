@@ -30,9 +30,9 @@ strategy:
   selected_symbols:
     - "510300"
     - "510500"
+    - "159915"
     - "510880"
     - "518880"
-    - "511880"
   enable_cash_etf_fallback: false
   cash_etf_symbol: "511880"
   enable_market_filter: false

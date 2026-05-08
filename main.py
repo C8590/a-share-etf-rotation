@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from itertools import product
 from pathlib import Path
 from typing import Any
@@ -848,24 +849,31 @@ def _latest_strategy_signal(config_path: str, strategy_name: str, output_path: s
     sells = [symbol for symbol in current_holdings if symbol not in target]
     buys = [symbol for symbol in target if symbol not in current_holdings]
     buy_lines = []
+    skipped_buy_lines = []
     sell_lines = []
     estimated_cash = ""
     for line in text.splitlines():
         if line.startswith("- ") and ("预计买入" in line or "预计成交金额" in line):
             buy_lines.append(line[2:])
+        if line.startswith("- 跳过ETF "):
+            skipped_buy_lines.append(line[2:])
         if line.startswith("- ") and ("全部卖出" in line):
             sell_lines.append(line[2:])
         if line.startswith("预计剩余现金:"):
             estimated_cash = line.replace("预计剩余现金:", "").strip()
     summary = {
         "strategy_name": strategy_name,
+        "strategy_status": strategy_status(strategy_name),
+        "config_path": config_path,
         "signal_date": str(signal_date.date()),
+        "latest_data_date": str(result["strategy"].close.index.max().date()),
         "current_cash": float(current_position.get("cash", 0)),
         "current_positions": ",".join(current_holdings) if current_holdings else "空仓",
         "target_symbols": ",".join(target) if target else "空仓",
         "suggested_sell": ",".join(sells) if sells else "无",
         "suggested_buy": ",".join(buys) if buys else "无",
         "buy_share_advice": " | ".join(buy_lines) if buy_lines else "无",
+        "skipped_buy_advice": " | ".join(skipped_buy_lines) if skipped_buy_lines else "无",
         "sell_advice": " | ".join(sell_lines) if sell_lines else "无",
         "estimated_remaining_cash": estimated_cash,
         "operation_reason": "详见 compare_signal.txt 中对应策略段落。",
@@ -874,8 +882,73 @@ def _latest_strategy_signal(config_path: str, strategy_name: str, output_path: s
     return text, summary
 
 
+def _load_small_observation_status() -> str:
+    qa_path = Path("output/qa_report.json")
+    if qa_path.exists():
+        try:
+            report = json.loads(qa_path.read_text(encoding="utf-8"))
+            allowed = bool(report.get("allow_small_observation"))
+            return "YES" if allowed else "NO"
+        except Exception as exc:  # noqa: BLE001
+            return f"UNKNOWN (qa_report.json 读取失败: {exc})"
+    review = build_strategy_review(output_dir="output")
+    main_row = review[review["strategy_name"] == "reduced_equal_weight_monthly"]
+    if not main_row.empty and str(main_row.iloc[0]["strategy_status"]) == "recommended_for_observation":
+        return "UNKNOWN (未找到 qa_report.json；主观察策略评估为 recommended_for_observation)"
+    return "NO (未找到 qa_report.json，且主观察策略未通过推荐评估)"
+
+
+def _current_position_overview(current_position: dict[str, Any]) -> str:
+    positions = current_position.get("positions", {}) or {}
+    holdings = [
+        f"{str(symbol).zfill(6)}:{float(item.get('shares', 0)):.0f}份"
+        for symbol, item in positions.items()
+        if float(item.get("shares", 0)) > 0
+    ]
+    return "，".join(holdings) if holdings else "空仓"
+
+
+def _compare_signal_overview(rows: list[dict[str, Any]]) -> str:
+    signal_dates = [row["signal_date"] for row in rows if row.get("signal_date")]
+    latest_dates = [row["latest_data_date"] for row in rows if row.get("latest_data_date")]
+    signal_date = signal_dates[0] if signal_dates else "UNKNOWN"
+    latest_data_date = max(latest_dates) if latest_dates else "UNKNOWN"
+    current_position = ensure_current_position("config/current_position.yaml")
+    allowed = _load_small_observation_status()
+    lines = [
+        "四策略对照观察信号",
+        "=" * 40,
+        "总览",
+        f"- 当前信号日期: {signal_date}",
+        f"- 数据最新日期: {latest_data_date}",
+        f"- 当前真实现金: {float(current_position.get('cash', 0)):.2f} 元",
+        f"- 当前真实持仓: {_current_position_overview(current_position)}",
+        "- 主观察策略: reduced_equal_weight_monthly",
+        f"- 是否允许小额观察: {allowed}",
+    ]
+    if signal_date != latest_data_date:
+        lines.extend(
+            [
+                "",
+                "当前信号日期不是最新交易日，请确认数据是否已更新或当前是否非调仓日。",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "安全边界:",
+            "- 本工具不自动下单，不连接券商，不替代人工判断。",
+            "- 小资金观察建议仍为 1000-3000 元。",
+            "- balanced 仅为 research_only，不作为推荐策略。",
+            "- conservative 仅为 defensive_only，不作为主策略。",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def command_compare_signal() -> pd.DataFrame:
     compare_items = [
+        ("reduced_equal_weight_monthly", "config/strategy_reduced_equal_weight_monthly.yaml"),
         ("equal_weight_monthly", "config/strategy_equal_weight_monthly.yaml"),
         ("balanced", "config/strategy_balanced.yaml"),
         ("conservative", "config/strategy_conservative.yaml"),
@@ -884,13 +957,13 @@ def command_compare_signal() -> pd.DataFrame:
     rows = []
     for strategy_name, config_path in compare_items:
         text, summary = _latest_strategy_signal(config_path, strategy_name, f"output/{strategy_name}_signal.txt")
-        sections.append(f"\n\n===== {strategy_name} =====\n{text}")
+        sections.append(f"\n\n===== {strategy_name} ({summary['strategy_status']}) =====\n{text}")
         rows.append(summary)
-    combined = "三策略对照观察信号\n" + "\n".join(sections)
+    combined = _compare_signal_overview(rows) + "\n".join(sections)
     Path("output/compare_signal.txt").write_text(combined, encoding="utf-8")
     result = pd.DataFrame(rows)
     result.to_csv("output/compare_signal.csv", index=False, encoding="utf-8-sig")
-    print("三策略对照信号已生成: output/compare_signal.txt, output/compare_signal.csv")
+    print("四策略对照信号已生成: output/compare_signal.txt, output/compare_signal.csv")
     print(result.to_string(index=False))
     return result
 

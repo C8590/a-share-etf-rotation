@@ -142,15 +142,25 @@ def generate_weekly_signal_text(
 
     target_weight = 1 / len(target) if target else 0
     buy_advice: list[dict[str, Any]] = []
+    skipped_buy_advice: list[dict[str, Any]] = []
     estimated_cash = cash_for_buy
     if target:
         target_value = total_value * target_weight
         for symbol in target:
             price = latest_prices.get(symbol)
             if pd.isna(price):
-                buy_advice.append({"symbol": symbol, "shares": 0, "notional": 0, "reason": "缺少最新价格，无法估算买入"})
+                skipped_buy_advice.append(
+                    {
+                        "symbol": symbol,
+                        "reason": "缺少最新价格，无法估算买入",
+                        "one_lot_cash": None,
+                        "available_cash": estimated_cash,
+                        "target_value": target_value,
+                    }
+                )
                 continue
             buy_gap = max(target_value - current_values.get(symbol, 0.0), 0.0)
+            available_cash_before = estimated_cash
             if not enable_lot_rounding:
                 shares = buy_gap / float(price)
                 notional = shares * float(price)
@@ -169,6 +179,25 @@ def generate_weekly_signal_text(
                 )
             if shares > 0:
                 buy_advice.append({"symbol": symbol, "shares": shares, "notional": notional, "reason": signal["buy_reasons"].get(symbol, "补足目标仓位")})
+            elif buy_gap > 0:
+                one_lot_notional = float(price) * lot_size
+                one_lot_cost = calculate_trade_cost(one_lot_notional, "buy", fee_config)["total_cost"]
+                one_lot_cash = one_lot_notional + one_lot_cost
+                if available_cash_before < one_lot_cash:
+                    reason = "当前可用现金不足以买入一手"
+                elif buy_gap < one_lot_cash:
+                    reason = "目标补足金额不足一手，按交易单位取整后跳过"
+                else:
+                    reason = "按交易单位和费用约束取整后无法买入一手"
+                skipped_buy_advice.append(
+                    {
+                        "symbol": symbol,
+                        "reason": reason,
+                        "one_lot_cash": one_lot_cash,
+                        "available_cash": available_cash_before,
+                        "target_value": target_value,
+                    }
+                )
 
     lines: list[str] = []
     lines.append("A股ETF低频轮动系统 - 最新周信号")
@@ -208,6 +237,20 @@ def generate_weekly_signal_text(
                 f"- {symbol} {etf_info.get(symbol, {}).get('name', symbol)}: "
                 f"预计买入 {item['shares']:.0f} 份，预计成交金额 {item['notional']:.2f} 元。"
                 f"原因: {item['reason']}"
+            )
+    else:
+        lines.append("- 无")
+    lines.append("跳过买入:")
+    if skipped_buy_advice:
+        for item in skipped_buy_advice:
+            symbol = item["symbol"]
+            one_lot_text = "N/A" if item["one_lot_cash"] is None else f"{item['one_lot_cash']:.2f} 元"
+            lines.append(
+                f"- 跳过ETF {symbol} {etf_info.get(symbol, {}).get('name', symbol)}: "
+                f"跳过原因: {item['reason']}；"
+                f"一手金额: {one_lot_text}；"
+                f"当前可用现金: {item['available_cash']:.2f} 元；"
+                f"目标金额: {item['target_value']:.2f} 元"
             )
     else:
         lines.append("- 无")
