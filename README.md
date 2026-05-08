@@ -56,6 +56,33 @@
 - 不建议继续追 `balanced` 作为主策略。
 - 不建议跳过 `qa-check` 直接看回测收益。
 
+## Windows 推荐使用虚拟环境运行
+
+Windows 下建议在项目目录创建并使用 `.venv`，不要直接使用全局 `pip`。如果全局 `pip` 损坏，项目 `.venv` 内部环境仍可独立安装和运行依赖。
+
+创建虚拟环境：
+
+```powershell
+py -3.12 -m venv .venv
+# 或
+py -3.11 -m venv .venv
+```
+
+安装依赖：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+运行项目：
+
+```powershell
+.\.venv\Scripts\python.exe main.py qa-check
+.\.venv\Scripts\python.exe main.py update-data
+.\.venv\Scripts\python.exe main.py compare-signal
+```
+
 ## 常用命令
 
 数据层：
