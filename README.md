@@ -83,6 +83,29 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe main.py compare-signal
 ```
 
+## 傻瓜式启动器使用方法
+
+Windows 本地使用时，可以直接双击 `start_quant.bat` 打开图形启动器。启动器只调用项目 `.venv` 内的 Python，不会使用全局 `python` 或全局 `pip`。
+
+推荐流程：
+
+1. 双击 `start_quant.bat`。
+2. 点击“一键生成信号”。
+3. 查看 `output/qa_report.txt` 是否通过；不建议跳过 `qa-check`。
+4. 查看 `output/compare_signal.txt` 中的信号与建议。
+5. 如需操作，只能手动打开券商 App 下单。
+6. 下单后点击“编辑当前持仓”，更新 `config/current_position.yaml`。
+7. 不建议自动交易。
+
+安全边界：
+
+- 本工具不自动下单。
+- 本工具不连接券商。
+- 本工具不替代人工判断。
+- 小资金观察建议仍为 `1000-3000` 元。
+- 当前主观察策略为 `reduced_equal_weight_monthly`。
+- `balanced` 只作为研究观察，不建议作为主跟随策略。
+
 ## 常用命令
 
 数据层：
