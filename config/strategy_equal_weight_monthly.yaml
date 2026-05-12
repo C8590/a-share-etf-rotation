@@ -1,20 +1,20 @@
 strategy_name: equal_weight_monthly
-
 backtest:
-  start_date: "20190101"
+  start_date: '20190101'
   end_date: null
   initial_cash: 10000
-
 fee_config:
-  commission_rate: 0.00005
+  commission_rate: 5.0e-05
   min_commission: 0.1
   stamp_tax_rate: 0.0
-  slippage_rate: 0.00005
-
+  slippage_rate: 5.0e-05
 strategy:
   strategy_type: equal_weight_monthly
   frequency: monthly
   rebalance_frequency: monthly
+  rebalance_timing: day_of_month
+  rebalance_day_of_month: 11
+  rebalance_roll: next
   signal_weekday: 4
   momentum_period: 20
   momentum_window: 20
@@ -29,12 +29,13 @@ strategy:
   etf_pool_selection: all
   selected_symbols: []
   enable_cash_etf_fallback: false
-  cash_etf_symbol: "511880"
+  cash_etf_symbol: '511880'
   enable_market_filter: false
   enable_trend_filter: false
-  market_filter_symbol: "510300"
+  market_filter_symbol: '510300'
   market_filter_ma_window: 200
   enable_min_momentum_filter: false
   min_momentum_threshold: null
   max_industry_etf_weight: null
   max_drawdown_stop: null
+  rebalance_day: null

@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime, time
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yaml
@@ -17,6 +19,8 @@ STRATEGY_ORDER = [
     "balanced",
     "conservative",
 ]
+MARKET_CLOSE_TIME = time(15, 0)
+MARKET_TZ = ZoneInfo("Asia/Shanghai")
 
 
 @dataclass(frozen=True)
@@ -88,6 +92,24 @@ def _txt_overview(project_root: Path) -> dict[str, str]:
     return result
 
 
+def _after_a_share_close(now: datetime | None = None) -> tuple[bool, str]:
+    current = now or datetime.now(MARKET_TZ)
+    if current.weekday() >= 5:
+        return False, current.date().isoformat()
+    return current.time() >= MARKET_CLOSE_TIME, current.date().isoformat()
+
+
+def _is_stale_after_close(latest_data_date: str, now: datetime | None = None) -> tuple[bool, str]:
+    after_close, expected_date = _after_a_share_close(now)
+    if not after_close or not latest_data_date or latest_data_date == "N/A":
+        return False, expected_date
+    try:
+        latest = pd.Timestamp(latest_data_date).date().isoformat()
+    except Exception:
+        return False, expected_date
+    return latest < expected_date, expected_date
+
+
 def build_overview(project_root: Path, signals: pd.DataFrame, qa_report: dict[str, Any]) -> dict[str, Any]:
     txt = _txt_overview(project_root)
     main_row = pd.Series(dtype=object)
@@ -109,7 +131,10 @@ def build_overview(project_root: Path, signals: pd.DataFrame, qa_report: dict[st
         allow_small_observation = txt.get("是否允许小额观察", "UNKNOWN")
     allow_text = "YES" if allow_small_observation is True else "NO" if allow_small_observation is False else str(allow_small_observation)
 
-    if signal_date and latest_data_date and signal_date != latest_data_date:
+    stale_after_close, expected_data_date = _is_stale_after_close(latest_data_date)
+    if stale_after_close:
+        risk_status = "收盘后数据未更新"
+    elif signal_date and latest_data_date and signal_date != latest_data_date:
         risk_status = "需确认信号日期"
     elif allow_text == "YES":
         risk_status = "允许小额观察"
@@ -124,6 +149,8 @@ def build_overview(project_root: Path, signals: pd.DataFrame, qa_report: dict[st
         "main_strategy": MAIN_STRATEGY,
         "allow_small_observation": allow_text,
         "risk_status": risk_status,
+        "data_stale_after_close": stale_after_close,
+        "expected_data_date": expected_data_date,
     }
 
 

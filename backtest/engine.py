@@ -73,6 +73,10 @@ class BacktestEngine:
                 self.close.index,
                 frequency=self.strategy_config.rebalance_frequency,
                 signal_weekday=self.signal_weekday,
+                rebalance_timing=self.strategy_config.rebalance_timing,
+                rebalance_day=self.strategy_config.rebalance_day,
+                rebalance_day_of_month=self.strategy_config.rebalance_day_of_month,
+                rebalance_roll=self.strategy_config.rebalance_roll,
             )
         )
         all_dates = list(self.close.index)

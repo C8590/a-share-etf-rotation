@@ -61,6 +61,10 @@ def load_strategy_settings(config_path: str | Path = "config/strategy.yaml") -> 
         max_positions=int(raw.get("max_positions", 2)),
         sell_rank_threshold=int(raw.get("sell_rank_threshold", 4)),
         rebalance_frequency=str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
+        rebalance_timing=str(raw.get("rebalance_timing") or "month_end"),
+        rebalance_day=None if raw.get("rebalance_day") is None else int(raw.get("rebalance_day")),
+        rebalance_day_of_month=None if raw.get("rebalance_day_of_month") is None else int(raw.get("rebalance_day_of_month")),
+        rebalance_roll=str(raw.get("rebalance_roll") or "next"),
         enable_market_filter=bool(raw.get("enable_market_filter", False)),
         market_filter_symbol=str(raw.get("market_filter_symbol", "510300")),
         market_filter_ma_window=int(raw.get("market_filter_ma_window", 200)),
@@ -222,9 +226,9 @@ def command_update_data(refresh: bool = False, config_path: str = "config/strate
         refresh=refresh,
         retry_failed_only=False,
     )
-    print("数据更新完成:")
+    print("数据更新完成:" if not errors else "数据更新未完成:")
     print_data_status(statuses)
-    if errors and not successes:
+    if errors:
         raise SystemExit(1)
 
 
@@ -315,6 +319,10 @@ def command_signal(config_path: str = "config/strategy.yaml") -> None:
         effective_etf_count=len(engine.market_data),
         min_effective_etf_count=int(raw.get("min_effective_etf_count", 5)),
         rebalance_frequency=str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
+        rebalance_timing=engine.strategy_config.rebalance_timing,
+        rebalance_day=engine.strategy_config.rebalance_day,
+        rebalance_day_of_month=engine.strategy_config.rebalance_day_of_month,
+        rebalance_roll=engine.strategy_config.rebalance_roll,
     )
     print("周信号已生成: output/weekly_signal.txt")
     print(text)
@@ -358,6 +366,10 @@ def _experiment_strategy(
         max_positions=max_positions,
         sell_rank_threshold=sell_rank,
         rebalance_frequency=frequency,
+        rebalance_timing=base.rebalance_timing,
+        rebalance_day=base.rebalance_day,
+        rebalance_day_of_month=base.rebalance_day_of_month,
+        rebalance_roll=base.rebalance_roll,
         enable_market_filter=base.enable_market_filter,
         market_filter_symbol=base.market_filter_symbol,
         market_filter_ma_window=base.market_filter_ma_window,
@@ -689,7 +701,15 @@ def _strategy_qa_rows(etf_pool: list[dict[str, str]]) -> tuple[list[dict[str, An
         try:
             engine = build_engine(config_path=config_path)
             dates = list(engine.close.index)
-            signal_dates = get_rebalance_dates(engine.close.index, engine.strategy_config.rebalance_frequency, engine.signal_weekday)
+            signal_dates = get_rebalance_dates(
+                engine.close.index,
+                engine.strategy_config.rebalance_frequency,
+                engine.signal_weekday,
+                rebalance_timing=engine.strategy_config.rebalance_timing,
+                rebalance_day=engine.strategy_config.rebalance_day,
+                rebalance_day_of_month=engine.strategy_config.rebalance_day_of_month,
+                rebalance_roll=engine.strategy_config.rebalance_roll,
+            )
             signal_date = signal_dates[-2] if len(signal_dates) >= 2 else signal_dates[-1]
             execute_idx = dates.index(signal_date) + 1
             execute_date = dates[execute_idx] if execute_idx < len(dates) else None
@@ -811,13 +831,57 @@ def command_qa_check() -> dict[str, Any]:
     (output_path / "qa_report.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("QA report generated: output/qa_report.txt, output/qa_report.json")
     print("\n".join(lines))
+    if not allow_observation:
+        raise SystemExit(1)
     return report
 
 
-def _latest_strategy_signal(config_path: str, strategy_name: str, output_path: str | Path) -> tuple[str, dict[str, Any]]:
+def _rebalance_rule_text(strategy_config: StrategyConfig) -> str:
+    if strategy_config.rebalance_frequency != "monthly":
+        return strategy_config.rebalance_frequency
+    if strategy_config.rebalance_timing == "day_of_month":
+        roll_text = {
+            "next": "非交易日 next（顺延到下一个交易日）",
+            "previous": "非交易日 previous（提前到上一个交易日）",
+            "nearest": "非交易日 nearest（选择最近交易日，同距离优先 previous）",
+        }.get(strategy_config.rebalance_roll, f"非交易日 {strategy_config.rebalance_roll}")
+        return f"monthly / day_of_month / 每月 {strategy_config.rebalance_day_of_month} 号 / {roll_text}"
+    if strategy_config.rebalance_timing == "nth_trading_day":
+        return f"monthly / nth_trading_day({strategy_config.rebalance_day})"
+    return f"monthly / {strategy_config.rebalance_timing}"
+
+
+def _resolve_effective_signal_date(dates: pd.DatetimeIndex, requested_signal_date: str | None) -> tuple[pd.Timestamp, str, str]:
+    all_dates = pd.DatetimeIndex(sorted(pd.to_datetime(dates).unique()))
+    if all_dates.empty:
+        raise ValueError("No market dates are available")
+    if not requested_signal_date:
+        return pd.NaT, "", ""
+
+    requested = pd.Timestamp(requested_signal_date).normalize()
+    usable = all_dates[all_dates <= requested]
+    if usable.empty:
+        raise ValueError(f"requested signal date {requested.date()} is before available market data")
+    effective = pd.Timestamp(usable[-1])
+    date_list = list(all_dates)
+    idx = date_list.index(effective)
+    execute_date = date_list[idx + 1] if idx + 1 < len(date_list) else None
+    return effective, str(requested.date()), str(execute_date.date()) if execute_date is not None else ""
+
+
+def _latest_strategy_signal(
+    config_path: str,
+    strategy_name: str,
+    output_path: str | Path,
+    requested_signal_date: str | None = None,
+) -> tuple[str, dict[str, Any]]:
     engine = build_engine(config_path=config_path)
     result = engine.run(output_dir="output", save_outputs=False)
     _, raw, _ = load_strategy_settings(config_path)
+    manual_signal_date, requested_date_text, execute_date_text = _resolve_effective_signal_date(
+        result["strategy"].close.index,
+        requested_signal_date,
+    )
     text = generate_weekly_signal_text(
         strategy=result["strategy"],
         equity_curve=result["equity_curve"],
@@ -831,13 +895,28 @@ def _latest_strategy_signal(config_path: str, strategy_name: str, output_path: s
         effective_etf_count=len(engine.market_data),
         min_effective_etf_count=int(raw.get("min_effective_etf_count", 5)),
         rebalance_frequency=str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
+        rebalance_timing=engine.strategy_config.rebalance_timing,
+        rebalance_day=engine.strategy_config.rebalance_day,
+        rebalance_day_of_month=engine.strategy_config.rebalance_day_of_month,
+        rebalance_roll=engine.strategy_config.rebalance_roll,
+        signal_date=None if pd.isna(manual_signal_date) else manual_signal_date,
     )
-    signal_dates = get_rebalance_dates(
-        result["strategy"].close.index,
-        str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
-        int(raw.get("signal_weekday", 4)),
-    )
-    signal_date = signal_dates[-1]
+    if pd.isna(manual_signal_date):
+        signal_dates = get_rebalance_dates(
+            result["strategy"].close.index,
+            str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
+            int(raw.get("signal_weekday", 4)),
+            rebalance_timing=engine.strategy_config.rebalance_timing,
+            rebalance_day=engine.strategy_config.rebalance_day,
+            rebalance_day_of_month=engine.strategy_config.rebalance_day_of_month,
+            rebalance_roll=engine.strategy_config.rebalance_roll,
+        )
+        signal_date = signal_dates[-1]
+        date_list = list(result["strategy"].close.index)
+        idx = date_list.index(signal_date)
+        execute_date_text = str(date_list[idx + 1].date()) if idx + 1 < len(date_list) else ""
+    else:
+        signal_date = manual_signal_date
     current_position = ensure_current_position("config/current_position.yaml")
     current_holdings = [
         str(symbol).zfill(6)
@@ -865,6 +944,15 @@ def _latest_strategy_signal(config_path: str, strategy_name: str, output_path: s
         "strategy_name": strategy_name,
         "strategy_status": strategy_status(strategy_name),
         "config_path": config_path,
+        "rebalance_frequency": engine.strategy_config.rebalance_frequency,
+        "rebalance_timing": engine.strategy_config.rebalance_timing,
+        "rebalance_day": engine.strategy_config.rebalance_day,
+        "rebalance_day_of_month": engine.strategy_config.rebalance_day_of_month,
+        "rebalance_roll": engine.strategy_config.rebalance_roll,
+        "rebalance_rule": _rebalance_rule_text(engine.strategy_config),
+        "requested_signal_date": requested_date_text,
+        "effective_signal_date": str(signal_date.date()),
+        "execute_date": execute_date_text,
         "signal_date": str(signal_date.date()),
         "latest_data_date": str(result["strategy"].close.index.max().date()),
         "current_cash": float(current_position.get("cash", 0)),
@@ -915,6 +1003,7 @@ def _compare_signal_overview(rows: list[dict[str, Any]]) -> str:
     latest_data_date = max(latest_dates) if latest_dates else "UNKNOWN"
     current_position = ensure_current_position("config/current_position.yaml")
     allowed = _load_small_observation_status()
+    main_rule = next((row.get("rebalance_rule") for row in rows if row.get("strategy_name") == "reduced_equal_weight_monthly"), "UNKNOWN")
     lines = [
         "四策略对照观察信号",
         "=" * 40,
@@ -924,6 +1013,7 @@ def _compare_signal_overview(rows: list[dict[str, Any]]) -> str:
         f"- 当前真实现金: {float(current_position.get('cash', 0)):.2f} 元",
         f"- 当前真实持仓: {_current_position_overview(current_position)}",
         "- 主观察策略: reduced_equal_weight_monthly",
+        f"- 调仓规则：{main_rule}",
         f"- 是否允许小额观察: {allowed}",
     ]
     if signal_date != latest_data_date:
@@ -946,7 +1036,7 @@ def _compare_signal_overview(rows: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def command_compare_signal() -> pd.DataFrame:
+def command_compare_signal(signal_date: str | None = None) -> pd.DataFrame:
     compare_items = [
         ("reduced_equal_weight_monthly", "config/strategy_reduced_equal_weight_monthly.yaml"),
         ("equal_weight_monthly", "config/strategy_equal_weight_monthly.yaml"),
@@ -956,8 +1046,13 @@ def command_compare_signal() -> pd.DataFrame:
     sections = []
     rows = []
     for strategy_name, config_path in compare_items:
-        text, summary = _latest_strategy_signal(config_path, strategy_name, f"output/{strategy_name}_signal.txt")
-        sections.append(f"\n\n===== {strategy_name} ({summary['strategy_status']}) =====\n{text}")
+        text, summary = _latest_strategy_signal(
+            config_path,
+            strategy_name,
+            f"output/{strategy_name}_signal.txt",
+            requested_signal_date=signal_date,
+        )
+        sections.append(f"\n\n===== {strategy_name} ({summary['strategy_status']}) =====\n调仓规则：{summary['rebalance_rule']}\n{text}")
         rows.append(summary)
     combined = _compare_signal_overview(rows) + "\n".join(sections)
     Path("output/compare_signal.txt").write_text(combined, encoding="utf-8")
@@ -1005,6 +1100,10 @@ def command_observation_report() -> str:
         result["strategy"].close.index,
         str(raw.get("frequency", raw.get("rebalance_frequency", "weekly"))),
         int(raw.get("signal_weekday", 4)),
+        rebalance_timing=engine.strategy_config.rebalance_timing,
+        rebalance_day=engine.strategy_config.rebalance_day,
+        rebalance_day_of_month=engine.strategy_config.rebalance_day_of_month,
+        rebalance_roll=engine.strategy_config.rebalance_roll,
     )
     signal_date = signal_dates[-1]
     current_position = ensure_current_position("config/current_position.yaml")
@@ -1126,7 +1225,8 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("oos-test", help="运行样本外验证")
     subparsers.add_parser("walk-forward", help="运行 walk-forward 参数稳定性分析")
     subparsers.add_parser("qa-check", help="运行数据层、策略层和输出层总质量检查")
-    subparsers.add_parser("compare-signal", help="生成三策略对照信号")
+    compare_parser = subparsers.add_parser("compare-signal", help="生成三策略对照信号")
+    compare_parser.add_argument("--signal-date", default=None, help="Manual requested signal date, YYYY-MM-DD")
     subparsers.add_parser("observation-report", help="生成实盘观察报告")
     return parser.parse_args()
 
@@ -1160,7 +1260,7 @@ def main() -> None:
     elif args.command == "qa-check":
         command_qa_check()
     elif args.command == "compare-signal":
-        command_compare_signal()
+        command_compare_signal(signal_date=args.signal_date)
     elif args.command == "observation-report":
         command_observation_report()
 

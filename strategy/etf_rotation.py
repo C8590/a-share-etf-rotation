@@ -16,6 +16,10 @@ class StrategyConfig:
     max_positions: int = 2
     sell_rank_threshold: int = 4
     rebalance_frequency: str = "weekly"
+    rebalance_timing: str = "month_end"
+    rebalance_day: int | None = None
+    rebalance_day_of_month: int | None = None
+    rebalance_roll: str = "next"
     enable_market_filter: bool = False
     market_filter_symbol: str = "510300"
     market_filter_ma_window: int = 200
@@ -187,6 +191,10 @@ def get_rebalance_dates(
     dates: pd.DatetimeIndex,
     frequency: str = "weekly",
     signal_weekday: int = 4,
+    rebalance_timing: str = "month_end",
+    rebalance_day: int | None = None,
+    rebalance_day_of_month: int | None = None,
+    rebalance_roll: str = "next",
 ) -> list[pd.Timestamp]:
     weekly_dates = get_weekly_signal_dates(dates, signal_weekday)
     if frequency == "weekly":
@@ -194,8 +202,70 @@ def get_rebalance_dates(
     if frequency == "biweekly":
         return weekly_dates[::2]
     if frequency == "monthly":
-        if not weekly_dates:
+        timing = str(rebalance_timing or "month_end")
+        if timing == "month_end":
+            if not weekly_dates:
+                return []
+            series = pd.Series(weekly_dates, index=pd.DatetimeIndex(weekly_dates))
+            return [pd.Timestamp(d) for d in series.resample("ME").last().dropna().tolist()]
+
+        if pd.DatetimeIndex(dates).empty:
             return []
-        series = pd.Series(weekly_dates, index=pd.DatetimeIndex(weekly_dates))
-        return [pd.Timestamp(d) for d in series.resample("ME").last().dropna().tolist()]
+        trading_dates = pd.DatetimeIndex(sorted(pd.to_datetime(dates).unique()))
+        by_month = pd.Series(trading_dates, index=trading_dates).groupby(trading_dates.to_period("M"))
+        if timing == "month_start":
+            return [pd.Timestamp(month_dates.iloc[0]) for _, month_dates in by_month]
+        if timing == "nth_trading_day":
+            if rebalance_day is None:
+                raise ValueError("rebalance_day is required when rebalance_timing is nth_trading_day")
+            day = int(rebalance_day)
+            if day < 1:
+                raise ValueError("rebalance_day must be >= 1")
+            return [pd.Timestamp(month_dates.iloc[min(day - 1, len(month_dates) - 1)]) for _, month_dates in by_month]
+        if timing == "day_of_month":
+            if rebalance_day_of_month is None:
+                raise ValueError("rebalance_day_of_month is required when rebalance_timing is day_of_month")
+            day_of_month = int(rebalance_day_of_month)
+            if day_of_month < 1 or day_of_month > 31:
+                raise ValueError("rebalance_day_of_month must be between 1 and 31")
+            roll = str(rebalance_roll or "next")
+            if roll not in {"next", "previous", "nearest"}:
+                raise ValueError(f"Unsupported rebalance roll: {rebalance_roll}")
+            return _get_day_of_month_rebalance_dates(trading_dates, day_of_month, roll)
+        raise ValueError(f"Unsupported rebalance timing: {rebalance_timing}")
     raise ValueError(f"Unsupported rebalance frequency: {frequency}")
+
+
+def _get_day_of_month_rebalance_dates(
+    trading_dates: pd.DatetimeIndex,
+    day_of_month: int,
+    roll: str,
+) -> list[pd.Timestamp]:
+    result: list[pd.Timestamp] = []
+    months = pd.PeriodIndex(trading_dates.to_period("M")).unique()
+    for month in months:
+        month_end = month.to_timestamp(how="end").normalize()
+        target_day = min(day_of_month, int(month_end.day))
+        target = pd.Timestamp(year=month.year, month=month.month, day=target_day)
+        previous_dates = trading_dates[trading_dates <= target]
+        next_dates = trading_dates[trading_dates >= target]
+        previous_date = pd.Timestamp(previous_dates[-1]) if len(previous_dates) else None
+        next_date = pd.Timestamp(next_dates[0]) if len(next_dates) else None
+
+        if roll == "next":
+            chosen = next_date
+        elif roll == "previous":
+            chosen = previous_date
+        else:
+            if previous_date is None:
+                chosen = next_date
+            elif next_date is None:
+                chosen = previous_date
+            else:
+                previous_distance = target - previous_date
+                next_distance = next_date - target
+                chosen = previous_date if previous_distance <= next_distance else next_date
+
+        if chosen is not None and (not result or result[-1] != chosen):
+            result.append(chosen)
+    return result

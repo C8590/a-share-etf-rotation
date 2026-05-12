@@ -99,12 +99,27 @@ def generate_weekly_signal_text(
     effective_etf_count: int | None = None,
     min_effective_etf_count: int = 5,
     rebalance_frequency: str = "weekly",
+    rebalance_timing: str = "month_end",
+    rebalance_day: int | None = None,
+    rebalance_day_of_month: int | None = None,
+    rebalance_roll: str = "next",
+    signal_date: pd.Timestamp | None = None,
 ) -> str:
-    signal_dates = get_rebalance_dates(strategy.close.index, rebalance_frequency, signal_weekday)
-    if not signal_dates:
-        raise ValueError("行情日期为空，无法生成周信号")
-
-    latest_signal_date = signal_dates[-1]
+    if signal_date is None:
+        signal_dates = get_rebalance_dates(
+            strategy.close.index,
+            rebalance_frequency,
+            signal_weekday,
+            rebalance_timing=rebalance_timing,
+            rebalance_day=rebalance_day,
+            rebalance_day_of_month=rebalance_day_of_month,
+            rebalance_roll=rebalance_roll,
+        )
+        if not signal_dates:
+            raise ValueError("行情日期为空，无法生成周信号")
+        latest_signal_date = signal_dates[-1]
+    else:
+        latest_signal_date = pd.Timestamp(signal_date)
     if latest_signal_date not in equity_curve.index:
         raise ValueError(f"权益曲线缺少信号日期: {latest_signal_date.date()}")
 
