@@ -178,6 +178,49 @@ class OutputSchemaTest(unittest.TestCase):
         for column in ["repair_status", "metadata_written", "still_missing_cache", "quality_after_repair"]:
             self.assertIn(column, frame.columns)
 
+    def test_qa_status_schemas_if_present(self) -> None:
+        breakdown = ROOT / "output" / "qa_status_breakdown.csv"
+        summary = ROOT / "output" / "qa_status_summary.csv"
+        if not breakdown.exists() or not summary.exists():
+            self.skipTest("qa_status reports do not exist")
+        validate_output_file_schema(breakdown, "qa_status_breakdown")
+        validate_output_file_schema(summary, "qa_status_summary")
+        frame = _read_csv(breakdown)
+        for column in ["qa_item", "actionability", "root_cause", "blocks_007b", "blocks_008b"]:
+            self.assertIn(column, frame.columns)
+
+    def test_candidate_unblock_schemas_if_present(self) -> None:
+        plan = ROOT / "output" / "candidate_unblock_plan.csv"
+        summary = ROOT / "output" / "candidate_unblock_summary.csv"
+        if not plan.exists() or not summary.exists():
+            self.skipTest("candidate unblock reports do not exist")
+        validate_output_file_schema(plan, "candidate_unblock_plan")
+        validate_output_file_schema(summary, "candidate_unblock_summary")
+        frame = _read_csv(plan)
+        for column in ["symbol", "unblock_path", "unblock_status", "still_blocked_after_primary_fix", "next_action"]:
+            self.assertIn(column, frame.columns)
+
+    def test_factor_008b_readiness_schemas_if_present(self) -> None:
+        report = ROOT / "output" / "factor_008b_readiness.csv"
+        summary = ROOT / "output" / "factor_008b_readiness_summary.csv"
+        if not report.exists() or not summary.exists():
+            self.skipTest("factor 008B readiness reports do not exist")
+        validate_output_file_schema(report, "factor_008b_readiness")
+        validate_output_file_schema(summary, "factor_008b_readiness_summary")
+
+    def test_index_007b_readiness_schemas_if_present(self) -> None:
+        report = ROOT / "output" / "index_007b_readiness.csv"
+        unlock = ROOT / "output" / "index_007b_unlock_plan.csv"
+        summary = ROOT / "output" / "index_007b_readiness_summary.csv"
+        if not report.exists() or not unlock.exists() or not summary.exists():
+            self.skipTest("index 007B readiness reports do not exist")
+        validate_output_file_schema(report, "index_007b_readiness")
+        validate_output_file_schema(unlock, "index_007b_unlock_plan")
+        validate_output_file_schema(summary, "index_007b_readiness_summary")
+        frame = _read_csv(report)
+        for column in ["readiness_item", "blocking", "blocker_type", "remediation_action", "prerequisite_task"]:
+            self.assertIn(column, frame.columns)
+
     def test_source_preference_audit_schema_if_present(self) -> None:
         path = ROOT / "output" / "source_preference_audit.csv"
         if not path.exists():

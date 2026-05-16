@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-16T13:03:18+08:00",
+  "generated_at": "2026-05-16T16:57:05+08:00",
   "qa_exit_status": "failed",
   "data_quality_failed_count": 244,
   "end_date_coverage_gap_days": 15,
@@ -31,6 +31,201 @@
     "data quality failed for 244 ETF(s)",
     "ETF end-date coverage gap is 15 days"
   ],
+  "qa_status": {
+    "qa_status_breakdown_report": "output/qa_status_breakdown.csv",
+    "qa_status_summary_report": "output/qa_status_summary.csv",
+    "hard_failure_count": 6,
+    "governed_failure_count": 6,
+    "refresh_action_count": 1,
+    "wait_for_history_count": 244,
+    "manual_review_action_count": 5,
+    "blocks_007b": true,
+    "blocks_008b": true,
+    "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
+    "actionability_counts": {
+      "already_governed": 244,
+      "governance_blocked": 276,
+      "manual_review": 5,
+      "refresh_needed": 1,
+      "source_unavailable": 9,
+      "wait_for_history": 244
+    },
+    "top_examples": [
+      {
+        "qa_item": "data_quality_failed",
+        "actionability": "wait_for_history",
+        "affected_count": 244,
+        "recommended_action": "keep excluded and observe until sufficient history"
+      },
+      {
+        "qa_item": "end_date_coverage_gap",
+        "actionability": "refresh_needed",
+        "affected_count": 1,
+        "recommended_action": "run update-data only in controlled environment or diagnose source lag"
+      },
+      {
+        "qa_item": "manual_review_required",
+        "actionability": "manual_review",
+        "affected_count": 5,
+        "recommended_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "qa_item": "candidate_gate",
+        "actionability": "governance_blocked",
+        "affected_count": 269,
+        "recommended_action": "keep blocked rows out of production candidate pool"
+      },
+      {
+        "qa_item": "factor_gate_status",
+        "actionability": "governance_blocked",
+        "affected_count": 7,
+        "recommended_action": "do not enter 008B"
+      },
+      {
+        "qa_item": "usable_benchmark_count",
+        "actionability": "source_unavailable",
+        "affected_count": 9,
+        "recommended_action": "rerun diagnose-index-source and update-index-data in network-enabled environment"
+      },
+      {
+        "qa_item": "governance_coverage",
+        "actionability": "already_governed",
+        "affected_count": 244,
+        "recommended_action": "treat QA failure as explained but still hard-gated"
+      }
+    ]
+  },
+  "governed_failures": 6,
+  "actionable_failures": 6,
+  "next_refresh_action": "run update-data only in controlled environment or diagnose source lag",
+  "next_manual_review_action": "complete P0 manual review list; do not auto-unblock",
+  "candidate_unblock_status": {
+    "candidate_unblock_plan_report": "output/candidate_unblock_plan.csv",
+    "candidate_unblock_summary_report": "output/candidate_unblock_summary.csv",
+    "total_symbols": 269,
+    "wait_for_history_count": 239,
+    "manual_review_required_count": 5,
+    "no_used_factors_count": 25,
+    "factor_gate_blocked_count": 269,
+    "benchmark_dependency_missing_count": 26,
+    "estimated_unblockable_by_waiting_count": 239,
+    "immediate_eligible_count": 0,
+    "top_examples": [
+      {
+        "symbol": "159231",
+        "name": "通用航空ETF华宝",
+        "current_candidate_status": "blocked_manual_review",
+        "unblock_path": "manual_review_required",
+        "unblock_status": "requires_manual_review",
+        "next_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "symbol": "159246",
+        "name": "创业板人工智能ETF富国",
+        "current_candidate_status": "blocked_manual_review",
+        "unblock_path": "manual_review_required",
+        "unblock_status": "requires_manual_review",
+        "next_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "symbol": "159287",
+        "name": "创业板综ETF博时",
+        "current_candidate_status": "blocked_manual_review",
+        "unblock_path": "manual_review_required",
+        "unblock_status": "requires_manual_review",
+        "next_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "symbol": "159387",
+        "name": "创业板新能源ETF国泰",
+        "current_candidate_status": "blocked_manual_review",
+        "unblock_path": "manual_review_required",
+        "unblock_status": "requires_manual_review",
+        "next_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "symbol": "560320",
+        "name": "N食品ETF富国",
+        "current_candidate_status": "blocked_manual_review",
+        "unblock_path": "manual_review_required",
+        "unblock_status": "requires_manual_review",
+        "next_action": "complete manual review, do not auto unblock"
+      },
+      {
+        "symbol": "159007",
+        "name": "养殖ETF华泰柏瑞",
+        "current_candidate_status": "blocked_short_history",
+        "unblock_path": "wait_for_history",
+        "unblock_status": "waiting",
+        "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+      },
+      {
+        "symbol": "159008",
+        "name": "证券ETF景顺",
+        "current_candidate_status": "blocked_short_history",
+        "unblock_path": "wait_for_history",
+        "unblock_status": "waiting",
+        "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+      },
+      {
+        "symbol": "159009",
+        "name": "创业板新能源ETF易方达",
+        "current_candidate_status": "blocked_short_history",
+        "unblock_path": "wait_for_history",
+        "unblock_status": "waiting",
+        "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+      },
+      {
+        "symbol": "159013",
+        "name": "工业互联网ETF大成",
+        "current_candidate_status": "blocked_short_history",
+        "unblock_path": "wait_for_history",
+        "unblock_status": "waiting",
+        "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+      },
+      {
+        "symbol": "159017",
+        "name": "石油ETF工银",
+        "current_candidate_status": "blocked_short_history",
+        "unblock_path": "wait_for_history",
+        "unblock_status": "waiting",
+        "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+      }
+    ],
+    "next_recommended_action": "complete manual review first, then rerun candidate gate without auto-clearing blocks"
+  },
+  "immediate_eligible_count": 0,
+  "estimated_unblockable_by_waiting_count": 239,
+  "candidate_next_action": "complete manual review first, then rerun candidate gate without auto-clearing blocks",
+  "factor_008b_readiness_status": "blocked",
+  "factor_008b_blockers": [
+    "candidate_eligible_count",
+    "factor_gate_status",
+    "min_computable_ratio",
+    "max_unable_to_score_ratio",
+    "short_history_bias",
+    "no_used_factors",
+    "tracking_error_dependency",
+    "relative_return_dependency",
+    "discount_premium_dependency",
+    "factor_coverage_minimum",
+    "manual_review_required",
+    "benchmark_dependency"
+  ],
+  "factor_008b_next_action": "clear short-history/manual-review/no-used-factor blockers, then rerun build-candidate-gate",
+  "index_007b_readiness_status": "blocked",
+  "index_007b_blockers": [
+    "usable_benchmark_count",
+    "index_cache_exists",
+    "index_cache_schema_valid",
+    "index_data_fetch_success",
+    "overlap_days_available",
+    "tracking_error_computable_count",
+    "relative_return_computable_count",
+    "index_source_network_available",
+    "eastmoney_proxy_failure"
+  ],
+  "index_007b_next_action": "diagnose-index-source -> update-index-data -> compute-etf-metrics",
   "report_paths": {
     "data_quality_diagnosis": "output\\data_quality_diagnosis.csv",
     "data_quality_diagnosis_summary": "output\\data_quality_diagnosis_summary.csv",
@@ -41,6 +236,15 @@
     "manual_review_list": "output\\manual_review_list.csv",
     "manual_review_summary": "output\\manual_review_summary.csv",
     "factor_score_gate": "output\\factor_score_gate.csv",
+    "qa_status_breakdown": "output\\qa_status_breakdown.csv",
+    "qa_status_summary": "output\\qa_status_summary.csv",
+    "candidate_unblock_plan": "output\\candidate_unblock_plan.csv",
+    "candidate_unblock_summary": "output\\candidate_unblock_summary.csv",
+    "factor_008b_readiness": "output\\factor_008b_readiness.csv",
+    "factor_008b_readiness_summary": "output\\factor_008b_readiness_summary.csv",
+    "index_007b_readiness": "output\\index_007b_readiness.csv",
+    "index_007b_unlock_plan": "output\\index_007b_unlock_plan.csv",
+    "index_007b_readiness_summary": "output\\index_007b_readiness_summary.csv",
     "qa_report": "output\\qa_report.json",
     "data_governance_status": "output\\data_governance_status.json",
     "data_governance_runbook": "docs\\research\\data_governance_runbook.md"

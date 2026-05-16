@@ -25,6 +25,12 @@ from data.candidate_gate import (
     summarize_candidate_gate,
     write_candidate_gate_report,
 )
+from data.candidate_unblock import (
+    build_candidate_unblock_plan,
+    merge_candidate_unblock_into_qa_report,
+    summarize_candidate_unblock_plan,
+    write_candidate_unblock_plan,
+)
 from data.cache_refresh import (
     repair_missing_cache,
     build_refresh_plan,
@@ -44,6 +50,13 @@ from data.downloader import build_data_coverage_report, load_etf_pool, update_al
 from data.etf_metrics import compute_etf_metrics, summarize_etf_metrics, write_etf_metrics_report
 from data.etf_metadata import summarize_etf_metadata, update_etf_metadata
 from data.index_data import summarize_index_data, update_index_data
+from data.index_readiness import (
+    build_007b_readiness_check,
+    build_index_unlock_plan,
+    merge_007b_readiness_into_qa_report,
+    summarize_007b_readiness,
+    write_007b_readiness_report,
+)
 from data.index_source_diagnostics import (
     diagnose_index_source_candidates,
     summarize_index_source_diagnostics,
@@ -68,6 +81,12 @@ from data.quality_diagnosis import (
     summarize_quality_diagnosis,
     write_quality_diagnosis_report,
 )
+from data.qa_status import (
+    build_qa_status_breakdown,
+    merge_qa_status_into_qa_report,
+    summarize_qa_status,
+    write_qa_status_report,
+)
 from data.schema import DATA_SCHEMA_VERSION, SCHEMA_VERSION
 from data.source_preference import run_source_preference_evaluation, summarize_source_preference_audit
 from data.source_diagnostics import run_source_diagnostics, summarize_source_diagnostics
@@ -84,6 +103,12 @@ from strategy.factors import (
     write_factor_score_audit,
     write_factor_score_gate_report,
     write_factor_score_reports,
+)
+from strategy.factor_readiness import (
+    build_008b_readiness_check,
+    merge_008b_readiness_into_qa_report,
+    summarize_008b_readiness,
+    write_008b_readiness_report,
 )
 
 
@@ -1121,6 +1146,91 @@ def command_qa_check() -> dict[str, Any]:
         manual_review=pd.DataFrame(manual_review_rows),
         qa_report=report,
     )
+    qa_status_rows = build_qa_status_breakdown(
+        output_dir=output_path,
+        qa_report=report,
+        data_governance_status=data_governance_status,
+    )
+    qa_status_breakdown_path, qa_status_summary_path = write_qa_status_report(
+        qa_status_rows,
+        breakdown_path=output_path / "qa_status_breakdown.csv",
+        summary_path=output_path / "qa_status_summary.csv",
+    )
+    qa_status_summary = summarize_qa_status(qa_status_rows)
+    data_governance_status["qa_status"] = qa_status_summary
+    data_governance_status["governed_failures"] = qa_status_summary["governed_failure_count"]
+    data_governance_status["actionable_failures"] = qa_status_summary["refresh_action_count"] + qa_status_summary["manual_review_action_count"]
+    data_governance_status["next_refresh_action"] = (
+        "run update-data only in controlled environment or diagnose source lag"
+        if qa_status_summary["refresh_action_count"]
+        else "no refresh action from qa_status"
+    )
+    data_governance_status["next_manual_review_action"] = (
+        "complete P0 manual review list; do not auto-unblock"
+        if qa_status_summary["manual_review_action_count"]
+        else "no manual review action from qa_status"
+    )
+    candidate_unblock_rows = build_candidate_unblock_plan(
+        output_dir=output_path,
+        candidate_gate=pd.DataFrame(candidate_gate_rows),
+        diagnosis=pd.DataFrame(quality_diagnosis_rows),
+        observation_pool=pd.DataFrame(observation_pool_rows),
+        manual_review=pd.DataFrame(manual_review_rows),
+        data_governance_status=data_governance_status,
+        qa_report=report,
+    )
+    candidate_unblock_plan_path, candidate_unblock_summary_path = write_candidate_unblock_plan(
+        candidate_unblock_rows,
+        report_path=output_path / "candidate_unblock_plan.csv",
+        summary_path=output_path / "candidate_unblock_summary.csv",
+    )
+    candidate_unblock_summary = summarize_candidate_unblock_plan(candidate_unblock_rows)
+    data_governance_status["candidate_unblock_status"] = candidate_unblock_summary
+    data_governance_status["immediate_eligible_count"] = candidate_unblock_summary["immediate_eligible_count"]
+    data_governance_status["estimated_unblockable_by_waiting_count"] = candidate_unblock_summary["estimated_unblockable_by_waiting_count"]
+    data_governance_status["candidate_next_action"] = candidate_unblock_summary["next_recommended_action"]
+    report["strategy_layer"]["candidate_unblock_plan_report"] = str(candidate_unblock_plan_path)
+    report["strategy_layer"]["candidate_unblock_summary_report"] = str(candidate_unblock_summary_path)
+    report["strategy_layer"]["candidate_unblock"] = candidate_unblock_summary
+    factor_008b_rows = build_008b_readiness_check(
+        output_dir=output_path,
+        candidate_gate=pd.DataFrame(candidate_gate_rows),
+        candidate_unblock=pd.DataFrame(candidate_unblock_rows),
+        manual_review=pd.DataFrame(manual_review_rows),
+        data_governance_status=data_governance_status,
+        qa_report=report,
+    )
+    factor_008b_report_path, factor_008b_summary_path = write_008b_readiness_report(
+        factor_008b_rows,
+        report_path=output_path / "factor_008b_readiness.csv",
+        summary_path=output_path / "factor_008b_readiness_summary.csv",
+    )
+    factor_008b_summary = summarize_008b_readiness(factor_008b_rows)
+    factor_008b_summary["factor_008b_readiness_report"] = str(factor_008b_report_path)
+    factor_008b_summary["factor_008b_readiness_summary_report"] = str(factor_008b_summary_path)
+    report["strategy_layer"].setdefault("factor_score", {}).update(factor_008b_summary)
+    data_governance_status["factor_008b_readiness_status"] = factor_008b_summary["readiness_status"]
+    data_governance_status["factor_008b_blockers"] = factor_008b_summary["blocking_items"]
+    data_governance_status["factor_008b_next_action"] = factor_008b_summary["next_recommended_action"]
+    data_governance_status["allowed_to_enter_008b"] = data_governance_status["allowed_to_enter_008b"] and factor_008b_summary["allowed_to_enter_008b"]
+    index_007b_rows = build_007b_readiness_check(output_dir=output_path, qa_report=report)
+    index_007b_unlock_plan = build_index_unlock_plan(output_dir=output_path)
+    index_007b_report_path, index_007b_unlock_path, index_007b_summary_path = write_007b_readiness_report(
+        index_007b_rows,
+        index_007b_unlock_plan,
+        report_path=output_path / "index_007b_readiness.csv",
+        unlock_plan_path=output_path / "index_007b_unlock_plan.csv",
+        summary_path=output_path / "index_007b_readiness_summary.csv",
+    )
+    index_007b_summary = summarize_007b_readiness(index_007b_rows)
+    index_007b_summary["index_007b_readiness_report"] = str(index_007b_report_path)
+    index_007b_summary["index_007b_unlock_plan_report"] = str(index_007b_unlock_path)
+    index_007b_summary["index_007b_readiness_summary_report"] = str(index_007b_summary_path)
+    report["data_layer"]["index_007b_readiness"] = index_007b_summary
+    data_governance_status["index_007b_readiness_status"] = index_007b_summary["readiness_status"]
+    data_governance_status["index_007b_blockers"] = index_007b_summary["blocking_items"]
+    data_governance_status["index_007b_next_action"] = index_007b_summary["next_recommended_action"]
+    data_governance_status["allowed_to_enter_007b"] = data_governance_status["allowed_to_enter_007b"] and index_007b_summary["allowed_to_enter_007b"]
     write_data_governance_status(data_governance_status, path=output_path / "data_governance_status.json")
     write_data_governance_runbook(data_governance_status, path=Path("docs") / "research" / "data_governance_runbook.md")
     data_governance_summary = {
@@ -1133,6 +1243,21 @@ def command_qa_check() -> dict[str, Any]:
     }
     report["data_layer"]["data_governance"] = data_governance_summary
     report["data_layer"].update(data_governance_summary)
+    report["data_layer"]["qa_status"] = qa_status_summary
+    report["data_layer"].update(
+        {
+            "qa_status_breakdown_report": str(qa_status_breakdown_path),
+            "qa_status_summary_report": str(qa_status_summary_path),
+            "hard_failure_count": qa_status_summary["hard_failure_count"],
+            "governed_failure_count": qa_status_summary["governed_failure_count"],
+            "refresh_action_count": qa_status_summary["refresh_action_count"],
+            "wait_for_history_count": qa_status_summary["wait_for_history_count"],
+            "manual_review_action_count": qa_status_summary["manual_review_action_count"],
+            "blocks_007b": qa_status_summary["blocks_007b"],
+            "blocks_008b": qa_status_summary["blocks_008b"],
+            "next_recommended_action": qa_status_summary["next_recommended_action"],
+        }
+    )
 
     import json
 
@@ -1279,6 +1404,133 @@ def command_summarize_data_governance() -> dict[str, Any]:
     print(f"Next recommended action: {status['next_recommended_action']}")
     print(f"Blocking reasons: {status['blocking_reasons']}")
     return status
+
+
+def command_summarize_qa_status() -> dict[str, Any]:
+    output_path = Path("output")
+    output_path.mkdir(parents=True, exist_ok=True)
+    rows = build_qa_status_breakdown(output_dir=output_path)
+    breakdown_path, summary_path = write_qa_status_report(
+        rows,
+        breakdown_path=output_path / "qa_status_breakdown.csv",
+        summary_path=output_path / "qa_status_summary.csv",
+    )
+    summary = summarize_qa_status(rows)
+    merge_qa_status_into_qa_report(output_path / "qa_report.json", summary=summary)
+    print(f"QA status breakdown: {breakdown_path}")
+    print(f"QA status summary: {summary_path}")
+    print(f"Hard failure rows: {summary['hard_failure_count']}")
+    print(f"Governed failure rows: {summary['governed_failure_count']}")
+    print(f"Refresh action count: {summary['refresh_action_count']}")
+    print(f"Wait-for-history count: {summary['wait_for_history_count']}")
+    print(f"Manual review action count: {summary['manual_review_action_count']}")
+    print(f"Blocks 007B: {summary['blocks_007b']}")
+    print(f"Blocks 008B: {summary['blocks_008b']}")
+    print(f"Next recommended action: {summary['next_recommended_action']}")
+    return summary
+
+
+def command_build_candidate_unblock_plan() -> dict[str, Any]:
+    output_path = Path("output")
+    output_path.mkdir(parents=True, exist_ok=True)
+    rows = build_candidate_unblock_plan(output_dir=output_path)
+    plan_path, summary_path = write_candidate_unblock_plan(
+        rows,
+        report_path=output_path / "candidate_unblock_plan.csv",
+        summary_path=output_path / "candidate_unblock_summary.csv",
+    )
+    summary = summarize_candidate_unblock_plan(rows)
+    merge_candidate_unblock_into_qa_report(output_path / "qa_report.json", summary=summary)
+    status_path = output_path / "data_governance_status.json"
+    if status_path.exists():
+        status = json.loads(status_path.read_text(encoding="utf-8"))
+        status["candidate_unblock_status"] = summary
+        status["immediate_eligible_count"] = summary["immediate_eligible_count"]
+        status["estimated_unblockable_by_waiting_count"] = summary["estimated_unblockable_by_waiting_count"]
+        status["candidate_next_action"] = summary["next_recommended_action"]
+        write_data_governance_status(status, path=status_path)
+    print(f"Candidate unblock plan: {plan_path}")
+    print(f"Candidate unblock summary: {summary_path}")
+    print(f"Total symbols: {summary['total_symbols']}")
+    print(f"Immediate eligible: {summary['immediate_eligible_count']}")
+    print(f"Wait for history: {summary['wait_for_history_count']}")
+    print(f"Manual review required: {summary['manual_review_required_count']}")
+    print(f"No used factors: {summary['no_used_factors_count']}")
+    print(f"Factor gate blocked after primary fix: {summary['factor_gate_blocked_count']}")
+    print(f"Benchmark dependency missing: {summary['benchmark_dependency_missing_count']}")
+    print(f"Next recommended action: {summary['next_recommended_action']}")
+    return summary
+
+
+def command_check_factor_008b_readiness() -> dict[str, Any]:
+    output_path = Path("output")
+    output_path.mkdir(parents=True, exist_ok=True)
+    rows = build_008b_readiness_check(output_dir=output_path)
+    report_path, summary_path = write_008b_readiness_report(
+        rows,
+        report_path=output_path / "factor_008b_readiness.csv",
+        summary_path=output_path / "factor_008b_readiness_summary.csv",
+    )
+    summary = summarize_008b_readiness(rows)
+    summary["factor_008b_readiness_report"] = str(report_path)
+    summary["factor_008b_readiness_summary_report"] = str(summary_path)
+    merge_008b_readiness_into_qa_report(output_path / "qa_report.json", summary=summary)
+    status_path = output_path / "data_governance_status.json"
+    if status_path.exists():
+        status = json.loads(status_path.read_text(encoding="utf-8"))
+        status["factor_008b_readiness_status"] = summary["readiness_status"]
+        status["factor_008b_blockers"] = summary["blocking_items"]
+        status["factor_008b_next_action"] = summary["next_recommended_action"]
+        status["allowed_to_enter_008b"] = bool(status.get("allowed_to_enter_008b", False)) and summary["allowed_to_enter_008b"]
+        write_data_governance_status(status, path=status_path)
+    print(f"Factor 008B readiness report: {report_path}")
+    print(f"Factor 008B readiness summary: {summary_path}")
+    print(f"Readiness status: {summary['readiness_status']}")
+    print(f"Allowed to enter 008B: {summary['allowed_to_enter_008b']}")
+    print(f"Blocking items: {', '.join(summary['blocking_items']) if summary['blocking_items'] else 'None'}")
+    print(f"Warning items: {', '.join(summary['warning_items']) if summary['warning_items'] else 'None'}")
+    print(f"Next recommended action: {summary['next_recommended_action']}")
+    return summary
+
+
+def command_check_index_007b_readiness() -> dict[str, Any]:
+    output_path = Path("output")
+    output_path.mkdir(parents=True, exist_ok=True)
+    rows = build_007b_readiness_check(output_dir=output_path)
+    unlock_plan = build_index_unlock_plan(output_dir=output_path)
+    report_path, unlock_path, summary_path = write_007b_readiness_report(
+        rows,
+        unlock_plan,
+        report_path=output_path / "index_007b_readiness.csv",
+        unlock_plan_path=output_path / "index_007b_unlock_plan.csv",
+        summary_path=output_path / "index_007b_readiness_summary.csv",
+    )
+    summary = summarize_007b_readiness(rows)
+    summary["index_007b_readiness_report"] = str(report_path)
+    summary["index_007b_unlock_plan_report"] = str(unlock_path)
+    summary["index_007b_readiness_summary_report"] = str(summary_path)
+    merge_007b_readiness_into_qa_report(output_path / "qa_report.json", summary=summary)
+    status_path = output_path / "data_governance_status.json"
+    if status_path.exists():
+        status = json.loads(status_path.read_text(encoding="utf-8"))
+        status["index_007b_readiness_status"] = summary["readiness_status"]
+        status["index_007b_blockers"] = summary["blocking_items"]
+        status["index_007b_next_action"] = summary["next_recommended_action"]
+        status["allowed_to_enter_007b"] = bool(status.get("allowed_to_enter_007b", False)) and summary["allowed_to_enter_007b"]
+        write_data_governance_status(status, path=status_path)
+    print(f"Index 007B readiness report: {report_path}")
+    print(f"Index 007B unlock plan: {unlock_path}")
+    print(f"Index 007B readiness summary: {summary_path}")
+    print(f"Readiness status: {summary['readiness_status']}")
+    print(f"Allowed to enter 007B: {summary['allowed_to_enter_007b']}")
+    print(f"Usable benchmark count: {summary['usable_benchmark_count']}")
+    print(f"Index cache valid count: {summary['index_cache_valid_count']}")
+    print(f"Tracking error computable count: {summary['tracking_error_computable_count']}")
+    print(f"Relative return computable count: {summary['relative_return_computable_count']}")
+    print(f"Blocking items: {', '.join(summary['blocking_items']) if summary['blocking_items'] else 'None'}")
+    print(f"Warning items: {', '.join(summary['warning_items']) if summary['warning_items'] else 'None'}")
+    print(f"Next recommended action: {summary['next_recommended_action']}")
+    return summary
 
 
 def command_plan_cache_refresh() -> list[dict[str, Any]]:
@@ -2346,6 +2598,10 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("build-observation-pool", help="build short-history ETF observation pool without refreshing cache")
     subparsers.add_parser("build-manual-review-list", help="build manual review list without refreshing cache or clearing blocks")
     subparsers.add_parser("summarize-data-governance", help="summarize data governance status without refreshing cache")
+    subparsers.add_parser("summarize-qa-status", help="summarize QA failure actionability without refreshing cache")
+    subparsers.add_parser("build-candidate-unblock-plan", help="build candidate unblock plan without changing candidate eligibility")
+    subparsers.add_parser("check-factor-008b-readiness", help="check ETF-GAP-008B readiness without generating candidates")
+    subparsers.add_parser("check-index-007b-readiness", help="check ETF-GAP-007B index readiness without entering 007B")
     subparsers.add_parser("plan-cache-refresh", help="生成 legacy cache 安全刷新 dry-run 计划")
     pilot_parser = subparsers.add_parser("pilot-refresh", help="小范围 pilot refresh，默认只允许 core_11 或显式 symbols")
     pilot_parser.add_argument("--pool", choices=["core_11"], default=None)
@@ -2438,6 +2694,14 @@ def main() -> None:
         command_build_manual_review_list()
     elif args.command == "summarize-data-governance":
         command_summarize_data_governance()
+    elif args.command == "summarize-qa-status":
+        command_summarize_qa_status()
+    elif args.command == "build-candidate-unblock-plan":
+        command_build_candidate_unblock_plan()
+    elif args.command == "check-factor-008b-readiness":
+        command_check_factor_008b_readiness()
+    elif args.command == "check-index-007b-readiness":
+        command_check_index_007b_readiness()
     elif args.command == "plan-cache-refresh":
         command_plan_cache_refresh()
     elif args.command == "pilot-refresh":

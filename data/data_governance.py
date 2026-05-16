@@ -9,6 +9,11 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
+from data.candidate_unblock import summarize_candidate_unblock_plan
+from data.index_readiness import summarize_007b_readiness
+from data.qa_status import summarize_qa_status
+from strategy.factor_readiness import summarize_008b_readiness
+
 
 DATA_GOVERNANCE_STATUS_REQUIRED_FIELDS = [
     "generated_at",
@@ -101,6 +106,15 @@ def _report_paths(output_dir: Path) -> dict[str, str]:
         "manual_review_list": str(output_dir / "manual_review_list.csv"),
         "manual_review_summary": str(output_dir / "manual_review_summary.csv"),
         "factor_score_gate": str(output_dir / "factor_score_gate.csv"),
+        "qa_status_breakdown": str(output_dir / "qa_status_breakdown.csv"),
+        "qa_status_summary": str(output_dir / "qa_status_summary.csv"),
+        "candidate_unblock_plan": str(output_dir / "candidate_unblock_plan.csv"),
+        "candidate_unblock_summary": str(output_dir / "candidate_unblock_summary.csv"),
+        "factor_008b_readiness": str(output_dir / "factor_008b_readiness.csv"),
+        "factor_008b_readiness_summary": str(output_dir / "factor_008b_readiness_summary.csv"),
+        "index_007b_readiness": str(output_dir / "index_007b_readiness.csv"),
+        "index_007b_unlock_plan": str(output_dir / "index_007b_unlock_plan.csv"),
+        "index_007b_readiness_summary": str(output_dir / "index_007b_readiness_summary.csv"),
         "qa_report": str(output_dir / "qa_report.json"),
         "data_governance_status": str(output_dir / "data_governance_status.json"),
         "data_governance_runbook": str(RUNBOOK_PATH),
@@ -215,6 +229,14 @@ def build_data_governance_status(
     else:
         next_action = "review governance status and consider controlled next-stage research"
 
+    qa_status_summary = summarize_qa_status(_read_csv(output_path / "qa_status_breakdown.csv"))
+    actionable_failures = qa_status_summary["refresh_action_count"] + qa_status_summary["manual_review_action_count"]
+    candidate_unblock_summary = summarize_candidate_unblock_plan(report_path=output_path / "candidate_unblock_plan.csv")
+    factor_008b_summary = summarize_008b_readiness(report_path=output_path / "factor_008b_readiness.csv")
+    index_007b_summary = summarize_007b_readiness(report_path=output_path / "index_007b_readiness.csv")
+    if index_007b_summary["readiness_status"] != "not_run":
+        allowed_007b = allowed_007b and bool(index_007b_summary["allowed_to_enter_007b"])
+
     return {
         "generated_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
         "qa_exit_status": "passed" if qa.get("allow_small_observation") else "failed",
@@ -236,6 +258,21 @@ def build_data_governance_status(
         "allowed_to_enter_007b": bool(allowed_007b),
         "next_recommended_action": next_action,
         "blocking_reasons": blocking_reasons,
+        "qa_status": qa_status_summary,
+        "governed_failures": qa_status_summary["governed_failure_count"],
+        "actionable_failures": actionable_failures,
+        "next_refresh_action": "run update-data only in controlled environment or diagnose source lag" if qa_status_summary["refresh_action_count"] else "no refresh action from qa_status",
+        "next_manual_review_action": "complete P0 manual review list; do not auto-unblock" if qa_status_summary["manual_review_action_count"] else "no manual review action from qa_status",
+        "candidate_unblock_status": candidate_unblock_summary,
+        "immediate_eligible_count": candidate_unblock_summary["immediate_eligible_count"],
+        "estimated_unblockable_by_waiting_count": candidate_unblock_summary["estimated_unblockable_by_waiting_count"],
+        "candidate_next_action": candidate_unblock_summary["next_recommended_action"],
+        "factor_008b_readiness_status": factor_008b_summary["readiness_status"],
+        "factor_008b_blockers": factor_008b_summary["blocking_items"],
+        "factor_008b_next_action": factor_008b_summary["next_recommended_action"],
+        "index_007b_readiness_status": index_007b_summary["readiness_status"],
+        "index_007b_blockers": index_007b_summary["blocking_items"],
+        "index_007b_next_action": index_007b_summary["next_recommended_action"],
         "report_paths": _report_paths(output_path),
     }
 
@@ -274,6 +311,21 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 - Factor score gate status: `{status.get("factor_gate_status")}`
 - Allowed to enter ETF-GAP-008B: `{_yes_no(status.get("allowed_to_enter_008b"))}`
 - Allowed to enter ETF-GAP-007B: `{_yes_no(status.get("allowed_to_enter_007b"))}`
+- QA status hard failure rows: `{status.get("qa_status", {}).get("hard_failure_count", 0)}`
+- QA status governed failure rows: `{status.get("governed_failures", 0)}`
+- QA status refresh-action count: `{status.get("qa_status", {}).get("refresh_action_count", 0)}`
+- QA status wait-for-history count: `{status.get("qa_status", {}).get("wait_for_history_count", 0)}`
+- QA status manual-review action count: `{status.get("qa_status", {}).get("manual_review_action_count", 0)}`
+- Candidate unblock immediate eligible count: `{status.get("immediate_eligible_count", 0)}`
+- Candidate unblock wait-for-history count: `{status.get("candidate_unblock_status", {}).get("wait_for_history_count", 0)}`
+- Candidate unblock manual-review count: `{status.get("candidate_unblock_status", {}).get("manual_review_required_count", 0)}`
+- Candidate unblock no-used-factors count: `{status.get("candidate_unblock_status", {}).get("no_used_factors_count", 0)}`
+- Factor 008B readiness status: `{status.get("factor_008b_readiness_status", "not_run")}`
+- Factor 008B blocker count: `{len(status.get("factor_008b_blockers", []))}`
+- Factor 008B next action: {status.get("factor_008b_next_action", "not_run")}
+- Index 007B readiness status: `{status.get("index_007b_readiness_status", "not_run")}`
+- Index 007B blocker count: `{len(status.get("index_007b_blockers", []))}`
+- Index 007B next action: {status.get("index_007b_next_action", "not_run")}
 
 Current blocking reasons:
 
@@ -292,8 +344,28 @@ Next recommended action: {status.get("next_recommended_action")}
 - `output/manual_review_list.csv`: P0 manual-review checklist for ETFs that require human confirmation.
 - `output/manual_review_summary.csv`: aggregate manual-review counts.
 - `output/factor_score_gate.csv`: factor-score gate findings. Blocking rows mean factor scores cannot drive candidate construction.
+- `output/qa_status_breakdown.csv`: QA failure actionability split. It explains what can be fixed by waiting, manual review, controlled refresh/source diagnosis, or source repair.
+- `output/qa_status_summary.csv`: aggregate QA-status findings and next actions.
+- `output/candidate_unblock_plan.csv`: per-symbol unblock path plan. It does not mark any ETF eligible.
+- `output/candidate_unblock_summary.csv`: aggregate candidate-unblock counts and next actions.
+- `output/factor_008b_readiness.csv`: ETF-GAP-008B readiness check. It does not generate candidates or change factor scores.
+- `output/factor_008b_readiness_summary.csv`: aggregate 008B readiness blockers and warning items.
+- `output/index_007b_readiness.csv`: ETF-GAP-007B benchmark/index readiness precheck. It does not enter 007B or calculate benchmark-relative metrics.
+- `output/index_007b_unlock_plan.csv`: ETF-level path to unlock real benchmark metrics after confirmed mapping and schema-valid index cache exist.
+- `output/index_007b_readiness_summary.csv`: aggregate 007B readiness blockers, warnings, and unlock priorities.
 - `output/qa_report.json`: top-level QA and report summary.
 - `output/data_governance_status.json`: machine-readable governance status generated by `summarize-data-governance`.
+
+## How To Read `qa_status_breakdown.csv`
+
+Use `qa_item`, `actionability`, `root_cause`, `governed_by`, and the `blocks_*` columns.
+
+- `wait_for_history` means the ETF is not a refresh target; it needs enough trading rows and a rerun of the gates.
+- `refresh_needed` means a controlled update or source-lag diagnosis may be appropriate, but this runbook does not refresh data.
+- `manual_review` means a human must verify the listed evidence and no automatic unblocking is allowed.
+- `source_unavailable` means benchmark or source dependencies are absent, blocking ETF-GAP-007B.
+- `governance_blocked` means the issue is already represented by a gate and still blocks candidate use.
+- `already_governed` means the failure is explained by reports but remains a hard QA failure.
 
 ## How To Read `data_quality_diagnosis.csv`
 
@@ -314,6 +386,47 @@ Use `candidate_status`, `gate_passed`, `blocked`, `block_reason`, and `observati
 - `blocked_manual_review` waits for a human review conclusion.
 - `blocked_no_used_factors` is unscoreable evidence, not bearish evidence.
 - `blocked_factor_gate` means the global factor-score gate blocks candidate research.
+
+## How To Read `candidate_unblock_plan.csv`
+
+Use `unblock_path`, `unblock_status`, `required_conditions`, `still_blocked_after_primary_fix`, and `next_action`.
+
+- `wait_for_history` means the primary path is row-count accumulation; it is not a refresh instruction.
+- `manual_review_required` means a human review must be completed before rerunning gates.
+- `benchmark_dependency_missing` means benchmark/index cache work is still required before benchmark-dependent factors can help.
+- `no_used_factors` means the row is unscoreable, never a low-score candidate.
+- `still_blocked_after_primary_fix=True` means another blocker, usually global factor gate or manual review, remains after the primary row-level condition.
+
+## How To Read `factor_008b_readiness.csv`
+
+Use `readiness_item`, `blocking`, `blocker_type`, `dependency`, `remediation_action`, and `prerequisite_task`.
+
+- `candidate_eligible_count` and `factor_gate_status` are hard 008B entry gates.
+- `short_history_bias` must be fixed by waiting for history and rerunning governance reports, not by scoring it low.
+- `no_used_factors` means no usable enabled evidence; never fill missing values with zero.
+- `tracking_error_dependency` and `relative_return_dependency` require schema-valid benchmark/index cache.
+- `discount_premium_dependency` requires NAV/IOPV data; exchange prices are not a substitute.
+- `fund_size_dependency` and `management_fee_dependency` remain metadata/config warnings until coverage is trustworthy.
+
+## How To Read `index_007b_readiness.csv`
+
+Use `readiness_item`, `blocking`, `blocker_type`, `dependency`, `remediation_action`, and `prerequisite_task`.
+
+- `usable_benchmark_count`, `index_cache_exists`, and `index_cache_schema_valid` are hard 007B entry gates.
+- `tracking_error_computable_count` and `relative_return_computable_count` must be greater than zero before entering 007B.
+- `index_source_network_available` and `eastmoney_proxy_failure` identify work that must be done in a network/proxy-enabled environment.
+- `benchmark_mapping_confidence` allows only `config_manual` or `metadata_exact` hard mappings; `name_inferred` and `unable_to_confirm` remain review-only.
+- `no_fake_benchmark_guard` must always pass. ETF own prices must never be used as benchmark substitutes.
+
+## How To Read `index_007b_unlock_plan.csv`
+
+Use `unlock_priority`, `required_action`, `eligible_for_007b_after_unlock`, and the cache/source status columns.
+
+- `P0_get_index_cache` means a confirmed mapping exists, but real schema-valid index cache is missing.
+- `P1_validate_mapping` and `P3_manual_review` mean the ETF cannot become a hard benchmark row until mapping evidence improves.
+- `P1_fix_index_schema` means a cache file exists but cannot pass the required index-cache schema.
+- `P2_wait_for_network` means source checks must be rerun where network/proxy access works.
+- `eligible_for_007b_after_unlock=True` means the ETF can be considered for a small-scope 007B run only after cache and metric gates are real.
 
 ## How To Read `short_history_observation_pool.csv`
 

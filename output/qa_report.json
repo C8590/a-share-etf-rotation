@@ -1709,6 +1709,95 @@
         }
       ]
     },
+    "index_007b_readiness": {
+      "index_007b_readiness_report": "output\\index_007b_readiness.csv",
+      "index_007b_unlock_plan_report": "output\\index_007b_unlock_plan.csv",
+      "index_007b_readiness_summary_report": "output\\index_007b_readiness_summary.csv",
+      "readiness_status": "blocked",
+      "allowed_to_enter_007b": false,
+      "blocking_items": [
+        "usable_benchmark_count",
+        "index_cache_exists",
+        "index_cache_schema_valid",
+        "index_data_fetch_success",
+        "overlap_days_available",
+        "tracking_error_computable_count",
+        "relative_return_computable_count",
+        "index_source_network_available",
+        "eastmoney_proxy_failure"
+      ],
+      "warning_items": [],
+      "usable_benchmark_count": 0,
+      "index_cache_valid_count": 0,
+      "tracking_error_computable_count": 0,
+      "relative_return_computable_count": 0,
+      "top_blockers": [
+        {
+          "readiness_item": "usable_benchmark_count",
+          "blocker_type": "benchmark_dependency",
+          "actual_value": "0",
+          "remediation_action": "do not enter 007B until at least one confirmed benchmark has a schema-valid index cache",
+          "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics"
+        },
+        {
+          "readiness_item": "index_cache_exists",
+          "blocker_type": "index_cache_missing",
+          "actual_value": "0/9",
+          "remediation_action": "create real index cache via update-index-data; do not write placeholder cache",
+          "prerequisite_task": "run update-index-data only after source diagnostics pass"
+        },
+        {
+          "readiness_item": "index_cache_schema_valid",
+          "blocker_type": "index_cache_missing",
+          "actual_value": "0/9",
+          "remediation_action": "validate required OHLCV/index columns before ETF metrics consume the cache",
+          "prerequisite_task": "fix schema or rerun update-index-data with normalized index output"
+        },
+        {
+          "readiness_item": "index_data_fetch_success",
+          "blocker_type": "source_fetch_failed",
+          "actual_value": "0",
+          "remediation_action": "rerun source diagnostics in network/proxy-enabled environment before updating index cache",
+          "prerequisite_task": "diagnose-index-source"
+        },
+        {
+          "readiness_item": "overlap_days_available",
+          "blocker_type": "insufficient_overlap",
+          "actual_value": "0",
+          "remediation_action": "compute ETF metrics only after ETF cache and schema-valid benchmark cache overlap",
+          "prerequisite_task": "compute-etf-metrics after index cache is valid"
+        },
+        {
+          "readiness_item": "tracking_error_computable_count",
+          "blocker_type": "metric_unavailable",
+          "actual_value": "0",
+          "remediation_action": "tracking_error remains forbidden until real benchmark-relative metric coverage is positive",
+          "prerequisite_task": "schema-valid index cache -> compute-etf-metrics"
+        },
+        {
+          "readiness_item": "relative_return_computable_count",
+          "blocker_type": "metric_unavailable",
+          "actual_value": "0",
+          "remediation_action": "relative_return remains forbidden until real benchmark-relative metric coverage is positive",
+          "prerequisite_task": "schema-valid index cache -> compute-etf-metrics"
+        },
+        {
+          "readiness_item": "index_source_network_available",
+          "blocker_type": "source_network",
+          "actual_value": "network_failures=27",
+          "remediation_action": "run diagnose-index-source in a network/proxy-enabled environment",
+          "prerequisite_task": "fix proxy/network path before update-index-data"
+        },
+        {
+          "readiness_item": "eastmoney_proxy_failure",
+          "blocker_type": "source_network",
+          "actual_value": "18",
+          "remediation_action": "fix EastMoney proxy/network path or use another source that produces schema-valid cache",
+          "prerequisite_task": "diagnose-index-source"
+        }
+      ],
+      "next_recommended_action": "diagnose-index-source -> update-index-data -> compute-etf-metrics"
+    },
     "data_governance": {
       "data_governance_runbook": "docs/research/data_governance_runbook.md",
       "data_governance_status_report": "output/data_governance_status.json",
@@ -1733,7 +1822,7 @@
     "data_governance_status_report": "output/data_governance_status.json",
     "allowed_to_enter_008b": false,
     "allowed_to_enter_007b": false,
-    "next_recommended_action": "complete P0 manual review list and keep affected ETFs blocked",
+    "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
     "blocking_reasons": [
       "data_quality_failed",
       "end_date_coverage_gap",
@@ -1746,7 +1835,80 @@
       "no_usable_benchmark",
       "data quality failed for 244 ETF(s)",
       "ETF end-date coverage gap is 15 days"
-    ]
+    ],
+    "qa_status": {
+      "qa_status_breakdown_report": "output/qa_status_breakdown.csv",
+      "qa_status_summary_report": "output/qa_status_summary.csv",
+      "hard_failure_count": 6,
+      "governed_failure_count": 6,
+      "refresh_action_count": 1,
+      "wait_for_history_count": 244,
+      "manual_review_action_count": 5,
+      "blocks_007b": true,
+      "blocks_008b": true,
+      "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
+      "actionability_counts": {
+        "already_governed": 244,
+        "governance_blocked": 276,
+        "manual_review": 5,
+        "refresh_needed": 1,
+        "source_unavailable": 9,
+        "wait_for_history": 244
+      },
+      "top_examples": [
+        {
+          "qa_item": "data_quality_failed",
+          "actionability": "wait_for_history",
+          "affected_count": 244,
+          "recommended_action": "keep excluded and observe until sufficient history"
+        },
+        {
+          "qa_item": "end_date_coverage_gap",
+          "actionability": "refresh_needed",
+          "affected_count": 1,
+          "recommended_action": "run update-data only in controlled environment or diagnose source lag"
+        },
+        {
+          "qa_item": "manual_review_required",
+          "actionability": "manual_review",
+          "affected_count": 5,
+          "recommended_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "qa_item": "candidate_gate",
+          "actionability": "governance_blocked",
+          "affected_count": 269,
+          "recommended_action": "keep blocked rows out of production candidate pool"
+        },
+        {
+          "qa_item": "factor_gate_status",
+          "actionability": "governance_blocked",
+          "affected_count": 7,
+          "recommended_action": "do not enter 008B"
+        },
+        {
+          "qa_item": "usable_benchmark_count",
+          "actionability": "source_unavailable",
+          "affected_count": 9,
+          "recommended_action": "rerun diagnose-index-source and update-index-data in network-enabled environment"
+        },
+        {
+          "qa_item": "governance_coverage",
+          "actionability": "already_governed",
+          "affected_count": 244,
+          "recommended_action": "treat QA failure as explained but still hard-gated"
+        }
+      ]
+    },
+    "qa_status_breakdown_report": "output\\qa_status_breakdown.csv",
+    "qa_status_summary_report": "output\\qa_status_summary.csv",
+    "hard_failure_count": 6,
+    "governed_failure_count": 6,
+    "refresh_action_count": 1,
+    "wait_for_history_count": 244,
+    "manual_review_action_count": 5,
+    "blocks_007b": true,
+    "blocks_008b": true
   },
   "strategy_layer": {
     "passed": true,
@@ -2161,7 +2323,103 @@
         }
       ],
       "passed_gate_count": 1,
-      "failed_gate_count": 8
+      "failed_gate_count": 8,
+      "factor_008b_readiness_report": "output\\factor_008b_readiness.csv",
+      "factor_008b_readiness_summary_report": "output\\factor_008b_readiness_summary.csv",
+      "readiness_status": "blocked",
+      "allowed_to_enter_008b": false,
+      "blocking_items": [
+        "candidate_eligible_count",
+        "factor_gate_status",
+        "min_computable_ratio",
+        "max_unable_to_score_ratio",
+        "short_history_bias",
+        "no_used_factors",
+        "tracking_error_dependency",
+        "relative_return_dependency",
+        "discount_premium_dependency",
+        "factor_coverage_minimum",
+        "manual_review_required",
+        "benchmark_dependency"
+      ],
+      "warning_items": [
+        "fund_size_dependency",
+        "management_fee_dependency",
+        "metadata_dependency"
+      ],
+      "top_blockers": [
+        {
+          "readiness_item": "candidate_eligible_count",
+          "blocker_type": "candidate_gate",
+          "actual_value": "0/269",
+          "remediation_action": "do not form candidates until candidate gate has eligible rows",
+          "prerequisite_task": "clear short-history/manual-review/no-used-factor blockers, then rerun build-candidate-gate"
+        },
+        {
+          "readiness_item": "factor_gate_status",
+          "blocker_type": "factor_gate",
+          "actual_value": "blocked_for_strategy_use",
+          "remediation_action": "keep factor score observation-only until all blocking gate rows pass",
+          "prerequisite_task": "fix source coverage, short-history bias, no-used-factors, and factor coverage, then rerun compute-factor-score"
+        },
+        {
+          "readiness_item": "min_computable_ratio",
+          "blocker_type": "coverage",
+          "actual_value": "0.4800 (24/50)",
+          "remediation_action": "Keep factor score as an observation report until broad enough coverage exists.",
+          "prerequisite_task": "improve factor source coverage and rerun compute-factor-score"
+        },
+        {
+          "readiness_item": "max_unable_to_score_ratio",
+          "blocker_type": "no_used_factors",
+          "actual_value": "0.5200 (26/50)",
+          "remediation_action": "Treat no_used_factors as unscoreable, not as a low score.",
+          "prerequisite_task": "restore at least one enabled factor per affected ETF"
+        },
+        {
+          "readiness_item": "short_history_bias",
+          "blocker_type": "short_history",
+          "actual_value": "24/24 (1.0000)",
+          "remediation_action": "Require enough price history before producing an independent candidate strategy.",
+          "prerequisite_task": "rerun diagnose-data-quality / candidate gate / factor score after row counts mature"
+        },
+        {
+          "readiness_item": "no_used_factors",
+          "blocker_type": "no_used_factors",
+          "actual_value": "26/50; unable_to_score_ratio=0.5200",
+          "remediation_action": "restore genuine factor evidence; never fill missing indicators with zero",
+          "prerequisite_task": "fix source dependencies or config only after source evidence is real"
+        },
+        {
+          "readiness_item": "tracking_error_dependency",
+          "blocker_type": "benchmark_dependency",
+          "actual_value": "tracking_error_used=0; coverage=0.0000; usable_benchmark_count=0",
+          "remediation_action": "build schema-valid benchmark/index cache before enabling benchmark-relative factors",
+          "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics -> compute-factor-score"
+        },
+        {
+          "readiness_item": "relative_return_dependency",
+          "blocker_type": "benchmark_dependency",
+          "actual_value": "relative_return_60d_used=0; coverage=0.0000; usable_benchmark_count=0",
+          "remediation_action": "build schema-valid benchmark/index cache before enabling benchmark-relative factors",
+          "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics -> compute-factor-score"
+        },
+        {
+          "readiness_item": "discount_premium_dependency",
+          "blocker_type": "nav_iopv_dependency",
+          "actual_value": "discount_premium_used=0; coverage=0.0000",
+          "remediation_action": "add trusted NAV or IOPV source; exchange prices alone cannot create discount/premium",
+          "prerequisite_task": "source NAV/IOPV, recompute ETF metrics, then rerun factor score"
+        },
+        {
+          "readiness_item": "factor_coverage_minimum",
+          "blocker_type": "coverage",
+          "actual_value": "score_computable_count=24; min_factor=discount_premium:0.0000",
+          "remediation_action": "Raise source coverage and sample size before entering ETF-GAP-008B.",
+          "prerequisite_task": "fix source dependencies, wait for history, then rerun factor score gate"
+        }
+      ],
+      "next_recommended_action": "clear short-history/manual-review/no-used-factor blockers, then rerun build-candidate-gate"
     },
     "candidate_gate_report": "output/candidate_gate.csv",
     "candidate_gate_summary_report": "output/candidate_gate_summary.csv",
@@ -2268,6 +2526,103 @@
           "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
         }
       ]
+    },
+    "candidate_unblock_plan_report": "output\\candidate_unblock_plan.csv",
+    "candidate_unblock_summary_report": "output\\candidate_unblock_summary.csv",
+    "candidate_unblock": {
+      "candidate_unblock_plan_report": "output/candidate_unblock_plan.csv",
+      "candidate_unblock_summary_report": "output/candidate_unblock_summary.csv",
+      "total_symbols": 269,
+      "wait_for_history_count": 239,
+      "manual_review_required_count": 5,
+      "no_used_factors_count": 25,
+      "factor_gate_blocked_count": 269,
+      "benchmark_dependency_missing_count": 26,
+      "estimated_unblockable_by_waiting_count": 239,
+      "immediate_eligible_count": 0,
+      "top_examples": [
+        {
+          "symbol": "159231",
+          "name": "通用航空ETF华宝",
+          "current_candidate_status": "blocked_manual_review",
+          "unblock_path": "manual_review_required",
+          "unblock_status": "requires_manual_review",
+          "next_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "symbol": "159246",
+          "name": "创业板人工智能ETF富国",
+          "current_candidate_status": "blocked_manual_review",
+          "unblock_path": "manual_review_required",
+          "unblock_status": "requires_manual_review",
+          "next_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "symbol": "159287",
+          "name": "创业板综ETF博时",
+          "current_candidate_status": "blocked_manual_review",
+          "unblock_path": "manual_review_required",
+          "unblock_status": "requires_manual_review",
+          "next_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "symbol": "159387",
+          "name": "创业板新能源ETF国泰",
+          "current_candidate_status": "blocked_manual_review",
+          "unblock_path": "manual_review_required",
+          "unblock_status": "requires_manual_review",
+          "next_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "current_candidate_status": "blocked_manual_review",
+          "unblock_path": "manual_review_required",
+          "unblock_status": "requires_manual_review",
+          "next_action": "complete manual review, do not auto unblock"
+        },
+        {
+          "symbol": "159007",
+          "name": "养殖ETF华泰柏瑞",
+          "current_candidate_status": "blocked_short_history",
+          "unblock_path": "wait_for_history",
+          "unblock_status": "waiting",
+          "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+        },
+        {
+          "symbol": "159008",
+          "name": "证券ETF景顺",
+          "current_candidate_status": "blocked_short_history",
+          "unblock_path": "wait_for_history",
+          "unblock_status": "waiting",
+          "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+        },
+        {
+          "symbol": "159009",
+          "name": "创业板新能源ETF易方达",
+          "current_candidate_status": "blocked_short_history",
+          "unblock_path": "wait_for_history",
+          "unblock_status": "waiting",
+          "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+        },
+        {
+          "symbol": "159013",
+          "name": "工业互联网ETF大成",
+          "current_candidate_status": "blocked_short_history",
+          "unblock_path": "wait_for_history",
+          "unblock_status": "waiting",
+          "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+        },
+        {
+          "symbol": "159017",
+          "name": "石油ETF工银",
+          "current_candidate_status": "blocked_short_history",
+          "unblock_path": "wait_for_history",
+          "unblock_status": "waiting",
+          "next_action": "keep excluded and rerun candidate gate after minimum history is reached"
+        }
+      ],
+      "next_recommended_action": "complete manual review first, then rerun candidate gate without auto-clearing blocks"
     }
   },
   "output_layer": {

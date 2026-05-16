@@ -488,6 +488,208 @@ MANUAL_REVIEW_STATUS_ALLOWED_VALUES = {
     "blocked_until_review",
     "unknown",
 }
+QA_STATUS_BREAKDOWN_REQUIRED_COLUMNS = [
+    "qa_item",
+    "raw_status",
+    "normalized_status",
+    "severity",
+    "blocking",
+    "actionability",
+    "affected_count",
+    "affected_ratio",
+    "root_cause",
+    "governed_by",
+    "recommended_action",
+    "can_be_fixed_by_refresh",
+    "can_be_fixed_by_waiting",
+    "requires_manual_review",
+    "blocks_candidate_pool",
+    "blocks_007b",
+    "blocks_008b",
+    "notes",
+]
+QA_STATUS_SUMMARY_REQUIRED_COLUMNS = [
+    "summary_item",
+    "count",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+QA_STATUS_ACTIONABILITY_ALLOWED_VALUES = {
+    "refresh_needed",
+    "wait_for_history",
+    "manual_review",
+    "source_unavailable",
+    "governance_blocked",
+    "already_governed",
+    "unknown",
+}
+CANDIDATE_UNBLOCK_PLAN_REQUIRED_COLUMNS = [
+    "symbol",
+    "name",
+    "current_candidate_status",
+    "current_block_reason",
+    "unblock_path",
+    "unblock_status",
+    "unblock_priority",
+    "required_conditions",
+    "waiting_condition",
+    "manual_review_condition",
+    "benchmark_condition",
+    "factor_gate_condition",
+    "metadata_condition",
+    "liquidity_condition",
+    "estimated_earliest_review_date",
+    "can_be_unblocked_by_waiting",
+    "can_be_unblocked_by_manual_review",
+    "can_be_unblocked_by_refresh",
+    "can_be_unblocked_by_benchmark_update",
+    "still_blocked_after_primary_fix",
+    "next_action",
+    "notes",
+]
+CANDIDATE_UNBLOCK_SUMMARY_REQUIRED_COLUMNS = [
+    "unblock_item",
+    "count",
+    "ratio",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+CANDIDATE_UNBLOCK_PATH_ALLOWED_VALUES = {
+    "wait_for_history",
+    "manual_review_required",
+    "factor_gate_blocked",
+    "no_used_factors",
+    "benchmark_dependency_missing",
+    "metadata_dependency_missing",
+    "liquidity_watch",
+    "unknown",
+}
+CANDIDATE_UNBLOCK_STATUS_ALLOWED_VALUES = {
+    "not_ready",
+    "waiting",
+    "requires_manual_review",
+    "requires_data_dependency",
+    "requires_factor_gate_pass",
+    "eligible_after_conditions",
+    "unknown",
+}
+FACTOR_008B_READINESS_REQUIRED_COLUMNS = [
+    "readiness_item",
+    "current_status",
+    "passed",
+    "blocking",
+    "severity",
+    "threshold",
+    "actual_value",
+    "blocker_type",
+    "dependency",
+    "remediation_action",
+    "prerequisite_task",
+    "estimated_path",
+    "can_be_resolved_by_waiting",
+    "can_be_resolved_by_manual_review",
+    "can_be_resolved_by_index_cache",
+    "can_be_resolved_by_metadata",
+    "can_be_resolved_by_nav_iopv",
+    "can_be_resolved_by_factor_config",
+    "notes",
+]
+FACTOR_008B_READINESS_SUMMARY_REQUIRED_COLUMNS = [
+    "summary_item",
+    "count",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+FACTOR_008B_BLOCKER_TYPE_ALLOWED_VALUES = {
+    "candidate_gate",
+    "factor_gate",
+    "coverage",
+    "short_history",
+    "no_used_factors",
+    "benchmark_dependency",
+    "nav_iopv_dependency",
+    "metadata_dependency",
+    "manual_review",
+    "unknown",
+}
+INDEX_007B_READINESS_REQUIRED_COLUMNS = [
+    "readiness_item",
+    "current_status",
+    "passed",
+    "blocking",
+    "severity",
+    "threshold",
+    "actual_value",
+    "blocker_type",
+    "dependency",
+    "remediation_action",
+    "prerequisite_task",
+    "estimated_path",
+    "can_be_resolved_by_network",
+    "can_be_resolved_by_index_update",
+    "can_be_resolved_by_manual_mapping",
+    "can_be_resolved_by_schema_fix",
+    "notes",
+]
+INDEX_007B_UNLOCK_PLAN_REQUIRED_COLUMNS = [
+    "symbol",
+    "name",
+    "tracking_index_code",
+    "tracking_index_name",
+    "mapping_method",
+    "mapping_confidence",
+    "usable_as_benchmark",
+    "index_cache_exists",
+    "index_cache_schema_valid",
+    "index_fetch_success",
+    "benchmark_status",
+    "etf_metrics_status",
+    "tracking_error_status",
+    "relative_return_status",
+    "required_action",
+    "unlock_priority",
+    "eligible_for_007b_after_unlock",
+    "notes",
+]
+INDEX_007B_READINESS_SUMMARY_REQUIRED_COLUMNS = [
+    "summary_item",
+    "count",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+INDEX_007B_BLOCKER_TYPE_ALLOWED_VALUES = {
+    "benchmark_dependency",
+    "index_cache_missing",
+    "schema_invalid",
+    "source_network",
+    "source_fetch_failed",
+    "mapping_unconfirmed",
+    "insufficient_overlap",
+    "metric_unavailable",
+    "fake_benchmark_guard",
+    "manual_mapping",
+    "unknown",
+}
+INDEX_007B_UNLOCK_PRIORITY_ALLOWED_VALUES = {
+    "P0_get_index_cache",
+    "P1_validate_mapping",
+    "P1_fix_index_schema",
+    "P2_wait_for_network",
+    "P3_manual_review",
+    "no_action",
+}
 DATA_GOVERNANCE_STATUS_REQUIRED_FIELDS = [
     "generated_at",
     "qa_exit_status",
@@ -631,6 +833,57 @@ OUTPUT_FILE_SCHEMAS: dict[str, dict[str, Any]] = {
     "manual_review_summary": {
         "required": MANUAL_REVIEW_SUMMARY_REQUIRED_COLUMNS,
         "allowed": {"severity": {"info", "medium", "high"}},
+    },
+    "qa_status_breakdown": {
+        "required": QA_STATUS_BREAKDOWN_REQUIRED_COLUMNS,
+        "allowed": {
+            "actionability": QA_STATUS_ACTIONABILITY_ALLOWED_VALUES,
+            "severity": {"info", "medium", "high"},
+        },
+    },
+    "qa_status_summary": {
+        "required": QA_STATUS_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "medium", "high"}},
+    },
+    "candidate_unblock_plan": {
+        "required": CANDIDATE_UNBLOCK_PLAN_REQUIRED_COLUMNS,
+        "allowed": {
+            "unblock_path": CANDIDATE_UNBLOCK_PATH_ALLOWED_VALUES,
+            "unblock_status": CANDIDATE_UNBLOCK_STATUS_ALLOWED_VALUES,
+        },
+    },
+    "candidate_unblock_summary": {
+        "required": CANDIDATE_UNBLOCK_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "medium", "high"}},
+    },
+    "factor_008b_readiness": {
+        "required": FACTOR_008B_READINESS_REQUIRED_COLUMNS,
+        "allowed": {
+            "severity": {"info", "warning", "medium", "high"},
+            "blocker_type": FACTOR_008B_BLOCKER_TYPE_ALLOWED_VALUES,
+        },
+    },
+    "factor_008b_readiness_summary": {
+        "required": FACTOR_008B_READINESS_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "warning", "medium", "high"}},
+    },
+    "index_007b_readiness": {
+        "required": INDEX_007B_READINESS_REQUIRED_COLUMNS,
+        "allowed": {
+            "severity": {"info", "warning", "medium", "high"},
+            "blocker_type": INDEX_007B_BLOCKER_TYPE_ALLOWED_VALUES,
+        },
+    },
+    "index_007b_unlock_plan": {
+        "required": INDEX_007B_UNLOCK_PLAN_REQUIRED_COLUMNS,
+        "allowed": {
+            "unlock_priority": INDEX_007B_UNLOCK_PRIORITY_ALLOWED_VALUES,
+            "mapping_method": INDEX_MAPPING_METHOD_ALLOWED_VALUES,
+        },
+    },
+    "index_007b_readiness_summary": {
+        "required": INDEX_007B_READINESS_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "warning", "medium", "high"}},
     },
     "adjustment_audit": {
         "required": [
@@ -1156,6 +1409,21 @@ QA_REPORT_REQUIRED_SUMMARIES = {
         "low_coverage_indexes",
         "top_examples",
     ],
+    "index_007b_readiness": [
+        "index_007b_readiness_report",
+        "index_007b_unlock_plan_report",
+        "index_007b_readiness_summary_report",
+        "readiness_status",
+        "allowed_to_enter_007b",
+        "blocking_items",
+        "warning_items",
+        "usable_benchmark_count",
+        "index_cache_valid_count",
+        "tracking_error_computable_count",
+        "relative_return_computable_count",
+        "top_blockers",
+        "next_recommended_action",
+    ],
     "index_source_diagnostics": [
         "status",
         "index_source_diagnostics_report",
@@ -1211,6 +1479,18 @@ QA_REPORT_REQUIRED_SUMMARIES = {
         "next_recommended_action",
         "blocking_reasons",
     ],
+    "qa_status": [
+        "qa_status_breakdown_report",
+        "qa_status_summary_report",
+        "hard_failure_count",
+        "governed_failure_count",
+        "refresh_action_count",
+        "wait_for_history_count",
+        "manual_review_action_count",
+        "blocks_007b",
+        "blocks_008b",
+        "next_recommended_action",
+    ],
 }
 QA_REPORT_REQUIRED_STRATEGY_SUMMARIES = {
     "factor_score": [
@@ -1247,6 +1527,20 @@ QA_REPORT_REQUIRED_STRATEGY_SUMMARIES = {
         "blocked_factor_gate_count",
         "top_blocking_reasons",
         "top_examples",
+    ],
+    "candidate_unblock": [
+        "candidate_unblock_plan_report",
+        "candidate_unblock_summary_report",
+        "total_symbols",
+        "wait_for_history_count",
+        "manual_review_required_count",
+        "no_used_factors_count",
+        "factor_gate_blocked_count",
+        "benchmark_dependency_missing_count",
+        "estimated_unblockable_by_waiting_count",
+        "immediate_eligible_count",
+        "top_examples",
+        "next_recommended_action",
     ],
 }
 
@@ -1344,7 +1638,7 @@ def validate_qa_report_schema(report: dict[str, Any]) -> None:
     if missing_data:
         raise SchemaValidationError(f"qa_report.data_layer missing fields: {', '.join(missing_data)}")
     for summary_name, required_fields in QA_REPORT_REQUIRED_SUMMARIES.items():
-        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "etf_metadata", "index_data", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance"} and summary_name not in data_layer:
+        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "etf_metadata", "index_data", "index_007b_readiness", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance", "qa_status"} and summary_name not in data_layer:
             continue
         summary = data_layer.get(summary_name)
         if not isinstance(summary, dict):
@@ -1362,6 +1656,21 @@ def validate_qa_report_schema(report: dict[str, Any]) -> None:
         missing_summary = [field for field in required_fields if field not in summary]
         if missing_summary:
             raise SchemaValidationError(f"qa_report.strategy_layer.{summary_name} missing fields: {', '.join(missing_summary)}")
+    factor_score = strategy_layer.get("factor_score")
+    if isinstance(factor_score, dict) and "factor_008b_readiness_report" in factor_score:
+        required_readiness_fields = [
+            "factor_008b_readiness_report",
+            "factor_008b_readiness_summary_report",
+            "readiness_status",
+            "allowed_to_enter_008b",
+            "blocking_items",
+            "warning_items",
+            "top_blockers",
+            "next_recommended_action",
+        ]
+        missing_readiness = [field for field in required_readiness_fields if field not in factor_score]
+        if missing_readiness:
+            raise SchemaValidationError(f"qa_report.strategy_layer.factor_score 008B readiness missing fields: {', '.join(missing_readiness)}")
     if "schema_version" in report and not isinstance(report["schema_version"], str):
         raise SchemaValidationError("qa_report.schema_version must be a string when present")
     if "data_schema_version" in report and not isinstance(report["data_schema_version"], str):
@@ -1398,6 +1707,20 @@ def validate_data_governance_status_schema(report: dict[str, Any]) -> None:
         raise SchemaValidationError("data_governance_status.report_paths must be object")
     if str(report.get("qa_exit_status")) not in {"passed", "failed"}:
         raise SchemaValidationError("data_governance_status.qa_exit_status must be passed or failed")
+    if "qa_status" in report and not isinstance(report.get("qa_status"), dict):
+        raise SchemaValidationError("data_governance_status.qa_status must be object when present")
+    if "candidate_unblock_status" in report and not isinstance(report.get("candidate_unblock_status"), dict):
+        raise SchemaValidationError("data_governance_status.candidate_unblock_status must be object when present")
+    if "factor_008b_blockers" in report and not isinstance(report.get("factor_008b_blockers"), list):
+        raise SchemaValidationError("data_governance_status.factor_008b_blockers must be list when present")
+    if "index_007b_blockers" in report and not isinstance(report.get("index_007b_blockers"), list):
+        raise SchemaValidationError("data_governance_status.index_007b_blockers must be list when present")
+    for field in ["governed_failures", "actionable_failures"]:
+        if field in report and not isinstance(report.get(field), int):
+            raise SchemaValidationError(f"data_governance_status.{field} must be int when present")
+    for field in ["immediate_eligible_count", "estimated_unblockable_by_waiting_count"]:
+        if field in report and not isinstance(report.get(field), int):
+            raise SchemaValidationError(f"data_governance_status.{field} must be int when present")
 
 
 def validate_output_file_schema(path: str | Path, schema_name: str) -> None:
