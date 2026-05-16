@@ -1334,24 +1334,16 @@
       "index_map_report": "output\\index_map.csv",
       "index_data_coverage_report": "output\\index_data_coverage.csv",
       "total_index_mappings": 50,
-      "index_cache_written_count": 0,
-      "usable_benchmark_count": 0,
-      "manual_review_required_count": 9,
-      "fetch_success_count": 0,
-      "fetch_failed_count": 9,
-      "csindex_success_count": 0,
-      "eastmoney_failure_count": 18,
-      "schema_invalid_count": 9,
+      "index_cache_written_count": 6,
+      "usable_benchmark_count": 6,
+      "manual_review_required_count": 3,
+      "fetch_success_count": 8,
+      "fetch_failed_count": 1,
+      "csindex_success_count": 6,
+      "eastmoney_failure_count": 2,
+      "schema_invalid_count": 3,
       "low_coverage_indexes": [
-        "399006",
-        "000932",
-        "000300",
-        "000905",
-        "000015",
-        "000852",
-        "931865",
-        "399975",
-        "000688"
+        "399006"
       ],
       "top_examples": [
         {
@@ -1473,48 +1465,48 @@
           "index_name": "上证红利",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         },
         {
           "index_code": "000300",
           "index_name": "沪深300",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         },
         {
           "index_code": "000852",
           "index_name": "中证1000",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         },
         {
           "index_code": "000905",
           "index_name": "中证500",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         },
         {
           "index_code": "000932",
           "index_name": "中证主要消费",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         },
         {
           "index_code": "399975",
           "index_name": "中证全指证券公司",
           "api_name": "akshare.stock_zh_index_hist_csindex",
           "source_family": "csindex",
-          "row_count": 1784,
-          "end_date": "2026-05-14"
+          "row_count": 1785,
+          "end_date": "2026-05-15"
         }
       ],
       "top_examples": [
@@ -1525,7 +1517,7 @@
           "source_family": "eastmoney",
           "call_success": false,
           "failure_type": "proxy_error",
-          "failure_reason": "HTTPSConnectionPool(host='80.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=b%3AMK0010%2Cm%3A1%2Bt%3A1%2Cm%3A0+t%3A5%2Cm%3A1%2Bs%3A3%2Cm%3A0%2Bt%3A5%2Cm%3A2&fields=f3%2Cf12%2Cf13 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "failure_reason": "HTTPSConnectionPool(host='80.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=3&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=b%3AMK0010%2Cm%3A1%2Bt%3A1%2Cm%3A0+t%3A5%2Cm%3A1%2Bs%3A3%2Cm%3A0%2Bt%3A5%2Cm%3A2&fields=f3%2Cf12%2Cf13 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
           "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
         },
         {
@@ -1535,7 +1527,7 @@
           "source_family": "eastmoney",
           "call_success": false,
           "failure_type": "proxy_error",
-          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.399006&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260514 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.399006&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260516 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
           "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
         },
         {
@@ -1585,7 +1577,7 @@
           "source_family": "eastmoney",
           "call_success": false,
           "failure_type": "proxy_error",
-          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.000932&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260514 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.000932&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260516 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
           "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
         },
         {
@@ -1628,11 +1620,11 @@
       "etf_metrics_report": "output\\etf_metrics.csv",
       "etf_metrics_coverage_report": "output\\etf_metrics_coverage.csv",
       "total_etfs": 50,
-      "metrics_computable_count": 0,
-      "tracking_error_computable_count": 0,
-      "relative_return_computable_count": 0,
+      "metrics_computable_count": 6,
+      "tracking_error_computable_count": 6,
+      "relative_return_computable_count": 6,
       "discount_premium_available_count": 0,
-      "no_index_cache_count": 9,
+      "no_index_cache_count": 3,
       "missing_benchmark_count": 41,
       "insufficient_overlap_count": 0,
       "source_unavailable_count": 50,
@@ -1647,37 +1639,37 @@
         {
           "symbol": "159928",
           "name": "消费ETF汇添富",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\000932.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "510300",
           "name": "沪深300ETF华泰柏瑞",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\000300.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "510500",
           "name": "中证500ETF南方",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\000905.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "510880",
           "name": "红利ETF华泰柏瑞",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\000015.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "512100",
           "name": "中证1000ETF南方",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\000852.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "512480",
@@ -1689,9 +1681,9 @@
         {
           "symbol": "512880",
           "name": "证券ETF国泰",
-          "benchmark_status": "no_index_cache",
-          "tracking_error_status": "no_index_cache",
-          "failure_reason": "missing index cache: data\\index_cache\\399975.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+          "benchmark_status": "ok",
+          "tracking_error_status": "ok",
+          "failure_reason": "NAV/IOPV data is not available; price-only data cannot produce discount/premium"
         },
         {
           "symbol": "588000",
@@ -1713,96 +1705,108 @@
       "index_007b_readiness_report": "output\\index_007b_readiness.csv",
       "index_007b_unlock_plan_report": "output\\index_007b_unlock_plan.csv",
       "index_007b_readiness_summary_report": "output\\index_007b_readiness_summary.csv",
-      "readiness_status": "blocked",
-      "allowed_to_enter_007b": false,
-      "blocking_items": [
-        "usable_benchmark_count",
-        "index_cache_exists",
-        "index_cache_schema_valid",
-        "index_data_fetch_success",
-        "overlap_days_available",
-        "tracking_error_computable_count",
-        "relative_return_computable_count",
-        "index_source_network_available",
-        "eastmoney_proxy_failure"
+      "readiness_status": "ready_small_scope",
+      "allowed_to_enter_007b": true,
+      "allowed_to_enter_007b_scope": "small_scope",
+      "full_scope_available": false,
+      "blocking_items": [],
+      "warning_items": [
+        "partial_index_cache_missing_count",
+        "missing_benchmark_count",
+        "discount_premium_available_count"
       ],
-      "warning_items": [],
-      "usable_benchmark_count": 0,
-      "index_cache_valid_count": 0,
-      "tracking_error_computable_count": 0,
-      "relative_return_computable_count": 0,
-      "top_blockers": [
+      "usable_benchmark_count": 6,
+      "index_cache_valid_count": 6,
+      "tracking_error_computable_count": 6,
+      "relative_return_computable_count": 6,
+      "no_index_cache_count": 3,
+      "missing_benchmark_count": 41,
+      "discount_premium_available_count": 0,
+      "top_blockers": [],
+      "next_recommended_action": "enter 007B only for ETFs with confirmed benchmark metrics; keep warning rows out of full-scope work"
+    },
+    "etf_007b_metrics": {
+      "etf_007b_metrics_report": "output\\etf_007b_metrics_report.csv",
+      "etf_007b_metrics_summary_report": "output\\etf_007b_metrics_summary.csv",
+      "status": "ok",
+      "total_etfs": 50,
+      "computed_valid_count": 6,
+      "tracking_error_valid_count": 6,
+      "relative_return_valid_count": 6,
+      "no_index_cache_count": 3,
+      "missing_benchmark_count": 41,
+      "insufficient_overlap_count": 0,
+      "scope": "small_scope",
+      "full_scope_available": false,
+      "top_examples": [
         {
-          "readiness_item": "usable_benchmark_count",
-          "blocker_type": "benchmark_dependency",
-          "actual_value": "0",
-          "remediation_action": "do not enter 007B until at least one confirmed benchmark has a schema-valid index cache",
-          "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics"
+          "symbol": "159928",
+          "name": "消费ETF汇添富",
+          "tracking_index_code": "000932",
+          "tracking_index_name": "中证主要消费",
+          "tracking_error": "0.2909644174",
+          "relative_return_20d": "0.0001244814",
+          "relative_return_60d": "0.0012250386",
+          "relative_return_120d": "0.0059929643"
         },
         {
-          "readiness_item": "index_cache_exists",
-          "blocker_type": "index_cache_missing",
-          "actual_value": "0/9",
-          "remediation_action": "create real index cache via update-index-data; do not write placeholder cache",
-          "prerequisite_task": "run update-index-data only after source diagnostics pass"
+          "symbol": "510300",
+          "name": "沪深300ETF华泰柏瑞",
+          "tracking_index_code": "000300",
+          "tracking_index_name": "沪深300",
+          "tracking_error": "0.033885658",
+          "relative_return_20d": "0.0027587942",
+          "relative_return_60d": "0.0020840002",
+          "relative_return_120d": "-0.0209115303"
         },
         {
-          "readiness_item": "index_cache_schema_valid",
-          "blocker_type": "index_cache_missing",
-          "actual_value": "0/9",
-          "remediation_action": "validate required OHLCV/index columns before ETF metrics consume the cache",
-          "prerequisite_task": "fix schema or rerun update-index-data with normalized index output"
+          "symbol": "510500",
+          "name": "中证500ETF南方",
+          "tracking_index_code": "000905",
+          "tracking_index_name": "中证500",
+          "tracking_error": "0.0589507584",
+          "relative_return_20d": "0.0021536411",
+          "relative_return_60d": "-0.0005741148",
+          "relative_return_120d": "-0.0048039039"
         },
         {
-          "readiness_item": "index_data_fetch_success",
-          "blocker_type": "source_fetch_failed",
-          "actual_value": "0",
-          "remediation_action": "rerun source diagnostics in network/proxy-enabled environment before updating index cache",
-          "prerequisite_task": "diagnose-index-source"
+          "symbol": "510880",
+          "name": "红利ETF华泰柏瑞",
+          "tracking_index_code": "000015",
+          "tracking_index_name": "上证红利",
+          "tracking_error": "0.0577870922",
+          "relative_return_20d": "0.0016889204",
+          "relative_return_60d": "0.0010612681",
+          "relative_return_120d": "-0.0402811117"
         },
         {
-          "readiness_item": "overlap_days_available",
-          "blocker_type": "insufficient_overlap",
-          "actual_value": "0",
-          "remediation_action": "compute ETF metrics only after ETF cache and schema-valid benchmark cache overlap",
-          "prerequisite_task": "compute-etf-metrics after index cache is valid"
+          "symbol": "512100",
+          "name": "中证1000ETF南方",
+          "tracking_index_code": "000852",
+          "tracking_index_name": "中证1000",
+          "tracking_error": "0.6603904798",
+          "relative_return_20d": "0.0026959684",
+          "relative_return_60d": "0.0033060679",
+          "relative_return_120d": "-0.0109641444"
         },
         {
-          "readiness_item": "tracking_error_computable_count",
-          "blocker_type": "metric_unavailable",
-          "actual_value": "0",
-          "remediation_action": "tracking_error remains forbidden until real benchmark-relative metric coverage is positive",
-          "prerequisite_task": "schema-valid index cache -> compute-etf-metrics"
-        },
-        {
-          "readiness_item": "relative_return_computable_count",
-          "blocker_type": "metric_unavailable",
-          "actual_value": "0",
-          "remediation_action": "relative_return remains forbidden until real benchmark-relative metric coverage is positive",
-          "prerequisite_task": "schema-valid index cache -> compute-etf-metrics"
-        },
-        {
-          "readiness_item": "index_source_network_available",
-          "blocker_type": "source_network",
-          "actual_value": "network_failures=27",
-          "remediation_action": "run diagnose-index-source in a network/proxy-enabled environment",
-          "prerequisite_task": "fix proxy/network path before update-index-data"
-        },
-        {
-          "readiness_item": "eastmoney_proxy_failure",
-          "blocker_type": "source_network",
-          "actual_value": "18",
-          "remediation_action": "fix EastMoney proxy/network path or use another source that produces schema-valid cache",
-          "prerequisite_task": "diagnose-index-source"
+          "symbol": "512880",
+          "name": "证券ETF国泰",
+          "tracking_index_code": "399975",
+          "tracking_index_name": "中证全指证券公司",
+          "tracking_error": "0.032053141",
+          "relative_return_20d": "-4.66818e-05",
+          "relative_return_60d": "-0.0005218588",
+          "relative_return_120d": "0.0010048245"
         }
-      ],
-      "next_recommended_action": "diagnose-index-source -> update-index-data -> compute-etf-metrics"
+      ]
     },
     "data_governance": {
       "data_governance_runbook": "docs/research/data_governance_runbook.md",
       "data_governance_status_report": "output/data_governance_status.json",
       "allowed_to_enter_008b": false,
-      "allowed_to_enter_007b": false,
+      "allowed_to_enter_007b": true,
+      "allowed_to_enter_007b_scope": "small_scope",
       "next_recommended_action": "complete P0 manual review list and keep affected ETFs blocked",
       "blocking_reasons": [
         "data_quality_failed",
@@ -1813,7 +1817,6 @@
         "no_candidate_eligible",
         "candidate_gate_blocked",
         "factor_score_gate_blocked",
-        "no_usable_benchmark",
         "data quality failed for 244 ETF(s)",
         "ETF end-date coverage gap is 15 days"
       ]
@@ -1821,7 +1824,8 @@
     "data_governance_runbook": "docs/research/data_governance_runbook.md",
     "data_governance_status_report": "output/data_governance_status.json",
     "allowed_to_enter_008b": false,
-    "allowed_to_enter_007b": false,
+    "allowed_to_enter_007b": true,
+    "allowed_to_enter_007b_scope": "small_scope",
     "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
     "blocking_reasons": [
       "data_quality_failed",
@@ -1832,19 +1836,18 @@
       "no_candidate_eligible",
       "candidate_gate_blocked",
       "factor_score_gate_blocked",
-      "no_usable_benchmark",
       "data quality failed for 244 ETF(s)",
       "ETF end-date coverage gap is 15 days"
     ],
     "qa_status": {
       "qa_status_breakdown_report": "output/qa_status_breakdown.csv",
       "qa_status_summary_report": "output/qa_status_summary.csv",
-      "hard_failure_count": 6,
-      "governed_failure_count": 6,
+      "hard_failure_count": 5,
+      "governed_failure_count": 5,
       "refresh_action_count": 1,
       "wait_for_history_count": 244,
       "manual_review_action_count": 5,
-      "blocks_007b": true,
+      "blocks_007b": false,
       "blocks_008b": true,
       "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
       "actionability_counts": {
@@ -1852,7 +1855,6 @@
         "governance_blocked": 276,
         "manual_review": 5,
         "refresh_needed": 1,
-        "source_unavailable": 9,
         "wait_for_history": 244
       },
       "top_examples": [
@@ -1887,12 +1889,6 @@
           "recommended_action": "do not enter 008B"
         },
         {
-          "qa_item": "usable_benchmark_count",
-          "actionability": "source_unavailable",
-          "affected_count": 9,
-          "recommended_action": "rerun diagnose-index-source and update-index-data in network-enabled environment"
-        },
-        {
           "qa_item": "governance_coverage",
           "actionability": "already_governed",
           "affected_count": 244,
@@ -1902,12 +1898,12 @@
     },
     "qa_status_breakdown_report": "output\\qa_status_breakdown.csv",
     "qa_status_summary_report": "output\\qa_status_summary.csv",
-    "hard_failure_count": 6,
-    "governed_failure_count": 6,
+    "hard_failure_count": 5,
+    "governed_failure_count": 5,
     "refresh_action_count": 1,
     "wait_for_history_count": 244,
     "manual_review_action_count": 5,
-    "blocks_007b": true,
+    "blocks_007b": false,
     "blocks_008b": true
   },
   "strategy_layer": {
@@ -2339,8 +2335,7 @@
         "relative_return_dependency",
         "discount_premium_dependency",
         "factor_coverage_minimum",
-        "manual_review_required",
-        "benchmark_dependency"
+        "manual_review_required"
       ],
       "warning_items": [
         "fund_size_dependency",
@@ -2393,14 +2388,14 @@
         {
           "readiness_item": "tracking_error_dependency",
           "blocker_type": "benchmark_dependency",
-          "actual_value": "tracking_error_used=0; coverage=0.0000; usable_benchmark_count=0",
+          "actual_value": "tracking_error_used=0; coverage=0.0000; usable_benchmark_count=6",
           "remediation_action": "build schema-valid benchmark/index cache before enabling benchmark-relative factors",
           "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics -> compute-factor-score"
         },
         {
           "readiness_item": "relative_return_dependency",
           "blocker_type": "benchmark_dependency",
-          "actual_value": "relative_return_60d_used=0; coverage=0.0000; usable_benchmark_count=0",
+          "actual_value": "relative_return_60d_used=0; coverage=0.0000; usable_benchmark_count=6",
           "remediation_action": "build schema-valid benchmark/index cache before enabling benchmark-relative factors",
           "prerequisite_task": "diagnose-index-source -> update-index-data -> compute-etf-metrics -> compute-factor-score"
         },

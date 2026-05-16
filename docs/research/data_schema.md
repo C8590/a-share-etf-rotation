@@ -641,12 +641,19 @@ Known `readiness_item` values include:
 - `eastmoney_proxy_failure`
 - `csindex_available`
 - `no_fake_benchmark_guard`
+- `partial_index_cache_missing_count`
+- `missing_benchmark_count`
+- `discount_premium_available_count`
 
 Interpretation:
 
-- `blocking=True` means 007B must not start.
-- `usable_benchmark_count == 0` blocks 007B.
+- `blocking=True` means the applicable 007B scope must not start.
+- `usable_benchmark_count` is computed first from `output/index_data_coverage.csv` rows where `usable_as_benchmark`, `schema_valid`, and `fetch_success` are true. `qa_report.json` is fallback only when coverage is missing.
+- `usable_benchmark_count == 0` blocks all 007B.
 - `tracking_error_computable_count == 0` and `relative_return_computable_count == 0` block real benchmark-relative metrics.
+- `partial_index_cache_missing_count > 0` and `missing_benchmark_count > 0` are warnings for small-scope 007B and blockers for full-scope 007B.
+- `readiness_status=ready_small_scope` means only ETFs with confirmed benchmark mappings, schema-valid index cache, and positive benchmark-relative metric computability may enter 007B validation.
+- `allowed_to_enter_007b_scope=small_scope` is not full-market permission and does not connect 007B to strategy scoring, candidate pools, backtests, UI, or `compare_signal`.
 - `name_inferred` and `unable_to_confirm` mappings are not hard benchmarks.
 - `no_fake_benchmark_guard` must always pass.
 
@@ -687,6 +694,81 @@ Known `unlock_priority` values:
 ### `output/index_007b_readiness_summary.csv`
 
 Current file role: aggregate view of 007B readiness blockers, warnings, and ETF-level unlock priorities.
+
+Required:
+
+- `summary_item`
+- `count`
+- `severity`
+- `finding`
+- `suggested_action`
+- `examples`
+- `notes`
+
+Known `severity` values:
+
+- `info`
+- `warning`
+- `medium`
+- `high`
+
+### `output/etf_007b_metrics_report.csv`
+
+Current file role: small-scope ETF-GAP-007B research report. It reads existing
+`output/etf_metrics.csv` and local cache dates for validation context. It must
+not refresh ETF cache, refresh index cache, change strategy outputs, alter
+backtest returns, update UI, replace `compare_signal`, generate factor
+candidates, or relax QA.
+
+Required columns:
+
+- `symbol`
+- `name`
+- `tracking_index_code`
+- `tracking_index_name`
+- `benchmark_available`
+- `benchmark_status`
+- `tracking_error`
+- `tracking_error_status`
+- `relative_return_20d`
+- `relative_return_60d`
+- `relative_return_120d`
+- `benchmark_return_20d`
+- `benchmark_return_60d`
+- `benchmark_return_120d`
+- `etf_return_20d`
+- `etf_return_60d`
+- `etf_return_120d`
+- `overlap_days`
+- `data_start_date`
+- `data_end_date`
+- `benchmark_start_date`
+- `benchmark_end_date`
+- `computation_status`
+- `validation_status`
+- `failure_reason`
+- `notes`
+
+Known `validation_status` values:
+
+- `computed_valid`
+- `no_index_cache`
+- `missing_benchmark`
+- `insufficient_overlap`
+- `schema_invalid`
+- `source_unavailable`
+- `unknown`
+
+Interpretation:
+
+- `computed_valid` requires real `tracking_error`, real `relative_return_20d/60d/120d`, and real benchmark return fields.
+- `no_index_cache`, `missing_benchmark`, and `insufficient_overlap` remain unavailable states and must not be filled with zero.
+- `computed_valid` rows are small-scope research rows only. They are not factor-score inputs and are not candidate-gate inputs.
+- Full-scope 007B remains unavailable while any confirmed benchmark cache is missing/schema-invalid or any ETF lacks a confirmed benchmark mapping.
+
+### `output/etf_007b_metrics_summary.csv`
+
+Current file role: aggregate view of small-scope ETF-GAP-007B metric validation.
 
 Required:
 
@@ -897,8 +979,18 @@ Optional factor-008B readiness fields:
 Optional index-007B readiness fields:
 
 - `index_007b_readiness_status`
+- `allowed_to_enter_007b_scope`
+- `index_007b_full_scope_available`
 - `index_007b_blockers`
 - `index_007b_next_action`
+
+Optional ETF-007B metrics fields:
+
+- `etf_007b_status`
+- `etf_007b_scope`
+- `etf_007b_computable_count`
+- `etf_007b_full_scope_available`
+- `etf_007b_next_action`
 
 Allowed `qa_exit_status` values:
 
@@ -907,7 +999,7 @@ Allowed `qa_exit_status` values:
 
 `allowed_to_enter_008b` is false unless QA, candidate gate, manual review, short-history blockers, no-used-factors blockers, and factor score gate are all clean.
 
-`allowed_to_enter_007b` is false when benchmark/index evidence is not usable, including `usable_benchmark_count == 0`.
+`allowed_to_enter_007b` is false when benchmark/index evidence is not usable, including `usable_benchmark_count == 0`. When true with `allowed_to_enter_007b_scope=small_scope`, it authorizes only the independent 007B research report for computed-valid rows, not full-market use.
 
 ### `output/adjustment_audit.csv`
 
@@ -1967,6 +2059,27 @@ Required columns:
 - `data_layer.etf_metrics.top_examples`
 
 If ETF metrics have not run, the summary is parseable with `status=not_run`, zero counts, and empty examples. ETF metrics are a P1/P2 research capability and do not relax the existing ETF price-data hard QA gate.
+
+### `qa_report.json` ETF 007B Metrics Summary
+
+`qa_report.json` may include:
+
+- `data_layer.etf_007b_metrics.etf_007b_metrics_report`
+- `data_layer.etf_007b_metrics.etf_007b_metrics_summary_report`
+- `data_layer.etf_007b_metrics.total_etfs`
+- `data_layer.etf_007b_metrics.computed_valid_count`
+- `data_layer.etf_007b_metrics.tracking_error_valid_count`
+- `data_layer.etf_007b_metrics.relative_return_valid_count`
+- `data_layer.etf_007b_metrics.no_index_cache_count`
+- `data_layer.etf_007b_metrics.missing_benchmark_count`
+- `data_layer.etf_007b_metrics.insufficient_overlap_count`
+- `data_layer.etf_007b_metrics.scope`
+- `data_layer.etf_007b_metrics.full_scope_available`
+- `data_layer.etf_007b_metrics.top_examples`
+
+This summary is informational. It does not change existing QA hard gates and
+does not feed strategy, factor score, candidate gate, backtest, UI, or
+`compare_signal`.
 
 ### `output/factor_score_report.csv`
 

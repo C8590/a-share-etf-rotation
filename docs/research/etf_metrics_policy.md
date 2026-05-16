@@ -45,15 +45,20 @@ ETF discount or premium requires NAV, IOPV, or another reviewed fair-value sourc
 
 ## Current Report Interpretation
 
-With `usable_benchmark_count=0` and an empty `data/index_cache/`, a healthy ETF-GAP-007A run should show:
+The current ETF-GAP-007B small-scope state has six ETFs with real
+benchmark-relative metrics. Those rows have `tracking_error_status=ok`, real
+`tracking_error`, real `benchmark_return_*`, and real `relative_return_*`.
 
-- `tracking_error_status=no_index_cache` for ETFs with confirmed mappings but missing cache;
+The rest of the universe remains guarded:
+
+- `tracking_error_status=no_index_cache` for ETFs with confirmed mappings but missing or invalid benchmark cache;
 - `tracking_error_status=missing_benchmark` for ETFs without confirmed usable mappings;
-- blank `relative_return_*` and `benchmark_return_*`;
+- blank `relative_return_*` and `benchmark_return_*` where benchmark evidence is unavailable;
 - possible `etf_return_*` values where ETF cache is present and long enough;
 - `discount_premium_status=source_unavailable` until NAV/IOPV data exists.
 
-This is expected behavior, not a calculation failure.
+This mix is expected behavior. Six computable rows are small-scope research
+evidence, not full-market 007B readiness.
 
 ## Future Upgrade Path
 

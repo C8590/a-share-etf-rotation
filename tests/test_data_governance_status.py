@@ -169,9 +169,10 @@ class DataGovernanceStatusTest(unittest.TestCase):
         self.assertIn("no_candidate_eligible", status["blocking_reasons"])
 
     def test_usable_benchmark_zero_blocks_007b(self) -> None:
-        status = self._status(qa_report=_qa_fixture(usable_benchmark_count=0))
-        self.assertFalse(status["allowed_to_enter_007b"])
-        self.assertIn("no_usable_benchmark", status["blocking_reasons"])
+        with tempfile.TemporaryDirectory() as tmp:
+            status = self._status(output_dir=Path(tmp) / "output", qa_report=_qa_fixture(usable_benchmark_count=0))
+            self.assertFalse(status["allowed_to_enter_007b"])
+            self.assertIn("no_usable_benchmark", status["blocking_reasons"])
 
     def test_manual_review_and_short_history_blocking_reasons(self) -> None:
         status = self._status()

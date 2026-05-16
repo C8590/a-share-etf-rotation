@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 from data.candidate_unblock import summarize_candidate_unblock_plan
+from data.etf_007b import summarize_007b_small_scope
 from data.index_readiness import summarize_007b_readiness
 from data.qa_status import summarize_qa_status
 from strategy.factor_readiness import summarize_008b_readiness
@@ -115,6 +116,8 @@ def _report_paths(output_dir: Path) -> dict[str, str]:
         "index_007b_readiness": str(output_dir / "index_007b_readiness.csv"),
         "index_007b_unlock_plan": str(output_dir / "index_007b_unlock_plan.csv"),
         "index_007b_readiness_summary": str(output_dir / "index_007b_readiness_summary.csv"),
+        "etf_007b_metrics_report": str(output_dir / "etf_007b_metrics_report.csv"),
+        "etf_007b_metrics_summary": str(output_dir / "etf_007b_metrics_summary.csv"),
         "qa_report": str(output_dir / "qa_report.json"),
         "data_governance_status": str(output_dir / "data_governance_status.json"),
         "data_governance_runbook": str(RUNBOOK_PATH),
@@ -180,7 +183,10 @@ def build_data_governance_status(
     manual_count = int(len(manual_frame)) if not manual_frame.empty else _summary_count(manual_summary_frame, "review_item", "manual_review_count")
     data_quality_failed = int(len(diagnosis_frame)) if not diagnosis_frame.empty else _summary_count(diagnosis_summary_frame, "diagnosis_item", "short_history")
     factor_status = _factor_gate_status(factor_gate_frame, qa)
-    usable_benchmark_count = int(data_layer.get("index_data", {}).get("usable_benchmark_count", 0)) if isinstance(data_layer.get("index_data"), dict) else 0
+    index_007b_summary = summarize_007b_readiness(report_path=output_path / "index_007b_readiness.csv")
+    index_data_summary = data_layer.get("index_data", {}) if isinstance(data_layer.get("index_data"), dict) else {}
+    usable_benchmark_count = int(index_data_summary.get("usable_benchmark_count", 0)) if isinstance(index_data_summary, dict) else 0
+    usable_benchmark_count = max(usable_benchmark_count, int(index_007b_summary.get("usable_benchmark_count", 0)))
     qa_passed = bool(data_layer.get("passed", False)) and bool(strategy_layer.get("passed", False)) and bool(qa.get("output_layer", {}).get("passed", False))
 
     blocking_reasons: list[str] = []
@@ -233,9 +239,12 @@ def build_data_governance_status(
     actionable_failures = qa_status_summary["refresh_action_count"] + qa_status_summary["manual_review_action_count"]
     candidate_unblock_summary = summarize_candidate_unblock_plan(report_path=output_path / "candidate_unblock_plan.csv")
     factor_008b_summary = summarize_008b_readiness(report_path=output_path / "factor_008b_readiness.csv")
-    index_007b_summary = summarize_007b_readiness(report_path=output_path / "index_007b_readiness.csv")
     if index_007b_summary["readiness_status"] != "not_run":
-        allowed_007b = allowed_007b and bool(index_007b_summary["allowed_to_enter_007b"])
+        allowed_007b = bool(index_007b_summary["allowed_to_enter_007b"])
+    etf_007b_summary = summarize_007b_small_scope(
+        report_path=output_path / "etf_007b_metrics_report.csv",
+        readiness_summary=index_007b_summary,
+    )
 
     return {
         "generated_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(timespec="seconds"),
@@ -271,8 +280,15 @@ def build_data_governance_status(
         "factor_008b_blockers": factor_008b_summary["blocking_items"],
         "factor_008b_next_action": factor_008b_summary["next_recommended_action"],
         "index_007b_readiness_status": index_007b_summary["readiness_status"],
+        "allowed_to_enter_007b_scope": index_007b_summary.get("allowed_to_enter_007b_scope", "blocked"),
+        "index_007b_full_scope_available": bool(index_007b_summary.get("full_scope_available", False)),
         "index_007b_blockers": index_007b_summary["blocking_items"],
         "index_007b_next_action": index_007b_summary["next_recommended_action"],
+        "etf_007b_status": etf_007b_summary["status"],
+        "etf_007b_scope": etf_007b_summary["scope"],
+        "etf_007b_computable_count": etf_007b_summary["computed_valid_count"],
+        "etf_007b_full_scope_available": bool(etf_007b_summary["full_scope_available"]),
+        "etf_007b_next_action": "keep ETF-GAP-007B as a research-only small-scope report; do not connect to factor_score or candidate_gate",
         "report_paths": _report_paths(output_path),
     }
 
@@ -324,8 +340,15 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 - Factor 008B blocker count: `{len(status.get("factor_008b_blockers", []))}`
 - Factor 008B next action: {status.get("factor_008b_next_action", "not_run")}
 - Index 007B readiness status: `{status.get("index_007b_readiness_status", "not_run")}`
+- Index 007B scope: `{status.get("allowed_to_enter_007b_scope", "blocked")}`
+- Index 007B full-scope available: `{_yes_no(status.get("index_007b_full_scope_available", False))}`
 - Index 007B blocker count: `{len(status.get("index_007b_blockers", []))}`
 - Index 007B next action: {status.get("index_007b_next_action", "not_run")}
+- ETF 007B metrics status: `{status.get("etf_007b_status", "not_run")}`
+- ETF 007B metrics scope: `{status.get("etf_007b_scope", "blocked")}`
+- ETF 007B computable count: `{status.get("etf_007b_computable_count", 0)}`
+- ETF 007B full-scope available: `{_yes_no(status.get("etf_007b_full_scope_available", False))}`
+- ETF 007B next action: {status.get("etf_007b_next_action", "not_run")}
 
 Current blocking reasons:
 
@@ -353,6 +376,8 @@ Next recommended action: {status.get("next_recommended_action")}
 - `output/index_007b_readiness.csv`: ETF-GAP-007B benchmark/index readiness precheck. It does not enter 007B or calculate benchmark-relative metrics.
 - `output/index_007b_unlock_plan.csv`: ETF-level path to unlock real benchmark metrics after confirmed mapping and schema-valid index cache exist.
 - `output/index_007b_readiness_summary.csv`: aggregate 007B readiness blockers, warnings, and unlock priorities.
+- `output/etf_007b_metrics_report.csv`: small-scope ETF-GAP-007B research report for real tracking error and relative return rows. It does not feed factor scores or candidates.
+- `output/etf_007b_metrics_summary.csv`: aggregate small-scope 007B metric counts and unavailable-state counts.
 - `output/qa_report.json`: top-level QA and report summary.
 - `output/data_governance_status.json`: machine-readable governance status generated by `summarize-data-governance`.
 
@@ -412,8 +437,9 @@ Use `readiness_item`, `blocking`, `blocker_type`, `dependency`, `remediation_act
 
 Use `readiness_item`, `blocking`, `blocker_type`, `dependency`, `remediation_action`, and `prerequisite_task`.
 
-- `usable_benchmark_count`, `index_cache_exists`, and `index_cache_schema_valid` are hard 007B entry gates.
-- `tracking_error_computable_count` and `relative_return_computable_count` must be greater than zero before entering 007B.
+- `usable_benchmark_count`, `index_cache_exists`, and `index_cache_schema_valid` are hard 007B entry gates for the available benchmark subset.
+- `tracking_error_computable_count` and `relative_return_computable_count` must be greater than zero before entering small-scope 007B.
+- `partial_index_cache_missing_count`, `missing_benchmark_count`, and `discount_premium_available_count` are warnings for small-scope 007B and blockers for full-scope or NAV/IOPV-dependent work.
 - `index_source_network_available` and `eastmoney_proxy_failure` identify work that must be done in a network/proxy-enabled environment.
 - `benchmark_mapping_confidence` allows only `config_manual` or `metadata_exact` hard mappings; `name_inferred` and `unable_to_confirm` remain review-only.
 - `no_fake_benchmark_guard` must always pass. ETF own prices must never be used as benchmark substitutes.
@@ -427,6 +453,15 @@ Use `unlock_priority`, `required_action`, `eligible_for_007b_after_unlock`, and 
 - `P1_fix_index_schema` means a cache file exists but cannot pass the required index-cache schema.
 - `P2_wait_for_network` means source checks must be rerun where network/proxy access works.
 - `eligible_for_007b_after_unlock=True` means the ETF can be considered for a small-scope 007B run only after cache and metric gates are real.
+
+## How To Read `etf_007b_metrics_report.csv`
+
+Use `validation_status`, `computation_status`, `tracking_error_status`, and `benchmark_status`.
+
+- `computed_valid` means the row has real `tracking_error` plus real `relative_return_20d`, `relative_return_60d`, and `relative_return_120d` backed by benchmark returns.
+- `no_index_cache`, `missing_benchmark`, and `insufficient_overlap` remain unavailable states; do not fill zeros or carry ETF standalone returns into benchmark-relative fields.
+- The report is small-scope research output only. It must not be wired into factor scores, candidate gates, strategy selection, backtests, UI, or `compare_signal`.
+- Full-scope 007B remains unavailable while confirmed benchmark caches are missing or schema-invalid, or while ETF rows still have missing benchmark mappings.
 
 ## How To Read `short_history_observation_pool.csv`
 
@@ -513,7 +548,7 @@ ETF-GAP-008B can only be considered after QA, candidate gate, manual review, sho
 
 ## ETF-GAP-007B Entry Rule
 
-ETF-GAP-007B can only be considered when benchmark/index evidence is usable. At minimum, `usable_benchmark_count > 0` and the relevant index cache/schema checks must be clean. If `usable_benchmark_count == 0`, ETF-GAP-007B remains blocked.
+ETF-GAP-007B can be considered in `small_scope` when benchmark/index evidence is usable for at least one confirmed ETF/index pair. At minimum, `usable_benchmark_count > 0`, relevant index cache/schema checks are positive, and TE or RR computability is positive. Full-scope remains unavailable while any confirmed benchmark cache is missing/schema-invalid or any ETF still has `missing_benchmark`.
 
 ## Report Paths
 
@@ -546,6 +581,9 @@ def merge_data_governance_into_qa_report(
         "data_governance_status_report": str(path.parent / "data_governance_status.json"),
         "allowed_to_enter_008b": bool(current_status.get("allowed_to_enter_008b", False)),
         "allowed_to_enter_007b": bool(current_status.get("allowed_to_enter_007b", False)),
+        "allowed_to_enter_007b_scope": str(current_status.get("allowed_to_enter_007b_scope", "blocked")),
+        "etf_007b_scope": str(current_status.get("etf_007b_scope", "blocked")),
+        "etf_007b_computable_count": int(current_status.get("etf_007b_computable_count", 0)),
         "next_recommended_action": str(current_status.get("next_recommended_action", "")),
         "blocking_reasons": list(current_status.get("blocking_reasons", [])),
     }

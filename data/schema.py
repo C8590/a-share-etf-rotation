@@ -223,6 +223,53 @@ ETF_METRIC_STATUS_ALLOWED_VALUES = {
     "not_applicable",
     "unknown",
 }
+ETF_007B_METRICS_REPORT_REQUIRED_COLUMNS = [
+    "symbol",
+    "name",
+    "tracking_index_code",
+    "tracking_index_name",
+    "benchmark_available",
+    "benchmark_status",
+    "tracking_error",
+    "tracking_error_status",
+    "relative_return_20d",
+    "relative_return_60d",
+    "relative_return_120d",
+    "benchmark_return_20d",
+    "benchmark_return_60d",
+    "benchmark_return_120d",
+    "etf_return_20d",
+    "etf_return_60d",
+    "etf_return_120d",
+    "overlap_days",
+    "data_start_date",
+    "data_end_date",
+    "benchmark_start_date",
+    "benchmark_end_date",
+    "computation_status",
+    "validation_status",
+    "failure_reason",
+    "notes",
+]
+ETF_007B_METRICS_SUMMARY_REQUIRED_COLUMNS = [
+    "summary_item",
+    "count",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+ETF_007B_VALIDATION_STATUS_ALLOWED_VALUES = {
+    "computed_valid",
+    "no_index_cache",
+    "missing_benchmark",
+    "insufficient_overlap",
+    "schema_invalid",
+    "source_unavailable",
+    "unknown",
+}
+ETF_007B_COMPUTATION_STATUS_ALLOWED_VALUES = {"computed_valid", "not_computable"}
 
 FACTOR_SCORE_REPORT_REQUIRED_COLUMNS = [
     "symbol",
@@ -885,6 +932,19 @@ OUTPUT_FILE_SCHEMAS: dict[str, dict[str, Any]] = {
         "required": INDEX_007B_READINESS_SUMMARY_REQUIRED_COLUMNS,
         "allowed": {"severity": {"info", "warning", "medium", "high"}},
     },
+    "etf_007b_metrics_report": {
+        "required": ETF_007B_METRICS_REPORT_REQUIRED_COLUMNS,
+        "allowed": {
+            "benchmark_status": ETF_METRIC_STATUS_ALLOWED_VALUES,
+            "tracking_error_status": ETF_METRIC_STATUS_ALLOWED_VALUES,
+            "computation_status": ETF_007B_COMPUTATION_STATUS_ALLOWED_VALUES,
+            "validation_status": ETF_007B_VALIDATION_STATUS_ALLOWED_VALUES,
+        },
+    },
+    "etf_007b_metrics_summary": {
+        "required": ETF_007B_METRICS_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "warning", "medium", "high"}},
+    },
     "adjustment_audit": {
         "required": [
             "symbol",
@@ -1424,6 +1484,20 @@ QA_REPORT_REQUIRED_SUMMARIES = {
         "top_blockers",
         "next_recommended_action",
     ],
+    "etf_007b_metrics": [
+        "etf_007b_metrics_report",
+        "etf_007b_metrics_summary_report",
+        "total_etfs",
+        "computed_valid_count",
+        "tracking_error_valid_count",
+        "relative_return_valid_count",
+        "no_index_cache_count",
+        "missing_benchmark_count",
+        "insufficient_overlap_count",
+        "scope",
+        "full_scope_available",
+        "top_examples",
+    ],
     "index_source_diagnostics": [
         "status",
         "index_source_diagnostics_report",
@@ -1638,7 +1712,7 @@ def validate_qa_report_schema(report: dict[str, Any]) -> None:
     if missing_data:
         raise SchemaValidationError(f"qa_report.data_layer missing fields: {', '.join(missing_data)}")
     for summary_name, required_fields in QA_REPORT_REQUIRED_SUMMARIES.items():
-        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "etf_metadata", "index_data", "index_007b_readiness", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance", "qa_status"} and summary_name not in data_layer:
+        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "etf_metadata", "index_data", "index_007b_readiness", "etf_007b_metrics", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance", "qa_status"} and summary_name not in data_layer:
             continue
         summary = data_layer.get(summary_name)
         if not isinstance(summary, dict):
@@ -1721,6 +1795,13 @@ def validate_data_governance_status_schema(report: dict[str, Any]) -> None:
     for field in ["immediate_eligible_count", "estimated_unblockable_by_waiting_count"]:
         if field in report and not isinstance(report.get(field), int):
             raise SchemaValidationError(f"data_governance_status.{field} must be int when present")
+    for field in ["etf_007b_status", "etf_007b_scope", "etf_007b_next_action"]:
+        if field in report and not isinstance(report.get(field), str):
+            raise SchemaValidationError(f"data_governance_status.{field} must be str when present")
+    if "etf_007b_computable_count" in report and not isinstance(report.get("etf_007b_computable_count"), int):
+        raise SchemaValidationError("data_governance_status.etf_007b_computable_count must be int when present")
+    if "etf_007b_full_scope_available" in report and not isinstance(report.get("etf_007b_full_scope_available"), bool):
+        raise SchemaValidationError("data_governance_status.etf_007b_full_scope_available must be bool when present")
 
 
 def validate_output_file_schema(path: str | Path, schema_name: str) -> None:

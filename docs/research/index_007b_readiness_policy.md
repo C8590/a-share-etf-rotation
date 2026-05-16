@@ -5,19 +5,27 @@
 ETF cache, refresh index cache, alter strategy output, replace `compare_signal`,
 change backtest returns, update UI, or relax QA.
 
-## Why 007B Is Currently Blocked
+## Current State
 
-007B requires a real benchmark time series. The current reports show confirmed
-ETF-to-index mappings, but `data/index_cache` has no schema-valid benchmark
-cache, `usable_benchmark_count = 0`, and ETF metrics coverage has
-`tracking_error_computable_count = 0` and `relative_return_computable_count = 0`.
+007B requires a real benchmark time series. The current reports now show a
+small usable benchmark subset:
 
-This means benchmark-relative metrics cannot be trusted or computed yet. ETF
-standalone returns are not a substitute for benchmark returns.
+- `usable_benchmark_count = 6`
+- `index_cache_valid_count = 6`
+- `tracking_error_computable_count = 6`
+- `relative_return_computable_count = 6`
+
+This unlocks small-scope 007B validation only. It does not make the full ETF
+universe benchmark-ready, and it does not connect 007B to strategy scoring,
+candidate pools, backtests, UI, or `compare_signal`.
+
+Remaining gaps are still real: `399006`, `000688`, and `931865` do not have
+usable schema-valid index cache; 41 ETF rows still have `missing_benchmark`; and
+`discount_premium_available_count = 0`.
 
 ## Entry Conditions
 
-ETF-GAP-007B can be considered only when all hard conditions are true:
+ETF-GAP-007B small-scope can be considered when all hard conditions are true:
 
 - `usable_benchmark_count > 0`.
 - At least one confirmed `data/index_cache/{index_code}.csv` exists.
@@ -26,12 +34,18 @@ ETF-GAP-007B can be considered only when all hard conditions are true:
 - `tracking_error_computable_count > 0` or `relative_return_computable_count > 0`.
 - `no_fake_benchmark_guard` passes with zero violations.
 
-If any of these remain false, 007B stays blocked.
+If any of these remain false, 007B stays blocked. If these pass while other
+confirmed indexes or ETF mappings remain unavailable, readiness status should be
+`ready_small_scope`, not full-scope ready.
 
 ## Benchmark Evidence
 
-`usable_benchmark_count` means a benchmark is confirmed by mapping evidence and
-backed by real schema-valid index cache. A mapping row alone is not enough.
+`usable_benchmark_count` is counted from `output/index_data_coverage.csv` rows
+where `usable_as_benchmark`, `schema_valid`, and `fetch_success` are all true.
+`qa_report.json` is only a fallback when coverage is missing, because QA
+summaries can lag behind `update-index-data`.
+
+A mapping row alone is not enough.
 
 Schema-valid index cache means the CSV has required index OHLCV fields, parseable
 dates, numeric prices/volume/amount, `index_code`, `index_name`, and `source`,
@@ -74,14 +88,19 @@ considered.
 
 If only some indexes become available, 007B may be limited to ETFs whose rows in
 `index_007b_unlock_plan.csv` have confirmed mapping, schema-valid index cache,
-and positive metric computability after unlock. Other ETFs remain blocked.
+and positive metric computability. Other ETFs remain blocked from the small
+scope and must not receive fake benchmark values.
 
-Current high-confidence mapping rows with missing cache should be treated as
-priority unlock candidates, not as immediately usable benchmarks.
+Current small-scope benchmark codes are `000015`, `000300`, `000852`, `000905`,
+`000932`, and `399975`.
+
+Current high-confidence benchmark codes still unavailable are `399006`,
+`000688`, and `931865`; they should be treated as priority unlock candidates,
+not as immediately usable benchmarks.
 
 ## Pause Conditions
 
-Pause 007B when:
+Pause all 007B when:
 
 - `data/index_cache` is empty or all cache files are schema-invalid.
 - `usable_benchmark_count == 0`.
@@ -93,3 +112,10 @@ Pause 007B when:
 
 In all pause states, real `tracking_error` and real `relative_return` remain
 forbidden.
+
+Pause full-scope 007B, while still allowing small-scope validation, when:
+
+- `partial_index_cache_missing_count > 0`.
+- `missing_benchmark_count > 0`.
+- any confirmed benchmark code is missing schema-valid index cache.
+- `discount_premium_available_count == 0` for NAV/IOPV-dependent work.

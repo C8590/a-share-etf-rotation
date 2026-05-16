@@ -13,6 +13,7 @@ env/
 data/cache/
 data/cache_backup/
 data/cache_meta/
+data/index_cache/
 data/source_eval/
 
 output/*

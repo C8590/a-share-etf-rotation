@@ -47,6 +47,12 @@ from data.data_governance import (
     write_data_governance_status,
 )
 from data.downloader import build_data_coverage_report, load_etf_pool, update_all_data
+from data.etf_007b import (
+    build_007b_small_scope_report,
+    merge_007b_small_scope_into_qa_report,
+    summarize_007b_small_scope,
+    write_007b_small_scope_report,
+)
 from data.etf_metrics import compute_etf_metrics, summarize_etf_metrics, write_etf_metrics_report
 from data.etf_metadata import summarize_etf_metadata, update_etf_metadata
 from data.index_data import summarize_index_data, update_index_data
@@ -1227,10 +1233,32 @@ def command_qa_check() -> dict[str, Any]:
     index_007b_summary["index_007b_unlock_plan_report"] = str(index_007b_unlock_path)
     index_007b_summary["index_007b_readiness_summary_report"] = str(index_007b_summary_path)
     report["data_layer"]["index_007b_readiness"] = index_007b_summary
+    etf_007b_rows = build_007b_small_scope_report(output_dir=output_path)
+    etf_007b_report_path, etf_007b_summary_path = write_007b_small_scope_report(
+        etf_007b_rows,
+        report_path=output_path / "etf_007b_metrics_report.csv",
+        summary_path=output_path / "etf_007b_metrics_summary.csv",
+        readiness_summary=index_007b_summary,
+    )
+    etf_007b_summary = summarize_007b_small_scope(
+        etf_007b_rows,
+        report_path=etf_007b_report_path,
+        readiness_summary=index_007b_summary,
+    )
+    etf_007b_summary["etf_007b_metrics_report"] = str(etf_007b_report_path)
+    etf_007b_summary["etf_007b_metrics_summary_report"] = str(etf_007b_summary_path)
+    report["data_layer"]["etf_007b_metrics"] = etf_007b_summary
     data_governance_status["index_007b_readiness_status"] = index_007b_summary["readiness_status"]
+    data_governance_status["allowed_to_enter_007b_scope"] = index_007b_summary.get("allowed_to_enter_007b_scope", "blocked")
+    data_governance_status["index_007b_full_scope_available"] = bool(index_007b_summary.get("full_scope_available", False))
     data_governance_status["index_007b_blockers"] = index_007b_summary["blocking_items"]
     data_governance_status["index_007b_next_action"] = index_007b_summary["next_recommended_action"]
-    data_governance_status["allowed_to_enter_007b"] = data_governance_status["allowed_to_enter_007b"] and index_007b_summary["allowed_to_enter_007b"]
+    data_governance_status["allowed_to_enter_007b"] = bool(index_007b_summary["allowed_to_enter_007b"])
+    data_governance_status["etf_007b_status"] = etf_007b_summary["status"]
+    data_governance_status["etf_007b_scope"] = etf_007b_summary["scope"]
+    data_governance_status["etf_007b_computable_count"] = etf_007b_summary["computed_valid_count"]
+    data_governance_status["etf_007b_full_scope_available"] = bool(etf_007b_summary["full_scope_available"])
+    data_governance_status["etf_007b_next_action"] = "keep ETF-GAP-007B as a research-only small-scope report; do not connect to factor_score or candidate_gate"
     write_data_governance_status(data_governance_status, path=output_path / "data_governance_status.json")
     write_data_governance_runbook(data_governance_status, path=Path("docs") / "research" / "data_governance_runbook.md")
     data_governance_summary = {
@@ -1238,6 +1266,7 @@ def command_qa_check() -> dict[str, Any]:
         "data_governance_status_report": "output/data_governance_status.json",
         "allowed_to_enter_008b": data_governance_status["allowed_to_enter_008b"],
         "allowed_to_enter_007b": data_governance_status["allowed_to_enter_007b"],
+        "allowed_to_enter_007b_scope": data_governance_status.get("allowed_to_enter_007b_scope", "blocked"),
         "next_recommended_action": data_governance_status["next_recommended_action"],
         "blocking_reasons": data_governance_status["blocking_reasons"],
     }
@@ -1401,6 +1430,9 @@ def command_summarize_data_governance() -> dict[str, Any]:
     print(f"Data governance runbook: {runbook_path}")
     print(f"Allowed to enter 008B: {status['allowed_to_enter_008b']}")
     print(f"Allowed to enter 007B: {status['allowed_to_enter_007b']}")
+    print(f"Allowed 007B scope: {status.get('allowed_to_enter_007b_scope', 'blocked')}")
+    print(f"ETF 007B computable count: {status.get('etf_007b_computable_count', 0)}")
+    print(f"ETF 007B full scope available: {status.get('etf_007b_full_scope_available', False)}")
     print(f"Next recommended action: {status['next_recommended_action']}")
     print(f"Blocking reasons: {status['blocking_reasons']}")
     return status
@@ -1496,6 +1528,19 @@ def command_check_factor_008b_readiness() -> dict[str, Any]:
 def command_check_index_007b_readiness() -> dict[str, Any]:
     output_path = Path("output")
     output_path.mkdir(parents=True, exist_ok=True)
+    qa_path = output_path / "qa_report.json"
+    if qa_path.exists():
+        report = json.loads(qa_path.read_text(encoding="utf-8"))
+        data_layer = report.setdefault("data_layer", {})
+        data_layer["index_data"] = summarize_index_data(
+            index_map_path=output_path / "index_map.csv",
+            coverage_path=output_path / "index_data_coverage.csv",
+        )
+        data_layer["etf_metrics"] = summarize_etf_metrics(
+            metrics_path=output_path / "etf_metrics.csv",
+            coverage_path=output_path / "etf_metrics_coverage.csv",
+        )
+        qa_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     rows = build_007b_readiness_check(output_dir=output_path)
     unlock_plan = build_index_unlock_plan(output_dir=output_path)
     report_path, unlock_path, summary_path = write_007b_readiness_report(
@@ -1514,15 +1559,18 @@ def command_check_index_007b_readiness() -> dict[str, Any]:
     if status_path.exists():
         status = json.loads(status_path.read_text(encoding="utf-8"))
         status["index_007b_readiness_status"] = summary["readiness_status"]
+        status["allowed_to_enter_007b_scope"] = summary.get("allowed_to_enter_007b_scope", "blocked")
+        status["index_007b_full_scope_available"] = bool(summary.get("full_scope_available", False))
         status["index_007b_blockers"] = summary["blocking_items"]
         status["index_007b_next_action"] = summary["next_recommended_action"]
-        status["allowed_to_enter_007b"] = bool(status.get("allowed_to_enter_007b", False)) and summary["allowed_to_enter_007b"]
+        status["allowed_to_enter_007b"] = bool(summary["allowed_to_enter_007b"])
         write_data_governance_status(status, path=status_path)
     print(f"Index 007B readiness report: {report_path}")
     print(f"Index 007B unlock plan: {unlock_path}")
     print(f"Index 007B readiness summary: {summary_path}")
     print(f"Readiness status: {summary['readiness_status']}")
     print(f"Allowed to enter 007B: {summary['allowed_to_enter_007b']}")
+    print(f"Allowed 007B scope: {summary.get('allowed_to_enter_007b_scope', 'blocked')}")
     print(f"Usable benchmark count: {summary['usable_benchmark_count']}")
     print(f"Index cache valid count: {summary['index_cache_valid_count']}")
     print(f"Tracking error computable count: {summary['tracking_error_computable_count']}")
@@ -1530,6 +1578,44 @@ def command_check_index_007b_readiness() -> dict[str, Any]:
     print(f"Blocking items: {', '.join(summary['blocking_items']) if summary['blocking_items'] else 'None'}")
     print(f"Warning items: {', '.join(summary['warning_items']) if summary['warning_items'] else 'None'}")
     print(f"Next recommended action: {summary['next_recommended_action']}")
+    return summary
+
+
+def command_validate_etf_007b_metrics() -> dict[str, Any]:
+    output_path = Path("output")
+    output_path.mkdir(parents=True, exist_ok=True)
+    readiness = summarize_007b_readiness(report_path=output_path / "index_007b_readiness.csv")
+    rows = build_007b_small_scope_report(output_dir=output_path)
+    report_path, summary_path = write_007b_small_scope_report(
+        rows,
+        report_path=output_path / "etf_007b_metrics_report.csv",
+        summary_path=output_path / "etf_007b_metrics_summary.csv",
+        readiness_summary=readiness,
+    )
+    summary = summarize_007b_small_scope(rows, report_path=report_path, readiness_summary=readiness)
+    summary["etf_007b_metrics_report"] = str(report_path)
+    summary["etf_007b_metrics_summary_report"] = str(summary_path)
+    merge_007b_small_scope_into_qa_report(output_path / "qa_report.json", summary=summary)
+    status_path = output_path / "data_governance_status.json"
+    if status_path.exists():
+        status = json.loads(status_path.read_text(encoding="utf-8"))
+        status["etf_007b_status"] = summary["status"]
+        status["etf_007b_scope"] = summary["scope"]
+        status["etf_007b_computable_count"] = summary["computed_valid_count"]
+        status["etf_007b_full_scope_available"] = bool(summary["full_scope_available"])
+        status["etf_007b_next_action"] = "keep ETF-GAP-007B as a research-only small-scope report; do not connect to factor_score or candidate_gate"
+        write_data_governance_status(status, path=status_path)
+    print(f"ETF 007B metrics report: {report_path}")
+    print(f"ETF 007B metrics summary: {summary_path}")
+    print(f"Status: {summary['status']}")
+    print(f"Scope: {summary['scope']}")
+    print(f"Full scope available: {summary['full_scope_available']}")
+    print(f"Computed valid: {summary['computed_valid_count']}")
+    print(f"Tracking error valid: {summary['tracking_error_valid_count']}")
+    print(f"Relative return valid: {summary['relative_return_valid_count']}")
+    print(f"No index cache: {summary['no_index_cache_count']}")
+    print(f"Missing benchmark: {summary['missing_benchmark_count']}")
+    print(f"Insufficient overlap: {summary['insufficient_overlap_count']}")
     return summary
 
 
@@ -2602,6 +2688,7 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("build-candidate-unblock-plan", help="build candidate unblock plan without changing candidate eligibility")
     subparsers.add_parser("check-factor-008b-readiness", help="check ETF-GAP-008B readiness without generating candidates")
     subparsers.add_parser("check-index-007b-readiness", help="check ETF-GAP-007B index readiness without entering 007B")
+    subparsers.add_parser("validate-etf-007b-metrics", help="build small-scope ETF-GAP-007B metric validation report without refreshing cache")
     subparsers.add_parser("plan-cache-refresh", help="生成 legacy cache 安全刷新 dry-run 计划")
     pilot_parser = subparsers.add_parser("pilot-refresh", help="小范围 pilot refresh，默认只允许 core_11 或显式 symbols")
     pilot_parser.add_argument("--pool", choices=["core_11"], default=None)
@@ -2702,6 +2789,8 @@ def main() -> None:
         command_check_factor_008b_readiness()
     elif args.command == "check-index-007b-readiness":
         command_check_index_007b_readiness()
+    elif args.command == "validate-etf-007b-metrics":
+        command_validate_etf_007b_metrics()
     elif args.command == "plan-cache-refresh":
         command_plan_cache_refresh()
     elif args.command == "pilot-refresh":

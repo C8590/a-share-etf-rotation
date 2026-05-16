@@ -154,6 +154,51 @@ def _metric_count(coverage: pd.DataFrame, metric_names: list[str]) -> int:
     return max(counts) if counts else 0
 
 
+def _coverage_usable_benchmark_count(coverage: pd.DataFrame, qa: dict[str, Any], cache_valid_count: int) -> int:
+    if not coverage.empty:
+        usable = _bool_series(coverage, "usable_as_benchmark")
+        schema_valid = _bool_series(coverage, "schema_valid")
+        fetch_success = _bool_series(coverage, "fetch_success")
+        return int((usable & schema_valid & fetch_success).sum())
+    index_summary = qa.get("data_layer", {}).get("index_data", {}) if isinstance(qa.get("data_layer"), dict) else {}
+    if isinstance(index_summary, dict):
+        return min(_int(index_summary.get("usable_benchmark_count"), 0), cache_valid_count)
+    return 0
+
+
+def _metric_computable_counts(metrics: pd.DataFrame, coverage: pd.DataFrame) -> dict[str, int]:
+    tracking_error = 0
+    relative_return = 0
+    discount_premium = 0
+    no_index_cache = 0
+    missing_benchmark = 0
+    if not metrics.empty:
+        if "tracking_error_status" in metrics.columns:
+            tracking_error = int(metrics["tracking_error_status"].astype(str).eq("ok").sum())
+        relative_cols = [column for column in metrics.columns if column.startswith("relative_return_")]
+        if relative_cols:
+            relative_return = int(metrics[relative_cols].astype(str).apply(lambda row: row.str.strip().ne("").any(), axis=1).sum())
+        if "discount_premium_status" in metrics.columns:
+            discount_premium = int(metrics["discount_premium_status"].astype(str).eq("ok").sum())
+        if "benchmark_status" in metrics.columns:
+            status = metrics["benchmark_status"].astype(str)
+            no_index_cache = int(status.eq("no_index_cache").sum())
+            missing_benchmark = int(status.eq("missing_benchmark").sum())
+    if tracking_error == 0:
+        tracking_error = _metric_count(coverage, ["tracking_error"])
+    if relative_return == 0:
+        relative_return = _metric_count(coverage, ["relative_return_20d", "relative_return_60d", "relative_return_120d"])
+    if discount_premium == 0:
+        discount_premium = _metric_count(coverage, ["discount_premium"])
+    return {
+        "tracking_error_computable_count": tracking_error,
+        "relative_return_computable_count": relative_return,
+        "discount_premium_available_count": discount_premium,
+        "no_index_cache_count": no_index_cache,
+        "missing_benchmark_count": missing_benchmark,
+    }
+
+
 def _confirmed_mapping_mask(index_map: pd.DataFrame) -> pd.Series:
     if index_map.empty:
         return pd.Series(False, index=index_map.index)
@@ -376,8 +421,9 @@ def build_007b_readiness_check(
     cache_exists_count = sum(1 for item in cache_status.values() if item["exists"])
     cache_valid_count = sum(1 for item in cache_status.values() if item["schema_valid"])
     source_counts = _source_counts(coverage, diagnostics)
-    tracking_error_count = _metric_count(metrics_coverage, ["tracking_error"])
-    relative_return_count = _metric_count(metrics_coverage, ["relative_return_20d", "relative_return_60d", "relative_return_120d"])
+    metric_counts = _metric_computable_counts(metrics, metrics_coverage)
+    tracking_error_count = metric_counts["tracking_error_computable_count"]
+    relative_return_count = metric_counts["relative_return_computable_count"]
     overlap_count = 0
     if not metrics.empty:
         overlap_count = int(_bool_series(metrics, "benchmark_available").sum())
@@ -385,11 +431,13 @@ def build_007b_readiness_check(
     network_blocked = source_counts["network_failure_count"] > 0 and cache_valid_count == 0
     hard_mapping_count = int(confirmed.sum()) if not mapping.empty else 0
     inferred_count = int(mapping.get("mapping_method", pd.Series("", index=mapping.index)).astype(str).isin(["name_inferred", "unable_to_confirm"]).sum()) if not mapping.empty else 0
-    usable_benchmark_count = min(source_counts["usable_benchmark_count"], cache_valid_count)
-    if qa:
-        index_summary = qa.get("data_layer", {}).get("index_data", {}) if isinstance(qa.get("data_layer"), dict) else {}
-        if isinstance(index_summary, dict):
-            usable_benchmark_count = min(_int(index_summary.get("usable_benchmark_count"), usable_benchmark_count), cache_valid_count)
+    usable_benchmark_count = _coverage_usable_benchmark_count(coverage, qa, cache_valid_count)
+    partial_cache_missing_count = max(0, len(cache_status) - cache_valid_count)
+    unavailable_codes = sorted(
+        code
+        for code, item in cache_status.items()
+        if not item.get("schema_valid")
+    )
 
     rows = [
         _row(
@@ -407,7 +455,7 @@ def build_007b_readiness_check(
             estimated_path="network-enabled index update must produce usable_benchmark_count > 0",
             can_be_resolved_by_network=network_blocked,
             can_be_resolved_by_index_update=hard_mapping_count > 0,
-            notes="007B is blocked when usable_benchmark_count == 0",
+            notes="counted directly from index_data_coverage rows where usable_as_benchmark, schema_valid, and fetch_success are true; qa_report is fallback only when coverage is missing",
         ),
         _row(
             readiness_item="index_cache_exists",
@@ -604,6 +652,54 @@ def build_007b_readiness_check(
             prerequisite_task="replace invalid evidence with confirmed mapping and real index cache",
             estimated_path="never use ETF own price as benchmark",
             notes="violations=" + ";".join(fake_violations[:10]) if fake_violations else "guard passed; ETF own prices are not treated as benchmark",
+        ),
+        _row(
+            readiness_item="partial_index_cache_missing_count",
+            current_status="warning" if partial_cache_missing_count > 0 else "passed",
+            passed=partial_cache_missing_count == 0,
+            blocking=False,
+            severity="warning" if partial_cache_missing_count > 0 else "info",
+            threshold="0 for full-scope 007B; warnings allowed for small-scope 007B",
+            actual_value=str(partial_cache_missing_count),
+            blocker_type="index_cache_missing",
+            dependency="data/index_cache + index_data_coverage.csv",
+            remediation_action="keep unavailable benchmark codes out of small-scope 007B until real schema-valid cache exists",
+            prerequisite_task="rerun update-index-data only in a network-enabled environment; do not synthesize cache",
+            estimated_path="full-scope requires every confirmed benchmark cache to validate",
+            can_be_resolved_by_network=partial_cache_missing_count > 0,
+            can_be_resolved_by_index_update=partial_cache_missing_count > 0,
+            notes="blocks full-scope only; small-scope may use schema-valid cached benchmarks; unavailable_codes=" + ";".join(unavailable_codes),
+        ),
+        _row(
+            readiness_item="missing_benchmark_count",
+            current_status="warning" if metric_counts["missing_benchmark_count"] > 0 else "passed",
+            passed=metric_counts["missing_benchmark_count"] == 0,
+            blocking=False,
+            severity="warning" if metric_counts["missing_benchmark_count"] > 0 else "info",
+            threshold="0 for full-scope 007B; warnings allowed for small-scope 007B",
+            actual_value=str(metric_counts["missing_benchmark_count"]),
+            blocker_type="mapping_unconfirmed",
+            dependency="etf_metrics.csv + index_map.csv",
+            remediation_action="do not fill fake benchmarks for ETFs without confirmed mappings",
+            prerequisite_task="manual mapping or trusted metadata confirmation for missing benchmark rows",
+            estimated_path="full-scope requires confirmed benchmark mappings for the broader ETF universe",
+            can_be_resolved_by_manual_mapping=metric_counts["missing_benchmark_count"] > 0,
+            notes="blocks full-scope only; it does not block small-scope 007B for ETFs with confirmed benchmark metrics",
+        ),
+        _row(
+            readiness_item="discount_premium_available_count",
+            current_status="warning" if metric_counts["discount_premium_available_count"] == 0 else "passed",
+            passed=metric_counts["discount_premium_available_count"] > 0,
+            blocking=False,
+            severity="warning" if metric_counts["discount_premium_available_count"] == 0 else "info",
+            threshold="> 0 for discount/premium research; not required for benchmark-only small-scope 007B",
+            actual_value=str(metric_counts["discount_premium_available_count"]),
+            blocker_type="metric_unavailable",
+            dependency="NAV or IOPV source",
+            remediation_action="keep discount/premium disabled until NAV/IOPV source exists",
+            prerequisite_task="separate NAV/IOPV source task",
+            estimated_path="discount_premium_status == ok for at least one ETF",
+            notes="not a blocker for small-scope benchmark-relative 007B; price-only data cannot produce discount/premium",
         ),
     ]
     return rows
@@ -805,12 +901,17 @@ def summarize_007b_readiness(
             "index_007b_readiness_summary_report": "output/index_007b_readiness_summary.csv",
             "readiness_status": "not_run",
             "allowed_to_enter_007b": False,
+            "allowed_to_enter_007b_scope": "blocked",
+            "full_scope_available": False,
             "blocking_items": [],
             "warning_items": [],
             "usable_benchmark_count": 0,
             "index_cache_valid_count": 0,
             "tracking_error_computable_count": 0,
             "relative_return_computable_count": 0,
+            "no_index_cache_count": 0,
+            "missing_benchmark_count": 0,
+            "discount_premium_available_count": 0,
             "top_blockers": [],
             "next_recommended_action": "run check-index-007b-readiness after index and ETF metric reports exist",
         }
@@ -819,25 +920,32 @@ def summarize_007b_readiness(
     warnings = frame[~bool_col("blocking") & ~bool_col("passed")]
     top_fields = ["readiness_item", "blocker_type", "actual_value", "remediation_action", "prerequisite_task"]
     actual = {str(row["readiness_item"]): str(row["actual_value"]) for _, row in frame.iterrows()}
-    allowed = blocking.empty and bool_col("passed").all()
+    allowed = blocking.empty
+    full_scope_available = allowed and warnings.empty
+    scope = "full_scope" if full_scope_available else "small_scope" if allowed else "blocked"
     if not blocking.empty:
         next_action = str(blocking.iloc[0].get("prerequisite_task") or blocking.iloc[0].get("remediation_action"))
     elif not warnings.empty:
-        next_action = str(warnings.iloc[0].get("prerequisite_task") or warnings.iloc[0].get("remediation_action"))
+        next_action = "enter 007B only for ETFs with confirmed benchmark metrics; keep warning rows out of full-scope work"
     else:
         next_action = "007B readiness clean; restrict initial work to ETFs with real schema-valid benchmark cache"
     return {
         "index_007b_readiness_report": "output/index_007b_readiness.csv",
         "index_007b_unlock_plan_report": "output/index_007b_unlock_plan.csv",
         "index_007b_readiness_summary_report": "output/index_007b_readiness_summary.csv",
-        "readiness_status": "passed" if allowed else "blocked",
+        "readiness_status": "ready_full_scope" if full_scope_available else "ready_small_scope" if allowed else "blocked",
         "allowed_to_enter_007b": bool(allowed),
+        "allowed_to_enter_007b_scope": scope,
+        "full_scope_available": bool(full_scope_available),
         "blocking_items": blocking["readiness_item"].astype(str).tolist(),
         "warning_items": warnings["readiness_item"].astype(str).tolist(),
         "usable_benchmark_count": _int(actual.get("usable_benchmark_count"), 0),
         "index_cache_valid_count": _int(str(actual.get("index_cache_schema_valid", "0")).split("/", 1)[0], 0),
         "tracking_error_computable_count": _int(actual.get("tracking_error_computable_count"), 0),
         "relative_return_computable_count": _int(actual.get("relative_return_computable_count"), 0),
+        "no_index_cache_count": _int(actual.get("partial_index_cache_missing_count"), 0),
+        "missing_benchmark_count": _int(actual.get("missing_benchmark_count"), 0),
+        "discount_premium_available_count": _int(actual.get("discount_premium_available_count"), 0),
         "top_blockers": blocking[top_fields].head(10).to_dict("records"),
         "next_recommended_action": next_action,
     }

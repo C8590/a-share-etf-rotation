@@ -138,6 +138,38 @@ def _base_status(output: Path) -> None:
     (output / "data_governance_status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _write_valid_index_cache(root: Path, code: str) -> None:
+    _write_csv(
+        root / "data" / "index_cache" / f"{code}.csv",
+        [
+            {
+                "date": "2026-05-14",
+                "open": 100.0,
+                "high": 101.0,
+                "low": 99.0,
+                "close": 100.5,
+                "volume": 1000,
+                "amount": 100000,
+                "index_code": code,
+                "index_name": f"index {code}",
+                "source": "unit",
+            },
+            {
+                "date": "2026-05-15",
+                "open": 100.5,
+                "high": 102.0,
+                "low": 100.0,
+                "close": 101.5,
+                "volume": 1200,
+                "amount": 120000,
+                "index_code": code,
+                "index_name": f"index {code}",
+                "source": "unit",
+            },
+        ],
+    )
+
+
 def _write_fixture_reports(root: Path, *, fake_benchmark: bool = False) -> None:
     output = root / "output"
     output.mkdir(parents=True, exist_ok=True)
@@ -285,6 +317,128 @@ def _write_fixture_reports(root: Path, *, fake_benchmark: bool = False) -> None:
     )
 
 
+def _write_small_scope_fixture(root: Path) -> None:
+    output = root / "output"
+    output.mkdir(parents=True, exist_ok=True)
+    _base_qa_report(output)
+    _base_status(output)
+    usable_codes = ["000932", "000300", "000905", "000015", "000852", "399975"]
+    unavailable_codes = ["399006", "931865", "000688"]
+    _write_csv(
+        output / "index_map.csv",
+        [
+            {
+                "symbol": f"51{i:04d}",
+                "etf_name": f"ETF {code}",
+                "category": "ETF",
+                "sub_category": "index",
+                "tracking_index_name": f"index {code}",
+                "tracking_index_code": code,
+                "index_source": "config/index_map.yaml",
+                "mapping_method": "config_manual",
+                "confidence": 0.95,
+                "requires_manual_review": "False",
+                "usable_as_benchmark": "True",
+                "notes": "unit",
+            }
+            for i, code in enumerate([*usable_codes, *unavailable_codes])
+        ],
+    )
+    _write_csv(
+        output / "index_data_coverage.csv",
+        [
+            {
+                "tracking_index_code": code,
+                "tracking_index_name": f"index {code}",
+                "index_source": "akshare.stock_zh_index_hist_csindex",
+                "api_name": "akshare.stock_zh_index_hist_csindex",
+                "source_family": "csindex",
+                "fetch_success": "True" if code in usable_codes else "False",
+                "schema_valid": "True" if code in usable_codes else "False",
+                "start_date": "2019-01-01" if code in usable_codes else "",
+                "end_date": "2026-05-15" if code in usable_codes else "",
+                "row_count": 1000 if code in usable_codes else 0,
+                "latest_expected_date": "2026-05-15",
+                "end_date_gap_days": 0,
+                "missing_required_columns": "",
+                "missing_values_count": 0,
+                "duplicate_dates_count": 0,
+                "abnormal_return_count": 0,
+                "quality_status": "ok" if code in usable_codes else "failed",
+                "usable_as_benchmark": "True" if code in usable_codes else "False",
+                "requires_manual_review": "False" if code in usable_codes else "True",
+                "failure_reason": "" if code in usable_codes else "missing values",
+                "notes": "",
+            }
+            for code in [*usable_codes, *unavailable_codes]
+        ],
+    )
+    pd.DataFrame(columns=["index_code"]).to_csv(output / "index_source_diagnostics.csv", index=False, encoding="utf-8-sig")
+    metric_rows: list[dict[str, object]] = []
+    for i, code in enumerate(usable_codes):
+        metric_rows.append(
+            {
+                "symbol": f"51{i:04d}",
+                "name": f"ETF {code}",
+                "tracking_index_code": code,
+                "tracking_index_name": f"index {code}",
+                "benchmark_available": "True",
+                "benchmark_status": "ok",
+                "metric_status": "ok",
+                "tracking_error_status": "ok",
+                "relative_return_20d": 0.01,
+                "relative_return_60d": 0.02,
+                "relative_return_120d": 0.03,
+                "discount_premium_status": "source_unavailable",
+            }
+        )
+    for i, code in enumerate(unavailable_codes, start=6):
+        metric_rows.append(
+            {
+                "symbol": f"51{i:04d}",
+                "name": f"ETF {code}",
+                "tracking_index_code": code,
+                "tracking_index_name": f"index {code}",
+                "benchmark_available": "False",
+                "benchmark_status": "no_index_cache",
+                "metric_status": "unable_to_compute",
+                "tracking_error_status": "no_index_cache",
+                "relative_return_20d": "",
+                "relative_return_60d": "",
+                "relative_return_120d": "",
+                "discount_premium_status": "source_unavailable",
+            }
+        )
+    for i in range(41):
+        metric_rows.append(
+            {
+                "symbol": f"60{i:04d}",
+                "name": f"Missing {i}",
+                "tracking_index_code": "unable_to_confirm",
+                "tracking_index_name": "unable_to_confirm",
+                "benchmark_available": "False",
+                "benchmark_status": "missing_benchmark",
+                "metric_status": "unable_to_compute",
+                "tracking_error_status": "missing_benchmark",
+                "relative_return_20d": "",
+                "relative_return_60d": "",
+                "relative_return_120d": "",
+                "discount_premium_status": "source_unavailable",
+            }
+        )
+    _write_csv(output / "etf_metrics.csv", metric_rows)
+    _write_csv(
+        output / "etf_metrics_coverage.csv",
+        [
+            {"metric_name": "tracking_error", "total_count": 50, "computable_count": 6, "unable_count": 44, "coverage_ratio": 0.12, "main_failure_reason": "missing_benchmark", "dependency": "ETF cache + confirmed benchmark index cache", "importance": "P1", "notes": ""},
+            {"metric_name": "relative_return_60d", "total_count": 50, "computable_count": 6, "unable_count": 44, "coverage_ratio": 0.12, "main_failure_reason": "missing_benchmark", "dependency": "ETF cache + confirmed benchmark index cache", "importance": "P1", "notes": ""},
+            {"metric_name": "discount_premium", "total_count": 50, "computable_count": 0, "unable_count": 50, "coverage_ratio": 0.0, "main_failure_reason": "source_unavailable", "dependency": "NAV or IOPV source", "importance": "P2", "notes": ""},
+        ],
+    )
+    for code in usable_codes:
+        _write_valid_index_cache(root, code)
+
+
 class Index007BReadinessTest(unittest.TestCase):
     def test_classify_007b_blockers(self) -> None:
         self.assertEqual(classify_007b_blocker("usable_benchmark_count")["blocker_type"], "index_cache_missing")
@@ -377,6 +531,31 @@ class Index007BReadinessTest(unittest.TestCase):
             merged = json.loads((root / "output" / "qa_report.json").read_text(encoding="utf-8"))
             self.assertEqual(merged["data_layer"]["index_007b_readiness"]["readiness_status"], "blocked")
             self.assertFalse(merged["data_layer"]["index_007b_readiness"]["allowed_to_enter_007b"])
+
+    def test_small_scope_readiness_uses_current_coverage_and_warns_on_full_scope_gaps(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_small_scope_fixture(root)
+            rows = build_007b_readiness_check(output_dir=root / "output", index_cache_dir=root / "data" / "index_cache")
+            by_item = {row["readiness_item"]: row for row in rows}
+            self.assertEqual(by_item["usable_benchmark_count"]["actual_value"], "6")
+            self.assertTrue(by_item["usable_benchmark_count"]["passed"])
+            self.assertFalse(by_item["usable_benchmark_count"]["blocking"])
+            self.assertEqual(by_item["tracking_error_computable_count"]["actual_value"], "6")
+            self.assertEqual(by_item["relative_return_computable_count"]["actual_value"], "6")
+            self.assertEqual(by_item["partial_index_cache_missing_count"]["actual_value"], "3")
+            self.assertFalse(by_item["partial_index_cache_missing_count"]["blocking"])
+            self.assertEqual(by_item["missing_benchmark_count"]["actual_value"], "41")
+            self.assertFalse(by_item["missing_benchmark_count"]["blocking"])
+
+            summary = summarize_007b_readiness(rows)
+            self.assertTrue(summary["allowed_to_enter_007b"])
+            self.assertEqual(summary["allowed_to_enter_007b_scope"], "small_scope")
+            self.assertEqual(summary["readiness_status"], "ready_small_scope")
+            self.assertEqual(summary["usable_benchmark_count"], 6)
+            self.assertEqual(summary["no_index_cache_count"], 3)
+            self.assertEqual(summary["missing_benchmark_count"], 41)
+            self.assertFalse(summary["full_scope_available"])
 
 
 if __name__ == "__main__":

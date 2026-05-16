@@ -221,6 +221,17 @@ class OutputSchemaTest(unittest.TestCase):
         for column in ["readiness_item", "blocking", "blocker_type", "remediation_action", "prerequisite_task"]:
             self.assertIn(column, frame.columns)
 
+    def test_etf_007b_metrics_schemas_if_present(self) -> None:
+        report = ROOT / "output" / "etf_007b_metrics_report.csv"
+        summary = ROOT / "output" / "etf_007b_metrics_summary.csv"
+        if not report.exists() or not summary.exists():
+            self.skipTest("ETF 007B metrics reports do not exist")
+        validate_output_file_schema(report, "etf_007b_metrics_report")
+        validate_output_file_schema(summary, "etf_007b_metrics_summary")
+        frame = _read_csv(report)
+        for column in ["symbol", "tracking_error", "relative_return_60d", "computation_status", "validation_status"]:
+            self.assertIn(column, frame.columns)
+
     def test_source_preference_audit_schema_if_present(self) -> None:
         path = ROOT / "output" / "source_preference_audit.csv"
         if not path.exists():

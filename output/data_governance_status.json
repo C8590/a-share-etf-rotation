@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-16T16:57:05+08:00",
+  "generated_at": "2026-05-16T20:07:18+08:00",
   "qa_exit_status": "failed",
   "data_quality_failed_count": 244,
   "end_date_coverage_gap_days": 15,
@@ -16,7 +16,7 @@
   "manual_review_count": 5,
   "factor_gate_status": "blocked_for_strategy_use",
   "allowed_to_enter_008b": false,
-  "allowed_to_enter_007b": false,
+  "allowed_to_enter_007b": true,
   "next_recommended_action": "complete P0 manual review list and keep affected ETFs blocked",
   "blocking_reasons": [
     "data_quality_failed",
@@ -27,19 +27,18 @@
     "no_candidate_eligible",
     "candidate_gate_blocked",
     "factor_score_gate_blocked",
-    "no_usable_benchmark",
     "data quality failed for 244 ETF(s)",
     "ETF end-date coverage gap is 15 days"
   ],
   "qa_status": {
     "qa_status_breakdown_report": "output/qa_status_breakdown.csv",
     "qa_status_summary_report": "output/qa_status_summary.csv",
-    "hard_failure_count": 6,
-    "governed_failure_count": 6,
+    "hard_failure_count": 5,
+    "governed_failure_count": 5,
     "refresh_action_count": 1,
     "wait_for_history_count": 244,
     "manual_review_action_count": 5,
-    "blocks_007b": true,
+    "blocks_007b": false,
     "blocks_008b": true,
     "next_recommended_action": "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock",
     "actionability_counts": {
@@ -47,7 +46,6 @@
       "governance_blocked": 276,
       "manual_review": 5,
       "refresh_needed": 1,
-      "source_unavailable": 9,
       "wait_for_history": 244
     },
     "top_examples": [
@@ -82,12 +80,6 @@
         "recommended_action": "do not enter 008B"
       },
       {
-        "qa_item": "usable_benchmark_count",
-        "actionability": "source_unavailable",
-        "affected_count": 9,
-        "recommended_action": "rerun diagnose-index-source and update-index-data in network-enabled environment"
-      },
-      {
         "qa_item": "governance_coverage",
         "actionability": "already_governed",
         "affected_count": 244,
@@ -95,7 +87,7 @@
       }
     ]
   },
-  "governed_failures": 6,
+  "governed_failures": 5,
   "actionable_failures": 6,
   "next_refresh_action": "run update-data only in controlled environment or diagnose source lag",
   "next_manual_review_action": "complete P0 manual review list; do not auto-unblock",
@@ -209,23 +201,19 @@
     "relative_return_dependency",
     "discount_premium_dependency",
     "factor_coverage_minimum",
-    "manual_review_required",
-    "benchmark_dependency"
+    "manual_review_required"
   ],
   "factor_008b_next_action": "clear short-history/manual-review/no-used-factor blockers, then rerun build-candidate-gate",
-  "index_007b_readiness_status": "blocked",
-  "index_007b_blockers": [
-    "usable_benchmark_count",
-    "index_cache_exists",
-    "index_cache_schema_valid",
-    "index_data_fetch_success",
-    "overlap_days_available",
-    "tracking_error_computable_count",
-    "relative_return_computable_count",
-    "index_source_network_available",
-    "eastmoney_proxy_failure"
-  ],
-  "index_007b_next_action": "diagnose-index-source -> update-index-data -> compute-etf-metrics",
+  "index_007b_readiness_status": "ready_small_scope",
+  "allowed_to_enter_007b_scope": "small_scope",
+  "index_007b_full_scope_available": false,
+  "index_007b_blockers": [],
+  "index_007b_next_action": "enter 007B only for ETFs with confirmed benchmark metrics; keep warning rows out of full-scope work",
+  "etf_007b_status": "ok",
+  "etf_007b_scope": "small_scope",
+  "etf_007b_computable_count": 6,
+  "etf_007b_full_scope_available": false,
+  "etf_007b_next_action": "keep ETF-GAP-007B as a research-only small-scope report; do not connect to factor_score or candidate_gate",
   "report_paths": {
     "data_quality_diagnosis": "output\\data_quality_diagnosis.csv",
     "data_quality_diagnosis_summary": "output\\data_quality_diagnosis_summary.csv",
@@ -245,6 +233,8 @@
     "index_007b_readiness": "output\\index_007b_readiness.csv",
     "index_007b_unlock_plan": "output\\index_007b_unlock_plan.csv",
     "index_007b_readiness_summary": "output\\index_007b_readiness_summary.csv",
+    "etf_007b_metrics_report": "output\\etf_007b_metrics_report.csv",
+    "etf_007b_metrics_summary": "output\\etf_007b_metrics_summary.csv",
     "qa_report": "output\\qa_report.json",
     "data_governance_status": "output\\data_governance_status.json",
     "data_governance_runbook": "docs\\research\\data_governance_runbook.md"
