@@ -1,0 +1,103 @@
+# ETF-GAP-006 index benchmark map.
+# Confirmed codes should come from reliable metadata or explicit manual review.
+# Name-inferred candidates must remain mapping_method=name_inferred and require review.
+mappings:
+  - symbol: "510300"
+    etf_name: "华泰柏瑞沪深300ETF"
+    tracking_index_name: "沪深300"
+    tracking_index_code: "000300"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.95
+    requires_manual_review: false
+    notes: "core_11 manual seed; broad CSI 300 benchmark"
+  - symbol: "510500"
+    etf_name: "南方中证500ETF"
+    tracking_index_name: "中证500"
+    tracking_index_code: "000905"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.95
+    requires_manual_review: false
+    notes: "core_11 manual seed; CSI 500 benchmark"
+  - symbol: "512100"
+    etf_name: "南方中证1000ETF"
+    tracking_index_name: "中证1000"
+    tracking_index_code: "000852"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.95
+    requires_manual_review: false
+    notes: "core_11 manual seed; CSI 1000 benchmark"
+  - symbol: "159915"
+    etf_name: "易方达创业板ETF"
+    tracking_index_name: "创业板指"
+    tracking_index_code: "399006"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.95
+    requires_manual_review: false
+    notes: "core_11 manual seed; ChiNext broad benchmark; ETF-GAP-006B keeps mapping confirmed but current CSIndex formal cache may remain unavailable until source support passes schema/quality"
+  - symbol: "588000"
+    etf_name: "华夏科创50ETF"
+    tracking_index_name: "科创50"
+    tracking_index_code: "000688"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.95
+    requires_manual_review: false
+    notes: "core_11 manual seed; STAR 50 benchmark; ETF-GAP-006B does not write formal cache if CSIndex returns missing required values"
+  - symbol: "510880"
+    etf_name: "华泰柏瑞红利ETF"
+    tracking_index_name: "上证红利"
+    tracking_index_code: "000015"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.90
+    requires_manual_review: false
+    notes: "core_11 manual seed; dividend style benchmark"
+  - symbol: "512880"
+    etf_name: "国泰中证全指证券公司ETF"
+    tracking_index_name: "中证全指证券公司"
+    tracking_index_code: "399975"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.90
+    requires_manual_review: false
+    notes: "core_11 manual seed; sector benchmark"
+  - symbol: "512480"
+    etf_name: "国联安中证全指半导体ETF"
+    tracking_index_name: "中证全指半导体产品与设备"
+    tracking_index_code: "931865"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.85
+    requires_manual_review: false
+    notes: "core_11 manual seed; sector benchmark, keep source trace in coverage; ETF-GAP-006B does not write formal cache if CSIndex returns missing required values"
+  - symbol: "159928"
+    etf_name: "汇添富中证主要消费ETF"
+    tracking_index_name: "中证主要消费"
+    tracking_index_code: "000932"
+    index_source: "config/index_map.yaml"
+    mapping_method: "config_manual"
+    confidence: 0.90
+    requires_manual_review: false
+    notes: "core_11 manual seed; sector benchmark"
+  - symbol: "518880"
+    etf_name: "华安黄金ETF"
+    tracking_index_name: "unable_to_confirm"
+    tracking_index_code: "unable_to_confirm"
+    index_source: "config/index_map.yaml"
+    mapping_method: "unable_to_confirm"
+    confidence: 0.0
+    requires_manual_review: true
+    notes: "commodity ETF; do not map to an equity index without a confirmed benchmark source"
+  - symbol: "511880"
+    etf_name: "银华日利货币ETF"
+    tracking_index_name: "unable_to_confirm"
+    tracking_index_code: "unable_to_confirm"
+    index_source: "config/index_map.yaml"
+    mapping_method: "unable_to_confirm"
+    confidence: 0.0
+    requires_manual_review: true
+    notes: "money-market ETF; no confirmed index benchmark in current layer"

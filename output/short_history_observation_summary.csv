@@ -1,0 +1,17 @@
+﻿summary_item,count,ratio,severity,examples,suggested_action,notes
+total_observation_count,244,1.0,high,159231 通用航空ETF华宝;159387 创业板新能源ETF国泰;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;560320 N食品ETF富国,keep outside candidate strategy,short-history observation universe
+very_short_history,72,0.295082,medium,560320 N食品ETF富国;516230 光伏ETF招商;159157 有色金属ETF天弘;560230 光伏ETF富国;560290 有色ETF景顺,archive watch until enough history exists,very short history is prioritized as a status
+waiting_for_history,63,0.258197,medium,159213 机器人ETF汇添富;159382 创业板人工智能ETF南方;159208 航空航天ETF万家;159227 航空航天ETF华夏;159218 卫星ETF招商,recheck after rows_needed reaches zero,temporary history blocker
+low_liquidity_watch,141,0.577869,medium,159231 通用航空ETF华宝;159287 创业板综ETF博时;589980 科创100ETF汇添富;159219 深证100ETF融通;159392 航空ETF富国,watch liquidity separately from history,low liquidity is not a low score
+manual_review_required,5,0.020492,high,159231 通用航空ETF华宝;159387 创业板新能源ETF国泰;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;560320 N食品ETF富国,manual review before any candidate gate reconsideration,manual review takes priority over history wait
+estimated_eligible_within_20d,14,0.057377,medium,159231 通用航空ETF华宝;159213 机器人ETF汇添富;159382 创业板人工智能ETF南方;159208 航空航天ETF万家;159227 航空航天ETF华夏,rerun candidate gate after enough rows accumulate,calendar estimate is only as good as current snapshot
+estimated_eligible_within_60d,50,0.204918,medium,159231 通用航空ETF华宝;159387 创业板新能源ETF国泰;159246 创业板人工智能ETF富国;159213 机器人ETF汇添富;159382 创业板人工智能ETF南方,track for next candidate gate cycle,calendar estimate is only as good as current snapshot
+unknown_estimate,109,0.446721,medium,560320 N食品ETF富国;159140 科创创业人工智能ETF易方达;159139 科创创业人工智能ETF华泰柏瑞;588430 科创创业人工智能ETF工银;159243 创业板人工智能ETF招商,extend or refresh trading calendar before dating eligibility,no fabricated eligible date
+observation_priority:P0_manual_review,5,0.020492,high,159231 通用航空ETF华宝;159387 创业板新能源ETF国泰;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;560320 N食品ETF富国,see per-symbol recommended_action,grouped by observation_priority
+observation_priority:P1_wait_for_history,63,0.258197,medium,159213 机器人ETF汇添富;159382 创业板人工智能ETF南方;159208 航空航天ETF万家;159227 航空航天ETF华夏;159218 卫星ETF招商,see per-symbol recommended_action,grouped by observation_priority
+observation_priority:P2_low_liquidity_watch,105,0.430328,medium,589980 科创100ETF汇添富;159219 深证100ETF融通;159392 航空ETF富国;563550 A500增强ETF摩根;563060 央企50ETF易方达,see per-symbol recommended_action,grouped by observation_priority
+observation_priority:P3_archive_watch,71,0.290984,medium,516230 光伏ETF招商;159157 有色金属ETF天弘;560230 光伏ETF富国;560290 有色ETF景顺;560710 船舶ETF富国,see per-symbol recommended_action,grouped by observation_priority
+observation_status:manual_review_required,5,0.020492,high,159231 通用航空ETF华宝;159387 创业板新能源ETF国泰;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;560320 N食品ETF富国,see per-symbol recommended_action,grouped by observation_status
+observation_status:very_short_history,71,0.290984,medium,516230 光伏ETF招商;159157 有色金属ETF天弘;560230 光伏ETF富国;560290 有色ETF景顺;560710 船舶ETF富国,see per-symbol recommended_action,grouped by observation_status
+observation_status:waiting_but_low_liquidity,105,0.430328,medium,589980 科创100ETF汇添富;159219 深证100ETF融通;159392 航空ETF富国;563550 A500增强ETF摩根;563060 央企50ETF易方达,see per-symbol recommended_action,grouped by observation_status
+observation_status:waiting_for_history,63,0.258197,medium,159213 机器人ETF汇添富;159382 创业板人工智能ETF南方;159208 航空航天ETF万家;159227 航空航天ETF华夏;159218 卫星ETF招商,see per-symbol recommended_action,grouped by observation_status

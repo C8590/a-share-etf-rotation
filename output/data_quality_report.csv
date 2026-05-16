@@ -1,0 +1,1161 @@
+﻿symbol,name,status,rows,start_date,end_date,missing_count,duplicate_count,errors,warnings,failure_types,primary_failure_type
+510300,沪深300ETF华泰柏瑞,passed,1782,2019-01-02,2026-05-13,0,0,,,,
+588000,科创50ETF华夏,passed,1329,2020-11-16,2026-05-13,0,0,,,,
+563360,A500ETF华泰柏瑞,passed,381,2024-10-15,2026-05-12,0,0,,,,
+159352,A500ETF南方,passed,381,2024-10-15,2026-05-12,0,0,,,,
+588200,科创芯片ETF嘉实,warning,857,2022-10-26,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159338,中证A500ETF国泰,passed,381,2024-10-15,2026-05-12,0,0,,,,
+159915,创业板ETF易方达,warning,1781,2019-01-02,2026-05-13,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510500,中证500ETF南方,passed,1782,2019-01-02,2026-05-13,0,0,,,,
+510050,上证50ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+510310,沪深300ETF易方达,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159919,沪深300ETF嘉实,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512050,A500ETF华夏,passed,358,2024-11-15,2026-05-12,0,0,,,,
+515880,通信ETF国泰,warning,1614,2019-09-06,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159516,半导体设备ETF国泰,warning,673,2023-07-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+510330,沪深300ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159361,A500ETF易方达,passed,356,2024-11-19,2026-05-12,0,0,,,,
+159326,电网设备ETF华夏,passed,400,2024-09-09,2026-05-12,0,0,,,,
+588170,科创半导体ETF华夏,passed,264,2025-04-08,2026-05-12,0,0,,,,
+512880,证券ETF国泰,passed,1782,2019-01-02,2026-05-13,0,0,,,,
+512480,半导体ETF国联安,warning,1675,2019-06-12,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159949,创业板50ETF华安,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159845,中证1000ETF华夏,warning,1237,2021-03-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159206,卫星ETF永赢,passed,280,2025-03-14,2026-05-12,0,0,,,,
+512100,中证1000ETF南方,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588080,科创50ETF易方达,warning,1328,2020-11-16,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159363,创业板人工智能ETF华宝,warning,337,2024-12-16,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159995,芯片ETF华夏,warning,1516,2020-02-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512400,有色金属ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+562500,机器人ETF华夏,passed,1054,2021-12-29,2026-05-12,0,0,,,,
+563800,A500ETF广发,passed,357,2024-11-18,2026-05-12,0,0,,,,
+512000,券商ETF华宝,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159980,有色ETF大成,warning,1543,2019-12-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159755,电池ETF广发,warning,1181,2021-06-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159558,半导体设备ETF易方达,passed,459,2024-06-18,2026-05-12,0,0,,,,
+159819,人工智能ETF易方达,warning,1360,2020-09-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159870,化工ETF鹏华,warning,1257,2021-03-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512690,酒ETF鹏华,warning,1701,2019-05-06,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+515220,煤炭ETF国泰,warning,1501,2020-03-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159611,电力ETF广发,warning,1048,2022-01-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159530,机器人ETF易方达,warning,555,2024-01-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159852,软件ETF嘉实,warning,1268,2021-02-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515050,UC通信ETF华夏,passed,1592,2019-10-16,2026-05-12,0,0,,,,
+159901,深证100ETF易方达,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+563220,A500ETF富国,passed,381,2024-10-15,2026-05-12,0,0,,,,
+515790,光伏ETF华泰柏瑞,passed,1304,2020-12-18,2026-05-12,0,0,,,,
+588220,科创100ETF鹏华,warning,637,2023-09-15,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+512800,银行ETF华宝,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+515180,红利ETF易方达,passed,1545,2019-12-20,2026-05-12,0,0,,,,
+512500,中证500ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159992,创新药ETF银华,warning,1473,2020-04-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159922,中证500ETF嘉实,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159566,储能电池ETF易方达,warning,540,2024-02-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159351,A500ETF嘉实,passed,381,2024-10-15,2026-05-12,0,0,,,,
+512760,芯片ETF国泰,warning,1675,2019-06-12,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+512890,红利低波ETF华泰柏瑞,warning,1768,2019-01-18,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159967,创业板成长ETF华夏,warning,1653,2019-07-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+512660,军工ETF国泰,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+512170,医疗ETF华宝,warning,1672,2019-06-17,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+512010,医药ETF易方达,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588050,科创50ETF工银,warning,1328,2020-11-16,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+560010,中证1000ETF广发,warning,909,2022-08-04,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159770,机器人ETF天弘,warning,1091,2021-11-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159952,创业板ETF广发,warning,1779,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159583,通信ETF富国,warning,444,2024-07-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+563230,卫星ETF富国,failed,152,2025-09-17,2026-05-12,0,0,too few rows: 152 < 250,,insufficient_rows,insufficient_rows
+510100,上证50ETF易方达,warning,1596,2019-10-09,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+512070,证券保险ETF易方达,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516150,稀土ETF嘉实,passed,1247,2021-03-17,2026-05-12,0,0,,,,
+159633,中证1000ETF易方达,warning,910,2022-08-04,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+588060,科创50ETF广发,passed,1156,2021-07-29,2026-05-12,0,0,,,,
+563300,中证2000ETF华泰柏瑞,passed,638,2023-09-14,2026-05-12,0,0,,,,
+560860,工业有色ETF万家,passed,765,2023-03-13,2026-05-12,0,0,,,,
+159813,半导体ETF鹏华,warning,1445,2020-05-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159227,航空航天ETF华夏,failed,239,2025-05-16,2026-05-12,0,0,too few rows: 239 < 250,,insufficient_rows,insufficient_rows
+515120,创新药ETF广发,passed,1294,2021-01-04,2026-05-12,0,0,,,,
+159218,卫星ETF招商,failed,235,2025-05-22,2026-05-12,0,0,too few rows: 235 < 250,,insufficient_rows,insufficient_rows
+159869,游戏ETF华夏,warning,1255,2021-03-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159781,科创创业ETF易方达,warning,1174,2021-07-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159259,成长ETF易方达,failed,166,2025-08-28,2026-05-12,0,0,too few rows: 166 < 250,,insufficient_rows,insufficient_rows
+515080,中证红利ETF招商,passed,1540,2019-12-27,2026-05-12,0,0,,,,
+510880,红利ETF华泰柏瑞,passed,1782,2019-01-02,2026-05-13,0,0,,,,
+562800,稀有金属ETF嘉实,passed,1116,2021-09-27,2026-05-12,0,0,,,,
+588790,科创AIETF博时,warning,320,2025-01-09,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159381,创业板人工智能ETF华夏,passed,274,2025-03-24,2026-05-12,0,0,,,,
+515980,人工智能ETF华富,warning,1516,2020-02-10,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+515030,新能源车ETF华夏,passed,1499,2020-03-04,2026-05-12,0,0,,,,
+512710,军工龙头ETF富国,warning,1622,2019-08-26,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159353,中证A500ETF景顺,warning,381,2024-10-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159783,科创创业50ETF华夏,warning,1174,2021-07-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159667,工业母机ETF国泰,warning,857,2022-10-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510210,上证指数ETF富国,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588090,科创50ETF华泰柏瑞,passed,1328,2020-11-16,2026-05-12,0,0,,,,
+588290,科创芯片ETF华安,warning,857,2022-10-26,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+516160,新能源ETF南方,warning,1271,2021-02-04,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159842,券商ETF银华,warning,1245,2021-03-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159796,电池ETF汇添富,warning,1007,2022-03-14,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588750,科创芯片ETF汇添富,passed,329,2024-12-26,2026-05-12,0,0,,,,
+561380,电网设备ETF国泰,passed,332,2024-12-23,2026-05-12,0,0,,,,
+159682,创业板50ETF景顺,warning,809,2023-01-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159368,创业板新能源ETF华夏,passed,274,2025-03-24,2026-05-12,0,0,,,,
+588760,科创人工智能ETF广发,warning,310,2025-01-23,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+562590,半导体设备ETF华夏,passed,620,2023-10-18,2026-05-12,0,0,,,,
+159593,中证A50ETF平安,passed,523,2024-03-12,2026-05-12,0,0,,,,
+588780,科创芯片设计ETF国联安,warning,329,2024-12-26,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516650,有色金属ETF华夏,passed,1184,2021-06-21,2026-05-12,0,0,,,,
+159387,创业板新能源ETF国泰,failed,223,2025-06-10,2026-05-12,0,0,too few rows: 223 < 250,daily close return exceeds 20% on 1 day(s),insufficient_rows; abnormal_return,insufficient_rows
+588710,科创半导体设备ETF华泰柏瑞,failed,227,2025-06-04,2026-05-12,0,0,too few rows: 227 < 250,,insufficient_rows,insufficient_rows
+515070,人工智能ETF华夏,passed,1543,2019-12-24,2026-05-12,0,0,,,,
+588800,科创100ETF华夏,warning,599,2023-11-16,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+562550,绿电ETF华夏,passed,755,2023-03-27,2026-05-12,0,0,,,,
+512630,卫星ETF广发,failed,133,2025-10-22,2026-05-12,0,0,too few rows: 133 < 250,,insufficient_rows,insufficient_rows
+159801,芯片ETF广发,warning,1510,2020-02-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+561980,半导体设备ETF招商,passed,647,2023-09-01,2026-05-12,0,0,,,,
+560780,半导体设备ETF广发,passed,581,2023-12-12,2026-05-12,0,0,,,,
+560710,船舶ETF富国,failed,58,2026-02-06,2026-05-12,0,0,too few rows: 58 < 250,,insufficient_rows,insufficient_rows
+159246,创业板人工智能ETF富国,failed,201,2025-07-10,2026-05-12,0,0,too few rows: 201 < 250,daily close return exceeds 20% on 1 day(s),insufficient_rows; abnormal_return,insufficient_rows
+159928,消费ETF汇添富,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+516510,云计算ETF易方达,passed,1233,2021-04-07,2026-05-12,0,0,,,,
+159957,创业板ETF华夏,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159851,金融科技ETF华宝,warning,1245,2021-03-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+588030,科创100ETF博时,passed,637,2023-09-15,2026-05-12,0,0,,,,
+560050,中国A50ETF汇添富,passed,1091,2021-11-08,2026-05-12,0,0,,,,
+589720,科创创新药ETF国泰,failed,185,2025-08-01,2026-05-12,0,0,too few rows: 185 < 250,,insufficient_rows,insufficient_rows
+159732,消费电子ETF华夏,warning,1139,2021-08-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159841,证券ETF天弘,warning,1268,2021-02-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563530,卫星ETF易方达,failed,116,2025-11-14,2026-05-12,0,0,too few rows: 116 < 250,,insufficient_rows,insufficient_rows
+159865,养殖ETF国泰,warning,1254,2021-03-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512930,AI人工智能ETF平安,passed,1624,2019-08-23,2026-05-12,0,0,,,,
+589680,科创综指ETF鹏华,passed,287,2025-03-05,2026-05-12,0,0,,,,
+563020,红利低波ETF易方达,passed,579,2023-12-14,2026-05-12,0,0,,,,
+159327,半导体设备ETF万家,passed,425,2024-08-05,2026-05-12,0,0,,,,
+159977,创业板ETF天弘,warning,1600,2019-09-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+515300,300红利低波ETF嘉实,passed,1606,2019-09-19,2026-05-12,0,0,,,,
+512980,传媒ETF广发,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+561910,电池ETF招商,passed,1146,2021-08-12,2026-05-12,0,0,,,,
+560280,工程机械ETF广发,passed,612,2023-10-30,2026-05-12,0,0,,,,
+159840,锂电池ETF工银,warning,1140,2021-08-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515230,软件ETF国泰,passed,1258,2021-03-02,2026-05-12,0,0,,,,
+588230,科创200ETF华泰柏瑞,passed,331,2024-12-24,2026-05-12,0,0,,,,
+159681,创业板50ETF鹏华,warning,809,2023-01-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+512200,房地产ETF南方,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516640,芯片ETF富国,passed,1135,2021-08-27,2026-05-12,0,0,,,,
+510180,上证180ETF华安,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+588020,科创成长ETF易方达,warning,648,2023-08-31,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159652,有色ETF汇添富,warning,788,2023-02-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516020,化工ETF华宝,passed,1254,2021-03-08,2026-05-12,0,0,,,,
+159599,芯片ETF东财,passed,487,2024-05-08,2026-05-12,0,0,,,,
+516780,稀土ETF华泰柏瑞,passed,1254,2021-03-08,2026-05-12,0,0,,,,
+588190,科创100ETF银华,passed,637,2023-09-15,2026-05-12,0,0,,,,
+159766,旅游ETF富国,warning,1160,2021-07-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516350,芯片ETF易方达,passed,1058,2021-12-23,2026-05-12,0,0,,,,
+516120,化工ETF富国,passed,1253,2021-03-09,2026-05-12,0,0,,,,
+560390,电网设备ETF易方达,failed,46,2026-03-04,2026-05-12,0,0,too few rows: 46 < 250,,insufficient_rows,insufficient_rows
+515400,大数据ETF富国,passed,1282,2021-01-20,2026-05-12,0,0,,,,
+589130,科创芯片ETF易方达,failed,79,2026-01-08,2026-05-12,0,0,too few rows: 79 < 250,,insufficient_rows,insufficient_rows
+159994,通信ETF银华,warning,1502,2020-02-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159857,光伏ETF天弘,warning,1262,2021-02-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561560,电力ETF华泰柏瑞,passed,967,2022-05-16,2026-05-12,0,0,,,,
+518600,金ETF广发,passed,1395,2020-08-05,2026-05-12,0,0,,,,
+159267,航天ETF华安,failed,185,2025-08-01,2026-05-12,0,0,too few rows: 185 < 250,,insufficient_rows,insufficient_rows
+589010,科创人工智能ETF华夏,passed,263,2025-04-09,2026-05-12,0,0,,,,
+159998,计算机ETF天弘,warning,1472,2020-04-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589000,科创综指ETF华夏,passed,287,2025-03-05,2026-05-12,0,0,,,,
+159157,有色金属ETF天弘,failed,58,2026-02-06,2026-05-12,0,0,too few rows: 58 < 250,,insufficient_rows,insufficient_rows
+588730,科创人工智能ETF易方达,passed,309,2025-01-24,2026-05-12,0,0,,,,
+588890,科创芯片ETF南方,passed,495,2024-04-23,2026-05-12,0,0,,,,
+159388,创业板人工智能ETF国泰,warning,265,2025-04-07,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159241,航空航天ETF天弘,failed,230,2025-05-29,2026-05-12,0,0,too few rows: 230 < 250,,insufficient_rows,insufficient_rows
+159780,科创创业50ETF南方,warning,1174,2021-07-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159382,创业板人工智能ETF南方,failed,244,2025-05-09,2026-05-12,0,0,too few rows: 244 < 250,,insufficient_rows,insufficient_rows
+159608,稀有金属ETF广发,warning,1058,2021-12-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560090,证券ETF汇添富,passed,763,2023-03-15,2026-05-12,0,0,,,,
+589030,科创芯片设计ETF易方达,failed,72,2026-01-19,2026-05-12,0,0,too few rows: 72 < 250,,insufficient_rows,insufficient_rows
+589800,科创综指ETF易方达,passed,288,2025-03-04,2026-05-12,0,0,,,,
+159320,电网设备ETF广发,passed,330,2024-12-24,2026-05-12,0,0,,,,
+159715,稀土ETF易方达,warning,1125,2021-09-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512090,MSCIA股ETF易方达,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159883,医疗器械ETF永赢,warning,1216,2021-04-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512680,军工ETF广发,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159859,生物医药ETF天弘,warning,1172,2021-07-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561160,电池ETF富国,passed,929,2022-07-08,2026-05-12,0,0,,,,
+589020,科创半导体设备ETF鹏华,failed,161,2025-09-04,2026-05-12,0,0,too few rows: 161 < 250,,insufficient_rows,insufficient_rows
+513400,道琼斯ETF鹏华,passed,544,2024-02-02,2026-05-12,0,0,,,,
+515000,科技ETF华宝,warning,1629,2019-08-16,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+589190,科创芯片ETF华宝,failed,66,2026-01-27,2026-05-12,0,0,too few rows: 66 < 250,,insufficient_rows,insufficient_rows
+518680,金ETF富国,passed,1401,2020-07-28,2026-05-12,0,0,,,,
+515020,银行ETF华夏,passed,1558,2019-12-03,2026-05-12,0,0,,,,
+588830,科创新能源ETF鹏华,warning,421,2024-08-09,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159713,稀土ETF富国,warning,1144,2021-08-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510720,XD红利国企ETF国泰,passed,482,2024-05-15,2026-05-12,0,0,,,,
+515450,红利低波50ETF南方,passed,1504,2020-02-26,2026-05-12,0,0,,,,
+159993,证券ETF鹏华,warning,1517,2020-02-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562960,绿色电力ETF易方达,passed,744,2023-04-12,2026-05-12,0,0,,,,
+515800,中证800ETF汇添富,passed,1549,2019-12-16,2026-05-12,0,0,,,,
+159625,绿色电力ETF嘉实,warning,975,2022-04-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159140,科创创业人工智能ETF易方达,failed,92,2025-12-18,2026-05-12,0,0,too few rows: 92 < 250,,insufficient_rows,insufficient_rows
+159531,中证2000ETF南方,warning,636,2023-09-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563880,A500ETF汇添富,passed,352,2024-11-25,2026-05-12,0,0,,,,
+563380,航空航天ETF华泰柏瑞,failed,121,2025-11-07,2026-05-12,0,0,too few rows: 121 < 250,,insufficient_rows,insufficient_rows
+159595,中证A50ETF大成,passed,519,2024-03-18,2026-05-12,0,0,,,,
+512670,国防ETF鹏华,warning,1639,2019-08-01,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159263,价值ETF易方达,failed,203,2025-07-08,2026-05-12,0,0,too few rows: 203 < 250,,insufficient_rows,insufficient_rows
+159213,机器人ETF汇添富,failed,248,2025-04-30,2026-05-12,0,0,too few rows: 248 < 250,,insufficient_rows,insufficient_rows
+515170,食品饮料ETF华夏,passed,1287,2021-01-13,2026-05-12,0,0,,,,
+159731,石化ETF华夏,warning,1066,2021-12-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589070,科创芯片设计ETF天弘,failed,68,2026-01-23,2026-05-12,0,0,too few rows: 68 < 250,,insufficient_rows,insufficient_rows
+512570,证券ETF易方达,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+560530,中证A500ETF摩根,passed,381,2024-10-15,2026-05-12,0,0,,,,
+560610,A500ETF招商,passed,381,2024-10-15,2026-05-12,0,0,,,,
+588930,科创人工智能ETF银华,passed,317,2025-01-14,2026-05-12,0,0,,,,
+513850,美国50ETF易方达,passed,598,2023-11-17,2026-05-12,0,0,,,,
+515970,工程机械ETF华夏,failed,54,2026-02-12,2026-05-12,0,0,too few rows: 54 < 250,,insufficient_rows,insufficient_rows
+512290,生物医药ETF国泰,passed,1692,2019-05-20,2026-05-12,0,0,,,,
+159325,半导体ETF南方,passed,363,2024-11-08,2026-05-12,0,0,,,,
+515390,沪深300ETF华安,passed,1531,2020-01-10,2026-05-12,0,0,,,,
+159559,机器人ETF景顺,warning,581,2023-12-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588810,科创芯片ETF富国,passed,320,2025-01-09,2026-05-12,0,0,,,,
+159629,中证1000ETF富国,warning,911,2022-08-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+588460,科创50增强ETF鹏华,warning,807,2023-01-05,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159256,创业板软件ETF华夏,failed,184,2025-08-04,2026-05-12,0,0,too few rows: 184 < 250,,insufficient_rows,insufficient_rows
+159032,工业有色ETF易方达,failed,1,2026-05-13,2026-05-13,0,0,too few rows: 1 < 250,,insufficient_rows,insufficient_rows
+516010,游戏ETF国泰,passed,1255,2021-03-05,2026-05-12,0,0,,,,
+159807,科技ETF易方达,warning,1481,2020-03-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159207,高股息ETF广发,passed,263,2025-04-09,2026-05-12,0,0,,,,
+159925,沪深300ETF南方,warning,1779,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+510760,上证指数ETF国泰,passed,1370,2020-09-09,2026-05-12,0,0,,,,
+588120,科创100ETF国泰,passed,637,2023-09-15,2026-05-12,0,0,,,,
+512820,银行ETF汇添富,passed,1780,2019-01-02,2026-05-12,0,0,,,,
+516630,云计算ETF华夏,passed,1130,2021-09-03,2026-05-12,0,0,,,,
+512700,银行ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+516310,银行ETF易方达,passed,1199,2021-05-28,2026-05-12,0,0,,,,
+159697,石油ETF鹏华,warning,731,2023-05-04,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588380,科创创业ETF富国,warning,1173,2021-07-06,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+510230,金融ETF国泰,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516520,智能驾驶ETF华泰柏瑞,passed,1259,2021-03-01,2026-05-12,0,0,,,,
+511850,招商财富宝ETF,passed,1233,2021-04-07,2026-05-12,0,0,,,,
+159258,机器人ETF南方,failed,185,2025-08-01,2026-05-12,0,0,too few rows: 185 < 250,,insufficient_rows,insufficient_rows
+159939,信息技术ETF广发,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+516810,农业ETF华夏,passed,1046,2022-01-11,2026-05-12,0,0,,,,
+588990,科创芯片ETF博时,passed,416,2024-08-16,2026-05-12,0,0,,,,
+159745,建材ETF国泰,warning,1185,2021-06-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159305,储能电池ETF广发,warning,387,2024-09-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159622,创新药ETF东财,warning,728,2023-05-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563790,卫星ETF鹏华,failed,82,2026-01-05,2026-05-12,0,0,too few rows: 82 < 250,,insufficient_rows,insufficient_rows
+159825,农业ETF富国,warning,1297,2020-12-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159707,地产ETF华宝,warning,1087,2021-11-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159582,半导体ETF博时,passed,500,2024-04-16,2026-05-12,0,0,,,,
+512960,央企结构调整ETF博时,passed,1769,2019-01-18,2026-05-12,0,0,,,,
+589850,科创50ETF东财,failed,179,2025-08-11,2026-05-12,0,0,too few rows: 179 < 250,,insufficient_rows,insufficient_rows
+512080,A500ETF中金,passed,312,2025-01-21,2026-05-12,0,0,,,,
+159692,证券ETF东财,warning,718,2023-05-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560510,中证A500ETF泰康,passed,381,2024-10-15,2026-05-12,0,0,,,,
+159876,有色ETF华宝,warning,1241,2021-03-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159278,机器人ETF鹏华,failed,178,2025-08-12,2026-05-12,0,0,too few rows: 178 < 250,,insufficient_rows,insufficient_rows
+515700,新能源车ETF平安,passed,1516,2020-02-10,2026-05-12,0,0,,,,
+159997,电子ETF天弘,warning,1487,2020-03-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516670,畜牧养殖ETF招商,passed,1240,2021-03-26,2026-05-12,0,0,,,,
+159209,红利质量ETF招商,passed,273,2025-03-25,2026-05-12,0,0,,,,
+512940,有色ETF华安,failed,50,2026-02-26,2026-05-12,0,0,too few rows: 50 < 250,,insufficient_rows,insufficient_rows
+518890,上海金ETF中银,passed,1357,2020-09-28,2026-05-12,0,0,,,,
+588330,双创50ETF华宝,warning,1173,2021-07-06,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+159272,机器人ETF富国,failed,150,2025-09-19,2026-05-12,0,0,too few rows: 150 < 250,,insufficient_rows,insufficient_rows
+159601,A50ETF华夏,warning,1091,2021-11-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159758,红利质量ETF华夏,warning,1055,2021-12-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159142,科创创业人工智能ETF景顺,failed,96,2025-12-12,2026-05-12,0,0,too few rows: 96 < 250,,insufficient_rows,insufficient_rows
+159547,红利低波ETF华夏,warning,539,2024-02-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512020,A500ETF鹏华,passed,347,2024-12-02,2026-05-12,0,0,,,,
+159948,创业板ETF南方,warning,1779,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159279,创业板人工智能ETF华安,failed,144,2025-09-29,2026-05-12,0,0,too few rows: 144 < 250,,insufficient_rows,insufficient_rows
+159273,云计算ETF汇添富,failed,182,2025-08-06,2026-05-12,0,0,too few rows: 182 < 250,,insufficient_rows,insufficient_rows
+510580,中证500ETF易方达,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+159577,美国50ETF汇添富,passed,535,2024-02-23,2026-05-12,0,0,,,,
+588300,科创创业50ETF招商,warning,1174,2021-07-05,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+512040,价值100ETF富国,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159628,国证2000ETF万家,warning,923,2022-07-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159551,机器人ETF国泰,warning,599,2023-11-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159638,高端装备ETF嘉实,warning,904,2022-08-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561580,央企红利ETF华泰柏瑞,passed,713,2023-05-30,2026-05-12,0,0,,,,
+159680,中证1000增强ETF招商,warning,832,2022-11-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589520,科创人工智能ETF华宝,warning,281,2025-03-13,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159871,有色ETF银华,warning,1237,2021-03-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159339,A500ETF银华,passed,381,2024-10-15,2026-05-12,0,0,,,,
+510510,中证500ETF广发,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+516090,新能源ETF易方达,warning,1244,2021-03-19,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516080,创新药ETF易方达,passed,1263,2021-02-23,2026-05-12,0,0,,,,
+560450,电力ETF天弘,failed,6,2026-04-30,2026-05-12,0,0,too few rows: 6 < 250,,insufficient_rows,insufficient_rows
+516000,大数据ETF华夏,passed,1259,2021-03-01,2026-05-12,0,0,,,,
+159887,银行ETF富国,warning,1205,2021-05-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516920,芯片ETF汇添富,passed,1144,2021-08-16,2026-05-12,0,0,,,,
+159158,电力ETF景顺,failed,66,2026-01-27,2026-05-12,0,0,too few rows: 66 < 250,,insufficient_rows,insufficient_rows
+159300,沪深300ETF富国,warning,467,2024-06-05,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159552,中证2000增强ETF招商,warning,450,2024-06-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159141,科创创业人工智能ETF永赢,failed,97,2025-12-11,2026-05-12,0,0,too few rows: 97 < 250,,insufficient_rows,insufficient_rows
+159242,创业板人工智能ETF大成,failed,191,2025-07-24,2026-05-12,0,0,too few rows: 191 < 250,,insufficient_rows,insufficient_rows
+159107,创业板软件ETF富国,failed,149,2025-09-22,2026-05-12,0,0,too few rows: 149 < 250,,insufficient_rows,insufficient_rows
+159358,中证A500ETF大成,passed,348,2024-11-29,2026-05-12,0,0,,,,
+588480,科创创业人工智能ETF中金,failed,1,2026-05-12,2026-05-12,0,0,too few rows: 1 < 250,,insufficient_rows,insufficient_rows
+515370,光伏ETF华夏,failed,114,2025-11-18,2026-05-12,0,0,too few rows: 114 < 250,,insufficient_rows,insufficient_rows
+515100,红利低波100ETF景顺,warning,1418,2020-07-03,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516570,化工行业ETF易方达,passed,1185,2021-06-18,2026-05-12,0,0,,,,
+561330,矿业ETF国泰,passed,853,2022-11-01,2026-05-12,0,0,,,,
+159996,家电ETF国泰,warning,1491,2020-03-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159671,稀有金属ETF工银,warning,766,2023-03-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159875,新能源ETF嘉实,warning,1143,2021-08-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159864,光伏ETF国泰,warning,1148,2021-08-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159350,深证50ETF富国,warning,582,2023-12-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515210,钢铁ETF国泰,passed,1501,2020-03-02,2026-05-12,0,0,,,,
+159663,机床ETF华夏,warning,857,2022-10-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159929,医药ETF汇添富,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562950,消费电子ETF易方达,passed,1039,2022-01-20,2026-05-12,0,0,,,,
+512560,军工ETF易方达,warning,1779,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+510360,沪深300ETF广发,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+588940,科创50ETF富国,failed,228,2025-06-03,2026-05-12,0,0,too few rows: 228 < 250,,insufficient_rows,insufficient_rows
+562930,软件ETF易方达,passed,709,2023-06-05,2026-05-12,0,0,,,,
+513800,日本东证指数ETF南方,passed,1667,2019-06-25,2026-05-12,0,0,,,,
+560770,机器人ETF招商,failed,164,2025-09-01,2026-05-12,0,0,too few rows: 164 < 250,,insufficient_rows,insufficient_rows
+159695,通信ETF嘉实,warning,727,2023-05-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561170,绿色电力ETF富国,passed,762,2023-03-16,2026-05-12,0,0,,,,
+589100,科创芯片ETF国泰,passed,265,2025-04-07,2026-05-12,0,0,,,,
+588240,科创200ETF鹏华,passed,293,2025-02-25,2026-05-12,0,0,,,,
+588870,科创50ETF汇添富,passed,308,2025-01-27,2026-05-12,0,0,,,,
+159930,能源ETF汇添富,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159890,云计算ETF招商,warning,1235,2021-04-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515650,消费50ETF富国,passed,1574,2019-11-11,2026-05-12,0,0,,,,
+159243,创业板人工智能ETF招商,failed,82,2026-01-05,2026-05-12,0,0,too few rows: 82 < 250,,insufficient_rows,insufficient_rows
+159212,深100ETF南方,passed,263,2025-04-09,2026-05-12,0,0,,,,
+588400,科创创业ETF嘉实,passed,1174,2021-07-05,2026-05-12,0,0,,,,
+516110,汽车ETF国泰,passed,1214,2021-05-07,2026-05-12,0,0,,,,
+561360,石油ETF国泰,passed,611,2023-10-31,2026-05-12,0,0,,,,
+159373,创业板50ETF嘉实,passed,304,2025-02-10,2026-05-12,0,0,,,,
+561300,沪深300增强ETF国泰,passed,1067,2021-12-10,2026-05-12,0,0,,,,
+159880,有色ETF鹏华,warning,1241,2021-03-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512810,军工ETF华宝,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+562310,沪深300成长ETF银华,passed,884,2022-09-09,2026-05-12,0,0,,,,
+589230,科创人工智能ETF南方,failed,62,2026-02-02,2026-05-12,0,0,too few rows: 62 < 250,,insufficient_rows,insufficient_rows
+516370,电力ETF汇添富,failed,24,2026-04-03,2026-05-12,0,0,too few rows: 24 < 250,,insufficient_rows,insufficient_rows
+159307,红利低波100ETF博时,warning,493,2024-04-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512720,计算机ETF国泰,passed,1629,2019-08-16,2026-05-12,0,0,,,,
+561100,消费电子ETF富国,passed,1031,2022-02-08,2026-05-12,0,0,,,,
+589960,科创新能源ETF易方达,failed,149,2025-09-22,2026-05-12,0,0,too few rows: 149 < 250,,insufficient_rows,insufficient_rows
+516860,金融科技ETF博时,passed,1111,2021-10-11,2026-05-12,0,0,,,,
+589660,科创综指ETF南方,passed,287,2025-03-05,2026-05-12,0,0,,,,
+562570,信创ETF华夏,passed,490,2024-04-30,2026-05-12,0,0,,,,
+159665,半导体龙头ETF工银,warning,806,2023-01-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515010,证券ETF华夏,passed,1576,2019-11-07,2026-05-12,0,0,,,,
+510630,消费ETF华夏,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588920,科创芯片ETF鹏华,failed,189,2025-07-28,2026-05-12,0,0,too few rows: 189 < 250,,insufficient_rows,insufficient_rows
+159146,电力ETF华宝,failed,71,2026-01-20,2026-05-12,0,0,too few rows: 71 < 250,,insufficient_rows,insufficient_rows
+520870,巴西ETF易方达,failed,117,2025-11-13,2026-05-12,0,0,too few rows: 117 < 250,,insufficient_rows,insufficient_rows
+512140,电力ETF华安,failed,2,2026-05-11,2026-05-12,0,0,too few rows: 2 < 250,,insufficient_rows,insufficient_rows
+516840,N汽车ETF南方,failed,1,2026-05-13,2026-05-13,0,0,too few rows: 1 < 250,,insufficient_rows,insufficient_rows
+588700,科创医药ETF嘉实,passed,564,2024-01-05,2026-05-12,0,0,,,,
+588150,科创50ETF南方,warning,1061,2021-12-20,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+159587,粮食ETF广发,warning,411,2024-08-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159507,通信ETF广发,warning,695,2023-06-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159193,新能源电池ETF银华,failed,5,2026-05-06,2026-05-12,0,0,too few rows: 5 < 250,,insufficient_rows,insufficient_rows
+589630,科创综指ETF国泰,passed,282,2025-03-12,2026-05-12,0,0,,,,
+159362,A500ETF工银,passed,347,2024-12-02,2026-05-12,0,0,,,,
+159546,集成电路ETF国泰,warning,618,2023-10-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515260,电子ETF华宝,warning,1398,2020-07-31,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+563080,中证A50ETF易方达,passed,519,2024-03-18,2026-05-12,0,0,,,,
+159139,科创创业人工智能ETF华泰柏瑞,failed,91,2025-12-19,2026-05-12,0,0,too few rows: 91 < 250,,insufficient_rows,insufficient_rows
+516880,光伏ETF银华,passed,1284,2021-01-18,2026-05-12,0,0,,,,
+159971,创业板ETF富国,warning,1660,2019-07-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+561350,中证500ETF国泰,passed,1132,2021-09-01,2026-05-12,0,0,,,,
+159526,机器人ETF嘉实,warning,494,2024-04-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562360,机器人ETF银华,passed,1107,2021-10-15,2026-05-12,0,0,,,,
+588110,科创成长ETF广发,passed,648,2023-08-31,2026-05-12,0,0,,,,
+562510,旅游ETF华夏,passed,1053,2021-12-30,2026-05-12,0,0,,,,
+159590,软件ETF汇添富,passed,365,2024-11-06,2026-05-12,0,0,,,,
+159839,生物医药ETF汇添富,warning,1264,2021-02-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159133,化工ETF天弘,failed,109,2025-11-25,2026-05-12,0,0,too few rows: 109 < 250,,insufficient_rows,insufficient_rows
+159356,A500ETF万家,passed,343,2024-12-06,2026-05-12,0,0,,,,
+560320,N食品ETF富国,failed,1,2026-05-13,2026-05-13,0,0,too few rows: 1 < 250,close equals high at an unusually high ratio,insufficient_rows; unknown,insufficient_rows
+515060,房地产ETF华夏,passed,1536,2020-01-03,2026-05-12,0,0,,,,
+562970,光伏ETF易方达,passed,364,2024-11-07,2026-05-12,0,0,,,,
+159635,基建ETF华夏,warning,927,2022-07-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159359,A500ETF华安,passed,347,2024-12-02,2026-05-12,0,0,,,,
+561990,沪深300增强ETF招商,passed,1067,2021-12-10,2026-05-12,0,0,,,,
+159205,创业板ETF东财,failed,221,2025-06-12,2026-05-12,0,0,too few rows: 221 < 250,,insufficient_rows,insufficient_rows
+588100,科创信息ETF嘉实,warning,958,2022-05-27,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516970,基建ETF广发,passed,1174,2021-07-05,2026-05-12,0,0,,,,
+561550,中证500增强ETF华泰柏瑞,passed,1067,2021-12-10,2026-05-12,0,0,,,,
+159782,双创50ETF银华,warning,1172,2021-07-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159908,创业板ETF博时,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588360,科创创业ETF国泰,passed,1173,2021-07-06,2026-05-12,0,0,,,,
+159806,新能源车ETF国泰,warning,1487,2020-03-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159360,A500ETF天弘,passed,349,2024-11-28,2026-05-12,0,0,,,,
+159572,创业板200ETF易方达,warning,572,2023-12-25,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588770,科创信息ETF摩根,passed,274,2025-03-24,2026-05-12,0,0,,,,
+589120,科创创新药ETF汇添富,failed,150,2025-09-19,2026-05-12,0,0,too few rows: 150 < 250,,insufficient_rows,insufficient_rows
+159828,医疗ETF国泰,warning,1288,2021-01-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516820,医疗创新ETF平安,passed,1176,2021-07-01,2026-05-12,0,0,,,,
+159867,养殖ETF鹏华,warning,1255,2021-03-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515290,银行ETF天弘,passed,1298,2020-12-28,2026-05-12,0,0,,,,
+512620,农业ETF天弘,failed,111,2025-11-21,2026-05-12,0,0,too few rows: 111 < 250,,insufficient_rows,insufficient_rows
+159805,传媒ETF鹏华,warning,1468,2020-04-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159588,石油ETF景顺,passed,470,2024-05-31,2026-05-12,0,0,,,,
+512900,证券ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+589900,科创综指ETF博时,passed,287,2025-03-05,2026-05-12,0,0,,,,
+159378,通用航空ETF永赢,passed,319,2025-01-10,2026-05-12,0,0,,,,
+589160,科创芯片ETF广发,failed,63,2026-01-30,2026-05-12,0,0,too few rows: 63 < 250,,insufficient_rows,insufficient_rows
+159899,软件ETF招商,warning,1179,2021-06-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588950,科创50ETF景顺,passed,309,2025-01-24,2026-05-12,0,0,,,,
+515630,证券保险ETF鹏华,passed,1477,2020-04-03,2026-05-12,0,0,,,,
+159393,沪深300ETF万家,warning,284,2025-03-10,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+515710,食品饮料ETF华宝,passed,1291,2021-01-07,2026-05-12,0,0,,,,
+560980,光伏龙头ETF广发,passed,833,2022-11-29,2026-05-12,0,0,,,,
+516290,光伏ETF汇添富,passed,1139,2021-08-23,2026-05-12,0,0,,,,
+588180,科创50ETF国联安,warning,1176,2021-07-01,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+560080,中药ETF汇添富,passed,864,2022-10-17,2026-05-12,0,0,,,,
+515900,央企创新ETF博时,passed,1547,2019-12-18,2026-05-12,0,0,,,,
+159673,沪深300ETF鹏华,warning,681,2023-07-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562880,电池ETF嘉实,passed,1163,2021-07-20,2026-05-12,0,0,,,,
+159386,A500ETF永赢,passed,303,2025-02-11,2026-05-12,0,0,,,,
+159738,云计算ETF华泰柏瑞,warning,1033,2022-01-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563050,央企科技ETF易方达,passed,688,2023-07-06,2026-05-12,0,0,,,,
+512510,中证500ETF华泰柏瑞,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159748,创新药ETF富国,warning,1072,2021-12-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589080,科创综指ETF汇添富,passed,287,2025-03-05,2026-05-12,0,0,,,,
+561800,稀有金属ETF华富,passed,1138,2021-08-24,2026-05-12,0,0,,,,
+512220,TMTETF景顺,passed,1774,2019-01-04,2026-05-12,0,0,,,,
+159834,金ETF南方,warning,1005,2022-03-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510980,上证指数ETF汇添富,passed,588,2023-12-01,2026-05-12,0,0,,,,
+159357,A500ETF博时,passed,349,2024-11-28,2026-05-12,0,0,,,,
+563000,中国A50ETF易方达,passed,1091,2021-11-08,2026-05-12,0,0,,,,
+589880,科创综指ETF建信,passed,290,2025-02-28,2026-05-12,0,0,,,,
+563860,中证A500ETF海富通,passed,302,2025-02-12,2026-05-12,0,0,,,,
+159698,粮食ETF鹏华,warning,657,2023-08-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159938,医药ETF广发,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159100,巴西ETF华夏,failed,117,2025-11-13,2026-05-12,0,0,too few rows: 117 < 250,,insufficient_rows,insufficient_rows
+159837,生物科技ETF易方达,warning,1277,2021-01-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159690,有色矿业ETF招商,warning,687,2023-07-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159830,金ETF天弘,warning,1164,2021-07-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560170,央企科技ETF南方,passed,688,2023-07-06,2026-05-12,0,0,,,,
+159739,云计算ETF鹏华,warning,1084,2021-11-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589260,科创芯片设计ETF国泰,failed,25,2026-04-02,2026-05-12,0,0,too few rows: 25 < 250,,insufficient_rows,insufficient_rows
+159129,化工ETF嘉实,failed,116,2025-11-14,2026-05-12,0,0,too few rows: 116 < 250,,insufficient_rows,insufficient_rows
+159560,芯片ETF景顺,warning,597,2023-11-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159022,科创创业人工智能ETF富国,failed,10,2026-04-24,2026-05-12,0,0,too few rows: 10 < 250,,insufficient_rows,insufficient_rows
+589860,科创综指ETF天弘,passed,287,2025-03-05,2026-05-12,0,0,,,,
+515250,智能汽车ETF富国,passed,1290,2021-01-08,2026-05-12,0,0,,,,
+562320,沪深300价值ETF银华,passed,802,2023-01-12,2026-05-12,0,0,,,,
+510320,沪深300ETF中金,passed,251,2025-04-25,2026-05-12,0,0,,,,
+515850,证券ETF富国,passed,1507,2020-02-21,2026-05-12,0,0,,,,
+588820,科创200ETF华夏,passed,323,2025-01-06,2026-05-12,0,0,,,,
+159175,电池ETF易方达,failed,45,2026-03-05,2026-05-12,0,0,too few rows: 45 < 250,,insufficient_rows,insufficient_rows
+510410,资源ETF博时,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159208,航空航天ETF万家,failed,243,2025-05-12,2026-05-12,0,0,too few rows: 243 < 250,,insufficient_rows,insufficient_rows
+510350,沪深300ETF工银,passed,1629,2019-08-16,2026-05-12,0,0,,,,
+560570,A500红利ETF国联安,failed,151,2025-09-18,2026-05-12,0,0,too few rows: 151 < 250,,insufficient_rows,insufficient_rows
+159888,智能汽车ETF华夏,warning,1204,2021-05-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563330,A股ETF华泰柏瑞,warning,606,2023-11-07,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+510150,消费ETF招商,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588420,科创创业人工智能ETF摩根,failed,82,2026-01-05,2026-05-12,0,0,too few rows: 82 < 250,,insufficient_rows,insufficient_rows
+560270,电力ETF工银,failed,44,2026-03-06,2026-05-12,0,0,too few rows: 44 < 250,,insufficient_rows,insufficient_rows
+563750,中证500ETF汇添富,failed,127,2025-10-30,2026-05-12,0,0,too few rows: 127 < 250,,insufficient_rows,insufficient_rows
+159147,电池ETF南方,failed,68,2026-01-23,2026-05-12,0,0,too few rows: 68 < 250,,insufficient_rows,insufficient_rows
+513360,教育ETF博时,passed,1185,2021-06-17,2026-05-12,0,0,,,,
+560580,电力ETF南方,passed,725,2023-05-12,2026-05-12,0,0,,,,
+159966,创业板价值ETF华夏,warning,1653,2019-07-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+588280,科创50ETF华安,warning,1097,2021-10-29,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159511,通信ETF南方,warning,666,2023-08-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588910,科创价值ETF建信,passed,265,2025-04-07,2026-05-12,0,0,,,,
+159790,碳中和ETF华夏,warning,1150,2021-08-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159310,芯片ETF天弘,warning,490,2024-04-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588430,科创创业人工智能ETF工银,failed,85,2025-12-29,2026-05-12,0,0,too few rows: 85 < 250,,insufficient_rows,insufficient_rows
+159565,汽车零部件ETF易方达,passed,534,2024-02-26,2026-05-12,0,0,,,,
+159168,有色ETF富国,failed,54,2026-02-12,2026-05-12,0,0,too few rows: 54 < 250,,insufficient_rows,insufficient_rows
+159736,食品饮料ETF天弘,warning,1116,2021-09-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159301,公用事业ETF华夏,passed,435,2024-07-22,2026-05-12,0,0,,,,
+516100,金融科技ETF华夏,passed,1160,2021-07-23,2026-05-12,0,0,,,,
+159248,人工智能ETF万家,failed,191,2025-07-24,2026-05-12,0,0,too few rows: 191 < 250,,insufficient_rows,insufficient_rows
+159725,线上消费ETF工银,warning,1175,2021-07-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159775,电池ETF建信,warning,1037,2022-01-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159540,信创ETF易方达,warning,628,2023-09-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159573,创业板200ETF华夏,warning,572,2023-12-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561600,消费电子ETF平安,passed,1126,2021-09-09,2026-05-12,0,0,,,,
+516910,物流ETF富国,passed,1189,2021-06-11,2026-05-12,0,0,,,,
+159768,房地产ETF银华,warning,1025,2022-02-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561230,中证A50ETF工银,passed,519,2024-03-18,2026-05-12,0,0,,,,
+588270,科创200ETF易方达,failed,219,2025-06-16,2026-05-12,0,0,too few rows: 219 < 250,,insufficient_rows,insufficient_rows
+159532,中证2000ETF易方达,warning,633,2023-09-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159814,创业大盘ETF西部利得,warning,1408,2020-07-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+589170,科创芯片设计ETF鹏华,failed,58,2026-02-06,2026-05-12,0,0,too few rows: 58 < 250,,insufficient_rows,insufficient_rows
+562890,A50ETF嘉实,passed,519,2024-03-18,2026-05-12,0,0,,,,
+530060,上证指数ETF易方达,failed,56,2026-02-10,2026-05-12,0,0,too few rows: 56 < 250,,insufficient_rows,insufficient_rows
+589560,科创人工智能ETF汇添富,failed,160,2025-09-05,2026-05-12,0,0,too few rows: 160 < 250,,insufficient_rows,insufficient_rows
+159905,红利ETF工银,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560350,中证A50ETF摩根,passed,523,2024-03-12,2026-05-12,0,0,,,,
+159160,电池ETF东财,failed,29,2026-03-27,2026-05-12,0,0,too few rows: 29 < 250,,insufficient_rows,insufficient_rows
+517380,创新药ETF天弘,passed,1149,2021-08-09,2026-05-12,0,0,,,,
+159669,绿色电力ETF国泰,warning,803,2023-01-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589110,科创人工智能ETF国泰,failed,138,2025-10-15,2026-05-12,0,0,too few rows: 138 < 250,,insufficient_rows,insufficient_rows
+515750,科技50ETF富国,passed,1555,2019-12-06,2026-05-12,0,0,,,,
+159247,创业板ETF汇添富,failed,62,2026-02-02,2026-05-12,0,0,too few rows: 62 < 250,,insufficient_rows,insufficient_rows
+560400,证券ETF华泰柏瑞,failed,35,2026-03-19,2026-05-12,0,0,too few rows: 35 < 250,,insufficient_rows,insufficient_rows
+562350,电力ETF银华,passed,927,2022-07-12,2026-05-12,0,0,,,,
+159155,电池ETF大成,failed,70,2026-01-21,2026-05-12,0,0,too few rows: 70 < 250,,insufficient_rows,insufficient_rows
+517800,人工智能50ETF方正富邦,passed,1136,2021-08-26,2026-05-12,0,0,,,,
+159757,电池ETF景顺,warning,1149,2021-08-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159623,成渝经济圈ETF博时,warning,884,2022-09-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562600,医疗器械ETF华夏,passed,582,2023-12-11,2026-05-12,0,0,,,,
+588960,科创新能源ETF富国,passed,297,2025-02-19,2026-05-12,0,0,,,,
+589220,科创200ETF国泰,failed,67,2026-01-26,2026-05-12,0,0,too few rows: 67 < 250,,insufficient_rows,insufficient_rows
+562820,集成电路ETF嘉实,passed,496,2024-04-22,2026-05-12,0,0,,,,
+159586,计算机ETF南方,warning,518,2024-03-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562660,中证2000ETF华夏,passed,638,2023-09-14,2026-05-12,0,0,,,,
+589890,科创综指ETF景顺,passed,287,2025-03-05,2026-05-12,0,0,,,,
+512950,央企改革ETF华夏,passed,1769,2019-01-18,2026-05-12,0,0,,,,
+159811,5GETF博时,warning,1465,2020-04-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159609,光伏ETF浦银,warning,929,2022-07-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512460,电池ETF华夏,failed,34,2026-03-20,2026-05-12,0,0,too few rows: 34 < 250,,insufficient_rows,insufficient_rows
+159230,通用航空ETF华夏,failed,229,2025-05-30,2026-05-12,0,0,too few rows: 229 < 250,,insufficient_rows,insufficient_rows
+517900,银行AH优选ETF招商,passed,998,2022-03-25,2026-05-12,0,0,,,,
+563320,通用航空ETF华泰柏瑞,failed,162,2025-09-03,2026-05-12,0,0,too few rows: 162 < 250,,insufficient_rows,insufficient_rows
+159337,中证500ETF东财,passed,393,2024-09-20,2026-05-12,0,0,,,,
+159376,A500ETF浦银,passed,318,2025-01-13,2026-05-12,0,0,,,,
+159581,红利ETF万家,passed,520,2024-03-15,2026-05-12,0,0,,,,
+159162,工业有色ETF鹏华,failed,64,2026-01-29,2026-05-12,0,0,too few rows: 64 < 250,,insufficient_rows,insufficient_rows
+518860,上海金ETF建信,passed,1366,2020-09-07,2026-05-12,0,0,,,,
+159944,材料ETF广发,warning,1777,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563520,沪深300ETF永赢,passed,357,2024-11-18,2026-05-12,0,0,,,,
+560660,云计算50ETF新华,warning,1137,2021-08-25,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+516250,工程机械ETF富国,failed,90,2025-12-22,2026-05-12,0,0,too few rows: 90 < 250,,insufficient_rows,insufficient_rows
+561700,电力ETF博时,passed,924,2022-07-15,2026-05-12,0,0,,,,
+562850,央企能源ETF嘉实,passed,664,2023-08-09,2026-05-12,0,0,,,,
+159592,A50ETF银华,passed,519,2024-03-18,2026-05-12,0,0,,,,
+515310,沪深300ETF汇添富,passed,1542,2019-12-25,2026-05-12,0,0,,,,
+589820,科创200ETF建信,failed,154,2025-09-15,2026-05-12,0,0,too few rows: 154 < 250,,insufficient_rows,insufficient_rows
+159847,医疗ETF易方达,warning,1164,2021-07-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588450,科创50增强ETF招商,warning,477,2024-05-22,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+159903,深成ETF南方,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159172,养殖ETF汇添富,failed,34,2026-03-20,2026-05-12,0,0,too few rows: 34 < 250,,insufficient_rows,insufficient_rows
+516850,新能源ETF华夏,passed,1245,2021-03-19,2026-05-12,0,0,,,,
+516770,游戏ETF华泰柏瑞,passed,1255,2021-03-05,2026-05-12,0,0,,,,
+560850,信创ETF汇添富,passed,501,2024-04-15,2026-05-12,0,0,,,,
+159656,沪深300成长ETF万家,warning,800,2023-01-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159007,养殖ETF华泰柏瑞,failed,15,2026-04-17,2026-05-12,0,0,too few rows: 15 < 250,,insufficient_rows,insufficient_rows
+512910,A100ETF广发,passed,1663,2019-07-01,2026-05-12,0,0,,,,
+515330,沪深300ETF天弘,passed,1541,2019-12-26,2026-05-12,0,0,,,,
+516700,大数据ETF华宝,passed,1206,2021-05-19,2026-05-12,0,0,,,,
+159287,创业板综ETF博时,failed,167,2025-08-27,2026-05-12,0,0,too few rows: 167 < 250,daily close return exceeds 20% on 1 day(s),insufficient_rows; abnormal_return,insufficient_rows
+159138,工程机械ETF易方达,failed,76,2026-01-13,2026-05-12,0,0,too few rows: 76 < 250,,insufficient_rows,insufficient_rows
+562700,汽车零部件ETF华夏,passed,483,2024-05-14,2026-05-12,0,0,,,,
+516220,化工ETF国泰,passed,1252,2021-03-10,2026-05-12,0,0,,,,
+563210,专精特新ETF富国,passed,309,2025-01-24,2026-05-12,0,0,,,,
+560210,农牧渔ETF景顺,failed,34,2026-03-20,2026-05-12,0,0,too few rows: 34 < 250,,insufficient_rows,insufficient_rows
+159375,创业板50ETF国泰,passed,319,2025-01-10,2026-05-12,0,0,,,,
+159831,金ETF嘉实,warning,991,2022-04-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159013,工业互联网ETF大成,failed,8,2026-04-28,2026-05-12,0,0,too few rows: 8 < 250,,insufficient_rows,insufficient_rows
+589770,科创综指ETF招商,passed,287,2025-03-05,2026-05-12,0,0,,,,
+561130,国货ETF富国,passed,1106,2021-10-18,2026-05-12,0,0,,,,
+588010,科创新材料ETF博时,warning,857,2022-10-26,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+515580,科技100ETF华泰柏瑞,warning,1583,2019-10-28,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+515320,电子50ETF华安,passed,1290,2021-01-08,2026-05-12,0,0,,,,
+159835,创新药ETF建信,warning,1239,2021-03-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159195,石油ETF华安,failed,25,2026-04-02,2026-05-12,0,0,too few rows: 25 < 250,,insufficient_rows,insufficient_rows
+516800,智能制造ETF华宝,warning,1265,2021-02-19,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159283,通用航空ETF南方,failed,171,2025-08-21,2026-05-12,0,0,too few rows: 171 < 250,,insufficient_rows,insufficient_rows
+159178,消费电子ETF汇添富,failed,8,2026-04-28,2026-05-12,0,0,too few rows: 8 < 250,,insufficient_rows,insufficient_rows
+560630,机器人ETF万家,passed,268,2025-04-01,2026-05-12,0,0,,,,
+560800,数字经济ETF鹏扬,passed,1048,2022-01-07,2026-05-12,0,0,,,,
+159369,创业板50ETF易方达,failed,171,2025-08-21,2026-05-12,0,0,too few rows: 171 < 250,,insufficient_rows,insufficient_rows
+563500,A500ETF华宝,warning,347,2024-12-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159637,新能源车ETF东财,warning,890,2022-09-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516620,影视ETF国泰,passed,1092,2021-11-05,2026-05-12,0,0,,,,
+159190,创业板新能源ETF天弘,failed,28,2026-03-30,2026-05-12,0,0,too few rows: 28 < 250,,insufficient_rows,insufficient_rows
+516180,光伏ETF平安,passed,1257,2021-03-03,2026-05-12,0,0,,,,
+159538,信创ETF富国,passed,631,2023-09-22,2026-05-12,0,0,,,,
+589250,科创芯片设计ETF浦银,failed,26,2026-04-01,2026-05-12,0,0,too few rows: 26 < 250,,insufficient_rows,insufficient_rows
+563550,A500增强ETF摩根,failed,239,2025-05-16,2026-05-12,0,0,too few rows: 239 < 250,,insufficient_rows,insufficient_rows
+159299,金融科技ETF易方达,failed,156,2025-09-11,2026-05-12,0,0,too few rows: 156 < 250,,insufficient_rows,insufficient_rows
+159761,新材料ETF国泰,warning,1066,2021-12-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159181,石油ETF易方达,failed,35,2026-03-19,2026-05-12,0,0,too few rows: 35 < 250,,insufficient_rows,insufficient_rows
+159603,科创创业ETF天弘,warning,951,2022-06-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515460,红利质量ETF南方,failed,38,2026-03-16,2026-05-12,0,0,too few rows: 38 < 250,,insufficient_rows,insufficient_rows
+159192,家电ETF汇添富,failed,6,2026-04-30,2026-05-12,0,0,too few rows: 6 < 250,,insufficient_rows,insufficient_rows
+560230,光伏ETF富国,failed,58,2026-02-06,2026-05-12,0,0,too few rows: 58 < 250,,insufficient_rows,insufficient_rows
+159527,云计算ETF广发,passed,543,2024-02-01,2026-05-12,0,0,,,,
+159606,中证500成长ETF易方达,warning,1054,2021-12-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159149,创业板新能源ETF工银,failed,71,2026-01-20,2026-05-12,0,0,too few rows: 71 < 250,,insufficient_rows,insufficient_rows
+159982,中证500ETF鹏华,warning,1508,2020-02-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560880,家电ETF广发,passed,988,2022-04-12,2026-05-12,0,0,,,,
+159377,创业板医药ETF国泰,passed,258,2025-04-15,2026-05-12,0,0,,,,
+589270,科创100ETF前海开源,failed,8,2026-04-28,2026-05-12,0,0,too few rows: 8 < 250,,insufficient_rows,insufficient_rows
+563570,金融科技ETF兴业,failed,119,2025-11-11,2026-05-12,0,0,too few rows: 119 < 250,,insufficient_rows,insufficient_rows
+589090,科创AIETF鹏华,failed,167,2025-08-27,2026-05-12,0,0,too few rows: 167 < 250,,insufficient_rows,insufficient_rows
+159187,创业板新能源ETF景顺,failed,26,2026-04-01,2026-05-12,0,0,too few rows: 26 < 250,,insufficient_rows,insufficient_rows
+588140,科创200ETF广发,failed,138,2025-10-15,2026-05-12,0,0,too few rows: 138 < 250,,insufficient_rows,insufficient_rows
+561090,A500增强ETF华安,failed,207,2025-07-02,2026-05-12,0,0,too few rows: 207 < 250,,insufficient_rows,insufficient_rows
+517110,创新药ETF国泰,passed,1113,2021-09-30,2026-05-12,0,0,,,,
+562860,疫苗ETF嘉实,passed,776,2023-02-24,2026-05-12,0,0,,,,
+589550,科创价值ETF华夏,failed,189,2025-07-28,2026-05-12,0,0,too few rows: 189 < 250,,insufficient_rows,insufficient_rows
+515380,沪深300ETF泰康,passed,1486,2020-03-23,2026-05-12,0,0,,,,
+159591,A50ETF富国,warning,519,2024-03-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159858,创新药ETF南方,warning,1241,2021-03-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589950,科创100ETF富国,failed,136,2025-10-17,2026-05-12,0,0,too few rows: 136 < 250,,insufficient_rows,insufficient_rows
+159686,A100ETF易方达,warning,678,2023-07-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159153,消费电子ETF鹏华,failed,57,2026-02-09,2026-05-12,0,0,too few rows: 57 < 250,,insufficient_rows,insufficient_rows
+159215,A500ETF平安,passed,265,2025-04-07,2026-05-12,0,0,,,,
+159148,石油ETF富国,failed,55,2026-02-11,2026-05-12,0,0,too few rows: 55 < 250,,insufficient_rows,insufficient_rows
+563350,A50ETF华泰柏瑞,passed,516,2024-03-21,2026-05-12,0,0,,,,
+517090,央企共赢ETF国泰,passed,1055,2021-12-28,2026-05-12,0,0,,,,
+159330,沪深300ETF东财,passed,415,2024-08-19,2026-05-12,0,0,,,,
+159597,创业板成长ETF易方达,warning,474,2024-05-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159176,家电ETF华宝,failed,24,2026-04-03,2026-05-12,0,0,too few rows: 24 < 250,,insufficient_rows,insufficient_rows
+516190,传媒ETF华夏,passed,1120,2021-09-17,2026-05-12,0,0,,,,
+588160,科创新材料ETF南方,passed,857,2022-10-26,2026-05-12,0,0,,,,
+159708,红利ETF西部利得,warning,1175,2021-07-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561660,通用航空ETF平安,failed,120,2025-11-10,2026-05-12,0,0,too few rows: 120 < 250,,insufficient_rows,insufficient_rows
+589500,科创综指ETF工银,passed,289,2025-03-03,2026-05-12,0,0,,,,
+159820,中证500ETF天弘,warning,1382,2020-08-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159539,信创ETF广发,warning,626,2023-09-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159500,中证500ETF富国,failed,165,2025-08-29,2026-05-12,0,0,too few rows: 165 < 250,,insufficient_rows,insufficient_rows
+589600,科创综指ETF富国,passed,285,2025-03-07,2026-05-12,0,0,,,,
+159855,影视ETF银华,warning,1260,2021-02-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515720,金融科技ETF富国,failed,142,2025-10-09,2026-05-12,0,0,too few rows: 142 < 250,,insufficient_rows,insufficient_rows
+516750,建材ETF富国,passed,1092,2021-11-05,2026-05-12,0,0,,,,
+159943,深证成指ETF大成,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+588410,科创创业人工智能ETF鹏华,failed,82,2026-01-05,2026-05-12,0,0,too few rows: 82 < 250,,insufficient_rows,insufficient_rows
+510590,中证500ETF平安,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+530180,上证180ETF易方达,passed,329,2024-12-26,2026-05-12,0,0,,,,
+560470,有色ETF易方达,failed,6,2026-04-30,2026-05-12,0,0,too few rows: 6 < 250,,insufficient_rows,insufficient_rows
+515130,沪深300ETF博时,passed,1455,2020-05-11,2026-05-12,0,0,,,,
+159863,光伏ETF鹏华,warning,1251,2021-03-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+563650,中证A500ETF兴业,passed,266,2025-04-03,2026-05-12,0,0,,,,
+159523,沪深300成长ETF华夏,warning,635,2023-09-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560900,创新药ETF摩根,passed,954,2022-06-02,2026-05-12,0,0,,,,
+159536,中证2000ETF汇添富,warning,633,2023-09-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159596,A50ETF华宝,warning,519,2024-03-18,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159555,中证2000增强ETF银华,warning,580,2023-12-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159798,消费ETF易方达,warning,970,2022-05-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512580,环保ETF广发,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+510850,上证50ETF工银,passed,1741,2019-03-06,2026-05-12,0,0,,,,
+159249,A500增强ETF工银,failed,207,2025-07-02,2026-05-12,0,0,too few rows: 207 < 250,,insufficient_rows,insufficient_rows
+159647,中药ETF鹏华,warning,915,2022-07-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159151,食品ETF华夏,failed,75,2026-01-14,2026-05-12,0,0,too few rows: 75 < 250,,insufficient_rows,insufficient_rows
+159159,公用事业ETF国投瑞银,failed,54,2026-02-12,2026-05-12,0,0,too few rows: 54 < 250,,insufficient_rows,insufficient_rows
+510950,上证50ETF广发,warning,485,2024-05-10,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159666,交通运输ETF华夏,warning,785,2023-02-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159163,有色ETF泰康,failed,57,2026-02-09,2026-05-12,0,0,too few rows: 57 < 250,,insufficient_rows,insufficient_rows
+516270,新能源ETF华安,passed,1160,2021-07-23,2026-05-12,0,0,,,,
+159275,农牧渔ETF华宝,failed,144,2025-09-29,2026-05-12,0,0,too few rows: 144 < 250,,insufficient_rows,insufficient_rows
+159525,红利低波ETF富国,passed,479,2024-05-20,2026-05-12,0,0,,,,
+159123,光伏ETF嘉实,failed,107,2025-11-27,2026-05-12,0,0,too few rows: 107 < 250,,insufficient_rows,insufficient_rows
+517390,云计算ETF天弘,passed,1058,2021-12-23,2026-05-12,0,0,,,,
+560750,A500ETF申万菱信,passed,305,2025-02-07,2026-05-12,0,0,,,,
+159261,创业板新能源ETF鹏华,failed,204,2025-07-07,2026-05-12,0,0,too few rows: 204 < 250,,insufficient_rows,insufficient_rows
+563560,科技成长ETF兴业,failed,49,2026-02-27,2026-05-12,0,0,too few rows: 49 < 250,,insufficient_rows,insufficient_rows
+560380,A100ETF南方,passed,328,2024-12-27,2026-05-12,0,0,,,,
+588390,科创创业ETF博时,warning,1134,2021-08-30,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+560110,中证1000ETF汇添富,passed,908,2022-08-08,2026-05-12,0,0,,,,
+589380,科创AIETF富国,failed,208,2025-07-01,2026-05-12,0,0,too few rows: 208 < 250,,insufficient_rows,insufficient_rows
+159779,消费电子ETF招商,warning,1077,2021-11-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159019,石油ETF华宝,failed,11,2026-04-23,2026-05-12,0,0,too few rows: 11 < 250,,insufficient_rows,insufficient_rows
+560360,软件ETF万家,passed,455,2024-06-24,2026-05-12,0,0,,,,
+159902,中小100ETF华夏,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560100,中证500增强ETF南方,passed,1025,2022-02-16,2026-05-12,0,0,,,,
+562900,农业ETF易方达,passed,1066,2021-12-13,2026-05-12,0,0,,,,
+561010,软件ETF华安,passed,582,2023-12-11,2026-05-12,0,0,,,,
+159703,新材料ETF天弘,warning,1192,2021-06-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589210,科创芯片设计ETF广发,failed,89,2025-12-23,2026-05-12,0,0,too few rows: 89 < 250,,insufficient_rows,insufficient_rows
+159881,有色金属ETF国泰,warning,1176,2021-07-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159602,中国A50ETF南方,warning,1091,2021-11-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516230,光伏ETF招商,failed,61,2026-02-03,2026-05-12,0,0,too few rows: 61 < 250,,insufficient_rows,insufficient_rows
+159968,中证500ETF博时,warning,1581,2019-10-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159767,电池龙头ETF兴银,warning,1139,2021-08-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159537,信创ETF国泰,warning,625,2023-10-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515350,沪深300ETF民生加银,passed,1517,2020-02-07,2026-05-12,0,0,,,,
+159658,数字经济ETF华安,warning,867,2022-10-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589150,科创50ETF平安,failed,81,2026-01-06,2026-05-12,0,0,too few rows: 81 < 250,,insufficient_rows,insufficient_rows
+159008,证券ETF景顺,failed,8,2026-04-28,2026-05-12,0,0,too few rows: 8 < 250,,insufficient_rows,insufficient_rows
+560680,消费ETF广发,passed,854,2022-10-31,2026-05-12,0,0,,,,
+159390,中证A50ETF国联,passed,263,2025-04-09,2026-05-12,0,0,,,,
+159541,创业板综ETF万家,warning,611,2023-10-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159916,基本面ETF建信,warning,1776,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515560,证券ETF建信,passed,1407,2020-07-20,2026-05-12,0,0,,,,
+561120,家电ETF富国,passed,1026,2022-02-15,2026-05-12,0,0,,,,
+588040,科创50ETF鹏华,passed,260,2025-04-14,2026-05-12,0,0,,,,
+159616,农牧ETF建信,warning,908,2022-08-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159752,新能源ETF申万菱信,warning,1157,2021-07-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563010,电信ETF易方达,passed,683,2023-07-13,2026-05-12,0,0,,,,
+510680,上证50ETF万家,passed,1740,2019-01-02,2026-05-12,0,0,,,,
+159873,医疗设备ETF天弘,warning,1239,2021-03-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159898,医疗器械ETF招商,warning,1194,2021-06-04,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+530580,上证180ETF南方,passed,321,2025-01-08,2026-05-12,0,0,,,,
+515600,央企创新ETF广发,passed,1544,2019-12-18,2026-05-12,0,0,,,,
+159270,创业板200ETF南方,failed,191,2025-07-24,2026-05-12,0,0,too few rows: 191 < 250,,insufficient_rows,insufficient_rows
+588130,科创医药ETF华夏,failed,231,2025-05-28,2026-05-12,0,0,too few rows: 231 < 250,,insufficient_rows,insufficient_rows
+512120,医药ETF华安,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+588350,科创创业50ETF鹏扬,passed,846,2022-11-10,2026-05-12,0,0,,,,
+517120,创新药ETF华泰柏瑞,passed,1164,2021-07-19,2026-05-12,0,0,,,,
+563660,A500ETF银河,passed,267,2025-04-02,2026-05-12,0,0,,,,
+159728,在线消费ETF南方,warning,1043,2022-01-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515680,央企创新ETF嘉实,passed,1545,2019-12-18,2026-05-12,0,0,,,,
+588860,科创医药ETF工银,warning,411,2024-08-23,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159183,新能源车ETF招商,failed,32,2026-03-24,2026-05-12,0,0,too few rows: 32 < 250,,insufficient_rows,insufficient_rows
+159231,通用航空ETF华宝,failed,249,2025-04-29,2026-05-12,0,0,too few rows: 249 < 250,daily close return exceeds 20% on 1 day(s),insufficient_rows; abnormal_return,insufficient_rows
+562000,A100ETF华宝,warning,913,2022-08-01,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+562990,碳中和ETF易方达,passed,922,2022-07-19,2026-05-12,0,0,,,,
+159786,VRETF银华,warning,1150,2021-08-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561950,中证500增强ETF招商,passed,736,2023-04-24,2026-05-12,0,0,,,,
+159030,粮食ETF华夏,failed,1,2026-05-12,2026-05-12,0,0,too few rows: 1 < 250,,insufficient_rows,insufficient_rows
+159843,食品饮料ETF招商,warning,1270,2021-02-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588500,科创100增强ETF易方达,warning,436,2024-07-19,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+517950,沪深港科技50ETF交银,failed,92,2025-12-18,2026-05-12,0,0,too few rows: 92 < 250,,insufficient_rows,insufficient_rows
+510660,医药ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+516950,基建ETF银华,passed,1209,2021-05-14,2026-05-12,0,0,,,,
+159907,国证2000ETF广发,warning,1773,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+563510,A500红利低波ETF易方达,failed,105,2025-12-01,2026-05-12,0,0,too few rows: 105 < 250,,insufficient_rows,insufficient_rows
+515810,中证800ETF易方达,passed,1585,2019-10-25,2026-05-12,0,0,,,,
+159520,消费龙头ETF工银,warning,611,2023-10-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516050,科技龙头ETF工银,passed,1270,2021-02-05,2026-05-12,0,0,,,,
+159958,创业板ETF工银,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+512450,畜牧养殖ETF广发,failed,26,2026-04-01,2026-05-12,0,0,too few rows: 26 < 250,,insufficient_rows,insufficient_rows
+159677,中证1000增强ETF银华,warning,827,2022-12-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510390,沪深300ETF平安,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159956,创业板ETF建信,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+516500,生物科技ETF华夏,passed,1247,2021-03-17,2026-05-12,0,0,,,,
+589060,科创综指ETF东财,passed,271,2025-03-27,2026-05-12,0,0,,,,
+159676,创业板增强ETF富国,warning,744,2023-04-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561900,沪深300ESGETF招商,passed,1166,2021-07-15,2026-05-12,0,0,,,,
+515950,医药50ETF富国,passed,1479,2020-04-01,2026-05-12,0,0,,,,
+562070,沪深300指增ETF华宝,failed,87,2025-12-25,2026-05-12,0,0,too few rows: 87 < 250,,insufficient_rows,insufficient_rows
+159165,养殖ETF永赢,failed,54,2026-02-12,2026-05-12,0,0,too few rows: 54 < 250,,insufficient_rows,insufficient_rows
+588880,科创100ETF华泰柏瑞,warning,599,2023-11-16,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+589700,科创成长ETF南方,failed,226,2025-06-05,2026-05-12,0,0,too few rows: 226 < 250,,insufficient_rows,insufficient_rows
+562920,信息安全ETF易方达,passed,704,2023-06-12,2026-05-12,0,0,,,,
+516390,新能源车ETF汇添富,passed,1185,2021-06-18,2026-05-12,0,0,,,,
+560290,有色ETF景顺,failed,58,2026-02-06,2026-05-12,0,0,too few rows: 58 < 250,,insufficient_rows,insufficient_rows
+520580,新兴亚洲ETF招商,passed,296,2025-02-20,2026-05-12,0,0,,,,
+561310,消电ETF国泰,passed,1078,2021-11-25,2026-05-12,0,0,,,,
+512550,富时A50ETF嘉实,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159542,工程机械ETF大成,passed,464,2024-06-07,2026-05-12,0,0,,,,
+510670,上证180ETF华夏,failed,128,2025-10-29,2026-05-12,0,0,too few rows: 128 < 250,,insufficient_rows,insufficient_rows
+159945,能源ETF广发,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159589,红利ETF广发,warning,512,2024-03-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159613,信息安全ETF嘉实,warning,1034,2022-01-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561930,沪深300ETF招商,passed,393,2024-09-20,2026-05-12,0,0,,,,
+159641,碳中和ETF招商,warning,919,2022-07-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517770,游戏传媒ETF浦银,passed,1072,2021-12-03,2026-05-12,0,0,,,,
+561260,能源ETF工银,passed,664,2023-08-09,2026-05-12,0,0,,,,
+159392,航空ETF富国,failed,241,2025-05-14,2026-05-12,0,0,too few rows: 241 < 250,,insufficient_rows,insufficient_rows
+159643,疫苗ETF国泰,warning,898,2022-08-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159610,中证500增强ETF景顺,warning,1047,2022-01-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516320,高端装备ETF华夏,passed,1192,2021-06-08,2026-05-12,0,0,,,,
+159182,家电ETF南方,failed,3,2026-05-08,2026-05-12,0,0,too few rows: 3 < 250,,insufficient_rows,insufficient_rows
+588210,科创100ETF易方达,passed,599,2023-11-16,2026-05-12,0,0,,,,
+562050,药ETF华宝,failed,216,2025-06-19,2026-05-12,0,0,too few rows: 216 < 250,,insufficient_rows,insufficient_rows
+159173,农牧ETF南方,failed,25,2026-04-02,2026-05-12,0,0,too few rows: 25 < 250,,insufficient_rows,insufficient_rows
+561180,A100ETF富国,passed,838,2022-11-21,2026-05-12,0,0,,,,
+562580,可选消费ETF华夏,passed,513,2024-03-26,2026-05-12,0,0,,,,
+517180,中国国企ETF南方,passed,1055,2021-12-28,2026-05-12,0,0,,,,
+510370,沪深300ETF兴业,passed,1342,2020-10-27,2026-05-12,0,0,,,,
+562030,信创ETF华宝,warning,624,2023-10-12,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159108,工业软件ETF博时,failed,110,2025-11-24,2026-05-12,0,0,too few rows: 110 < 250,,insufficient_rows,insufficient_rows
+159627,A100ETF华夏,warning,830,2022-11-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516300,中证1000ETF华泰柏瑞,warning,1242,2021-03-24,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+512770,战略新兴ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+516130,消费龙头ETF华宝,passed,1109,2021-10-13,2026-05-12,0,0,,,,
+159336,央企红利ETF融通,passed,302,2025-02-12,2026-05-12,0,0,,,,
+562870,证券ETF嘉实,failed,190,2025-07-25,2026-05-12,0,0,too few rows: 190 < 250,,insufficient_rows,insufficient_rows
+562910,高端制造ETF易方达,passed,1047,2022-01-10,2026-05-12,0,0,,,,
+560150,红利低波ETF泰康,passed,506,2024-04-08,2026-05-12,0,0,,,,
+516550,农业ETF嘉实,passed,1232,2021-04-08,2026-05-12,0,0,,,,
+159199,石油ETF平安,failed,21,2026-04-09,2026-05-12,0,0,too few rows: 21 < 250,,insufficient_rows,insufficient_rows
+159156,电池ETF万家,failed,54,2026-02-12,2026-05-12,0,0,too few rows: 54 < 250,,insufficient_rows,insufficient_rows
+515110,一带一路ETF易方达,passed,1528,2020-01-15,2026-05-12,0,0,,,,
+159171,工业有色ETF博时,failed,45,2026-03-05,2026-05-12,0,0,too few rows: 45 < 250,,insufficient_rows,insufficient_rows
+159371,创业板50ETF富国,passed,302,2025-02-12,2026-05-12,0,0,,,,
+560310,光伏ETF博时,failed,48,2026-03-02,2026-05-12,0,0,too few rows: 48 < 250,,insufficient_rows,insufficient_rows
+159822,新经济ETF银华,warning,1344,2020-10-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561880,A100ETF华富,passed,309,2025-01-24,2026-05-12,0,0,,,,
+516060,创新药ETF工银,passed,1259,2021-03-01,2026-05-12,0,0,,,,
+159975,深100ETF招商,warning,1537,2020-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159618,光伏ETF华安,warning,980,2022-04-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159563,创业板综ETF华夏,warning,533,2024-02-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+560700,央企红利ETF广发,passed,708,2023-06-06,2026-05-12,0,0,,,,
+516590,智能汽车ETF易方达,passed,1211,2021-05-12,2026-05-12,0,0,,,,
+159226,中证A500增强ETF国泰,failed,230,2025-05-29,2026-05-12,0,0,too few rows: 230 < 250,,insufficient_rows,insufficient_rows
+515530,中证500ETF泰康,passed,1333,2020-11-09,2026-05-12,0,0,,,,
+588550,科创综指增强ETF易方达,failed,155,2025-09-12,2026-05-12,0,0,too few rows: 155 < 250,,insufficient_rows,insufficient_rows
+159189,石油ETF华夏,failed,35,2026-03-19,2026-05-12,0,0,too few rows: 35 < 250,,insufficient_rows,insufficient_rows
+159964,创业板ETF平安,warning,1710,2019-04-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159639,碳中和ETF南方,warning,922,2022-07-19,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159906,深成长ETF大成,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512730,银行ETF鹏华,passed,1517,2020-02-07,2026-05-12,0,0,,,,
+588370,科创50增强ETF南方,passed,823,2022-12-13,2026-05-12,0,0,,,,
+515960,医药ETF嘉实,passed,1433,2020-06-10,2026-05-12,0,0,,,,
+159385,数字经济ETF富国,failed,229,2025-05-30,2026-05-12,0,0,too few rows: 229 < 250,,insufficient_rows,insufficient_rows
+512330,信息科技ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+516210,银行ETF华安,passed,1117,2021-09-24,2026-05-12,0,0,,,,
+159257,航空ETF汇添富,failed,189,2025-07-28,2026-05-12,0,0,too few rows: 189 < 250,,insufficient_rows,insufficient_rows
+159180,软件ETF银华,failed,24,2026-04-03,2026-05-12,0,0,too few rows: 24 < 250,,insufficient_rows,insufficient_rows
+512600,消费ETF嘉实,warning,1779,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+515090,可持续发展ETF博时,passed,1507,2020-02-20,2026-05-12,0,0,,,,
+515860,科技ETF嘉实,passed,1588,2019-10-22,2026-05-12,0,0,,,,
+159009,创业板新能源ETF易方达,failed,18,2026-04-14,2026-05-12,0,0,too few rows: 18 < 250,,insufficient_rows,insufficient_rows
+516760,养殖ETF平安,passed,1250,2021-03-12,2026-05-12,0,0,,,,
+512530,沪深300红利ETF建信,passed,1604,2019-09-23,2026-05-12,0,0,,,,
+530080,上证180ETF天弘,passed,310,2025-01-23,2026-05-12,0,0,,,,
+512430,家居家电ETF华泰柏瑞,failed,6,2026-04-30,2026-05-12,0,0,too few rows: 6 < 250,,insufficient_rows,insufficient_rows
+517300,沪港深300ETF国寿,passed,1262,2021-02-24,2026-05-12,0,0,,,,
+561280,中证1000增强ETF工银,passed,632,2023-09-22,2026-05-12,0,0,,,,
+159219,深证100ETF融通,failed,242,2025-05-13,2026-05-12,0,0,too few rows: 242 < 250,,insufficient_rows,insufficient_rows
+516580,新能源ETF博时,passed,1159,2021-07-26,2026-05-12,0,0,,,,
+588720,科创50ETF中银,passed,259,2025-04-15,2026-05-12,0,0,,,,
+515190,中证500ETF中银证券,passed,1431,2020-05-27,2026-05-12,0,0,,,,
+510530,中证500ETF工银,passed,1536,2020-01-03,2026-05-12,0,0,,,,
+159288,创业板综ETF银华,failed,145,2025-09-26,2026-05-12,0,0,too few rows: 145 < 250,,insufficient_rows,insufficient_rows
+563960,300质量ETF兴全,failed,79,2026-01-08,2026-05-12,0,0,too few rows: 79 < 250,,insufficient_rows,insufficient_rows
+510270,国企ETF中银,passed,1774,2019-01-02,2026-05-12,0,0,,,,
+159197,石油ETF招商,failed,25,2026-04-02,2026-05-12,0,0,too few rows: 25 < 250,,insufficient_rows,insufficient_rows
+159675,创业板增强ETF嘉实,warning,830,2022-12-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+512650,长三角ETF汇添富,passed,1584,2019-10-25,2026-05-12,0,0,,,,
+159367,创业板50ETF华夏,passed,299,2025-02-14,2026-05-12,0,0,,,,
+517880,品牌消费ETF华泰柏瑞,passed,1073,2021-12-01,2026-05-12,0,0,,,,
+159679,中证1000增强ETF国泰,warning,778,2023-02-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517660,物联网ETF天弘,passed,1101,2021-10-25,2026-05-12,0,0,,,,
+588900,科创100ETF南方,warning,577,2023-12-18,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159296,A500红利低波ETF华宝,failed,161,2025-09-04,2026-05-12,0,0,too few rows: 161 < 250,,insufficient_rows,insufficient_rows
+159150,深证50ETF易方达,warning,582,2023-12-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515920,智能消费ETF博时,passed,1282,2021-01-20,2026-05-12,0,0,,,,
+589200,科创200ETF工银,failed,180,2025-08-08,2026-05-12,0,0,too few rows: 180 < 250,,insufficient_rows,insufficient_rows
+589050,科创综指ETF兴业,failed,174,2025-08-18,2026-05-12,0,0,too few rows: 174 < 250,,insufficient_rows,insufficient_rows
+561000,沪深300增强ETF华安,passed,803,2023-01-11,2026-05-12,0,0,,,,
+159909,TMT50ETF招商,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159103,金融科技ETF汇添富,failed,157,2025-09-10,2026-05-12,0,0,too few rows: 157 < 250,,insufficient_rows,insufficient_rows
+530300,上证180ETF华泰柏瑞,passed,319,2025-01-10,2026-05-12,0,0,,,,
+588660,科创创业50ETF兴银,passed,279,2025-03-17,2026-05-12,0,0,,,,
+159017,石油ETF工银,failed,3,2026-05-08,2026-05-12,0,0,too few rows: 3 < 250,,insufficient_rows,insufficient_rows
+159721,深证100ETF永赢,warning,1176,2021-06-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588680,科创100增强ETF广发,warning,446,2024-07-05,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+512990,MSCIA股ETF华夏,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159935,中证500ETF景顺,warning,1766,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510040,上证180ETF鹏华,passed,323,2025-01-06,2026-05-12,0,0,,,,
+159662,交运ETF南方,warning,830,2022-12-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516070,低碳ETF易方达,warning,1220,2021-04-23,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+561590,中证1000增强ETF华泰柏瑞,passed,824,2022-12-12,2026-05-12,0,0,,,,
+159255,通用航空ETF易方达,failed,184,2025-08-04,2026-05-12,0,0,too few rows: 184 < 250,,insufficient_rows,insufficient_rows
+159380,A500ETF东财,passed,321,2025-01-08,2026-05-12,0,0,,,,
+512250,A50ETF招商,passed,260,2025-04-14,2026-05-12,0,0,,,,
+159026,石油ETF南方,failed,10,2026-04-24,2026-05-12,0,0,too few rows: 10 < 250,,insufficient_rows,insufficient_rows
+589980,科创100ETF汇添富,failed,243,2025-05-12,2026-05-12,0,0,too few rows: 243 < 250,,insufficient_rows,insufficient_rows
+159619,基建ETF国泰,warning,1023,2022-02-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561750,A50ETF博时,failed,229,2025-05-30,2026-05-12,0,0,too few rows: 229 < 250,,insufficient_rows,insufficient_rows
+516830,沪深300ESGETF富国,passed,1174,2021-07-05,2026-05-12,0,0,,,,
+159763,新材料ETF建信,warning,1124,2021-09-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516900,食品饮料ETF华安,passed,1217,2021-04-28,2026-05-12,0,0,,,,
+563700,红利价值ETF易方达,passed,250,2025-04-28,2026-05-12,0,0,,,,
+510130,上证中盘ETF易方达,passed,1721,2019-01-03,2026-05-12,0,0,,,,
+159260,证券ETF博时,failed,124,2025-11-04,2026-05-12,0,0,too few rows: 124 < 250,,insufficient_rows,insufficient_rows
+530680,上证180ETF兴业,passed,321,2025-01-08,2026-05-12,0,0,,,,
+588320,双创50增强ETF广发,passed,805,2023-01-06,2026-05-12,0,0,,,,
+561190,碳中和ETF富国,passed,922,2022-07-19,2026-05-12,0,0,,,,
+516790,医疗ETF华泰柏瑞,passed,1139,2021-08-23,2026-05-12,0,0,,,,
+159773,创业板科技ETF华泰柏瑞,warning,1112,2021-10-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159020,养殖ETF易方达,failed,9,2026-04-27,2026-05-12,0,0,too few rows: 9 < 250,,insufficient_rows,insufficient_rows
+516360,新材料ETF华宝,passed,1210,2021-05-13,2026-05-12,0,0,,,,
+561500,漂亮50ETF华泰柏瑞,passed,1179,2021-06-28,2026-05-12,0,0,,,,
+562380,央企科技ETF银华,passed,688,2023-07-06,2026-05-12,0,0,,,,
+159512,汽车ETF广发,warning,675,2023-07-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563180,高股息ETF银华,passed,483,2024-05-14,2026-05-12,0,0,,,,
+588250,科创医药ETF鹏华,passed,275,2025-03-21,2026-05-12,0,0,,,,
+159777,创科技ETF国联安,warning,1104,2021-10-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159862,食品饮料ETF银华,warning,1089,2021-11-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561220,数字经济ETF工银,failed,229,2025-05-30,2026-05-12,0,0,too few rows: 229 < 250,,insufficient_rows,insufficient_rows
+589180,科创新材料ETF汇添富,failed,219,2025-06-16,2026-05-12,0,0,too few rows: 219 < 250,,insufficient_rows,insufficient_rows
+159508,生物医药ETF华安,warning,682,2023-07-14,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562520,中证1000成长ETF华夏,passed,1001,2022-03-22,2026-05-12,0,0,,,,
+560220,中证2000ETF广发,passed,636,2023-09-18,2026-05-12,0,0,,,,
+159328,家电ETF易方达,passed,358,2024-11-15,2026-05-12,0,0,,,,
+510990,180ESGETF工银,passed,1176,2021-07-01,2026-05-12,0,0,,,,
+563200,中证2000ETF富国,passed,620,2023-10-18,2026-05-12,0,0,,,,
+159797,医疗器械ETF汇添富,warning,967,2022-05-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+530050,上证50ETF东财,passed,345,2024-12-04,2026-05-12,0,0,,,,
+159576,深证100ETF广发,passed,566,2024-01-03,2026-05-12,0,0,,,,
+561770,A100ETF博时,failed,213,2025-06-24,2026-05-12,0,0,too few rows: 213 < 250,,insufficient_rows,insufficient_rows
+159253,银行ETF博时,failed,100,2025-12-08,2026-05-12,0,0,too few rows: 100 < 250,,insufficient_rows,insufficient_rows
+517550,沪港深消费龙头ETF招商,passed,1031,2022-02-08,2026-05-12,0,0,,,,
+561680,A500红利低波ETF平安,failed,160,2025-09-05,2026-05-12,0,0,too few rows: 160 < 250,,insufficient_rows,insufficient_rows
+560180,沪深300ESGETF南方,passed,737,2023-04-21,2026-05-12,0,0,,,,
+560410,电池ETF鹏华,failed,15,2026-04-17,2026-05-12,0,0,too few rows: 15 < 250,,insufficient_rows,insufficient_rows
+159298,创业板50ETF大成,failed,159,2025-09-08,2026-05-12,0,0,too few rows: 159 < 250,,insufficient_rows,insufficient_rows
+560260,医疗ETF广发,passed,637,2023-09-15,2026-05-12,0,0,,,,
+562530,中证1000价值ETF华夏,passed,904,2022-08-12,2026-05-12,0,0,,,,
+516730,证券ETF浦银,passed,1087,2021-11-12,2026-05-12,0,0,,,,
+588980,科创100ETF广发,failed,185,2025-08-01,2026-05-12,0,0,too few rows: 185 < 250,,insufficient_rows,insufficient_rows
+159706,深证100ETF华安,warning,1061,2021-12-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588840,科创50ETF万家,passed,284,2025-03-10,2026-05-12,0,0,,,,
+159631,A100ETF招商,warning,894,2022-08-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515760,浙江国资ETF华夏,passed,1353,2020-10-12,2026-05-12,0,0,,,,
+159505,国证2000ETF博时,warning,585,2023-12-04,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560690,电信ETF鹏华,passed,496,2024-04-22,2026-05-12,0,0,,,,
+159122,创业板新能源ETF富国,failed,125,2025-11-03,2026-05-12,0,0,too few rows: 125 < 250,,insufficient_rows,insufficient_rows
+159216,深证100ETF大成,passed,260,2025-04-11,2026-05-12,0,0,,,,
+159188,红利100ETF景顺,failed,20,2026-04-10,2026-05-12,0,0,too few rows: 20 < 250,,insufficient_rows,insufficient_rows
+516610,医疗设备ETF大成,passed,1210,2021-05-13,2026-05-12,0,0,,,,
+159827,农业ETF银华,warning,1304,2020-12-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159716,深证100ETF华宝,warning,1174,2021-06-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159891,医疗ETF建信,warning,1188,2021-06-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159895,物联网ETF易方达,warning,1098,2021-10-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159136,A50ETF广发,failed,87,2025-12-25,2026-05-12,0,0,too few rows: 87 < 250,,insufficient_rows,insufficient_rows
+515640,家电ETF华夏,failed,10,2026-04-24,2026-05-12,0,0,too few rows: 10 < 250,,insufficient_rows,insufficient_rows
+515660,沪深300ETF国联安,passed,1543,2019-12-24,2026-05-12,0,0,,,,
+159719,国企ETF平安,warning,1051,2021-12-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159787,建材ETF易方达,warning,1006,2022-03-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560500,500质量成长ETF鹏扬,passed,1132,2021-09-01,2026-05-12,0,0,,,,
+515890,红利ETF博时,passed,1467,2020-04-20,2026-05-12,0,0,,,,
+510030,价值ETF华宝,warning,1780,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159145,工业软件ETF广发,failed,72,2026-01-19,2026-05-12,0,0,too few rows: 72 < 250,,insufficient_rows,insufficient_rows
+588310,科创创业ETF方正富邦,warning,1073,2021-12-02,2026-05-12,0,0,,daily close return exceeds 20% on 2 day(s),abnormal_return,abnormal_return
+563600,A500增强ETF易方达,failed,145,2025-09-26,2026-05-12,0,0,too few rows: 145 < 250,,insufficient_rows,insufficient_rows
+159389,数字经济ETF嘉实,failed,229,2025-05-30,2026-05-12,0,0,too few rows: 229 < 250,,insufficient_rows,insufficient_rows
+560070,央企红利ETF汇添富,passed,708,2023-06-06,2026-05-12,0,0,,,,
+159793,线上消费ETF平安,warning,1078,2021-11-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517350,沪港深科技ETF广发,passed,1195,2021-06-03,2026-05-12,0,0,,,,
+589780,科创200ETF富国,failed,145,2025-09-26,2026-05-12,0,0,too few rows: 145 < 250,,insufficient_rows,insufficient_rows
+159848,证券ETF国联安,warning,1250,2021-03-12,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589990,科创综指ETF华泰柏瑞,passed,287,2025-03-05,2026-05-12,0,0,,,,
+159824,新能源车ETF博时,warning,1289,2021-01-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159961,深100ETF方正富邦,warning,1765,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159657,疫苗ETF鹏华,warning,765,2023-03-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516200,证券ETF华安,passed,1244,2021-03-22,2026-05-12,0,0,,,,
+588260,科创信息ETF华安,passed,958,2022-05-27,2026-05-12,0,0,,,,
+159672,消费ETF博时,warning,750,2023-04-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159106,民企300ETF前海开源,failed,133,2025-10-22,2026-05-12,0,0,too few rows: 133 < 250,,insufficient_rows,insufficient_rows
+530380,上证380ETF易方达,failed,143,2025-09-30,2026-05-12,0,0,too few rows: 143 < 250,,insufficient_rows,insufficient_rows
+588850,科创机械ETF嘉实,passed,252,2025-04-24,2026-05-12,0,0,,,,
+159795,智能汽车ETF汇添富,warning,1027,2022-02-14,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159723,科技龙头ETF汇添富,warning,1106,2021-10-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159533,中证2000ETF博时,passed,463,2024-06-07,2026-05-12,0,0,,,,
+159678,500增强ETF博时,warning,775,2023-02-27,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588690,科创增强ETF银华,failed,165,2025-08-29,2026-05-12,0,0,too few rows: 165 < 250,,insufficient_rows,insufficient_rows
+159936,可选消费ETF广发,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159517,中证800增强ETF银华,warning,643,2023-09-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159896,物联网ETF南方,warning,1077,2021-11-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159670,消费50ETF国联安,warning,728,2023-05-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159810,创业板ETF浦银,warning,1412,2020-07-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159549,红利低波ETF天弘,warning,582,2023-12-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510650,金融地产ETF华夏,passed,1776,2019-01-02,2026-05-12,0,0,,,,
+159991,创业板大盘ETF招商,warning,1463,2020-04-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 2 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+517050,互联网ETF华泰柏瑞,passed,1269,2021-02-08,2026-05-12,0,0,,,,
+159335,央企科创ETF融通,passed,402,2024-09-05,2026-05-12,0,0,,,,
+516560,养老ETF华宝,passed,1121,2021-09-16,2026-05-12,0,0,,,,
+512640,金融地产ETF嘉实,passed,1732,2019-01-02,2026-05-12,0,0,,,,
+560160,食品ETF易方达,failed,66,2026-01-27,2026-05-12,0,0,too few rows: 66 < 250,,insufficient_rows,insufficient_rows
+510810,上海国企ETF汇添富,passed,1773,2019-01-02,2026-05-12,0,0,,,,
+159535,中证2000ETF嘉实,warning,632,2023-09-22,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159661,A100ETF嘉实,warning,587,2023-12-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512030,中证A50增强ETF易方达,failed,177,2025-08-13,2026-05-12,0,0,too few rows: 177 < 250,,insufficient_rows,insufficient_rows
+159886,机械ETF富国,warning,1218,2021-04-28,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159379,A500ETF融通,passed,310,2025-01-23,2026-05-12,0,0,,,,
+510560,中证500ETF国寿,passed,1616,2019-01-07,2026-05-12,0,0,,,,
+563690,红利低波ETF永赢,failed,141,2025-10-10,2026-05-12,0,0,too few rows: 141 < 250,,insufficient_rows,insufficient_rows
+159311,数字经济ETF易方达,failed,198,2025-07-15,2026-05-12,0,0,too few rows: 198 < 250,,insufficient_rows,insufficient_rows
+588520,科创增强ETF永赢,failed,203,2025-07-08,2026-05-12,0,0,too few rows: 203 < 250,,insufficient_rows,insufficient_rows
+561790,央企能源ETF博时,passed,664,2023-08-09,2026-05-12,0,0,,,,
+159856,互联网龙头ETF工银,warning,1274,2021-02-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515910,质量ETF中金,passed,1260,2021-02-26,2026-05-12,0,0,,,,
+530800,上证180ETF银华,passed,308,2025-01-27,2026-05-12,0,0,,,,
+561200,中证A100ETF工银,passed,551,2024-01-05,2026-05-12,0,0,,,,
+560370,红利质量ETF易方达,failed,50,2026-02-26,2026-05-12,0,0,too few rows: 50 < 250,,insufficient_rows,insufficient_rows
+159177,工程机械ETF鹏华,failed,25,2026-04-02,2026-05-12,0,0,too few rows: 25 < 250,,insufficient_rows,insufficient_rows
+159550,互联网ETF东财,failed,210,2025-06-27,2026-05-12,0,0,too few rows: 210 < 250,,insufficient_rows,insufficient_rows
+515160,MSCI中国ETF招商,passed,1501,2020-03-02,2026-05-12,0,0,,,,
+563060,央企50ETF易方达,failed,238,2025-05-19,2026-05-12,0,0,too few rows: 238 < 250,,insufficient_rows,insufficient_rows
+510800,上证50ETF建信,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+515730,家居家电ETF永赢,failed,109,2025-11-25,2026-05-12,0,0,too few rows: 109 < 250,,insufficient_rows,insufficient_rows
+588070,科创成长ETF万家,passed,359,2024-11-14,2026-05-12,0,0,,,,
+512060,A100ETF天弘,failed,195,2025-07-18,2026-05-12,0,0,too few rows: 195 < 250,,insufficient_rows,insufficient_rows
+530100,上证580ETF易方达,failed,133,2025-10-22,2026-05-12,0,0,too few rows: 133 < 250,,insufficient_rows,insufficient_rows
+159645,疫苗ETF富国,warning,872,2022-09-26,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159543,国证2000ETF工银,warning,597,2023-11-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510380,沪深300ETF国寿,passed,1711,2019-01-02,2026-05-12,0,0,,,,
+159293,创业板综增强ETF建信,failed,76,2026-01-13,2026-05-12,0,0,too few rows: 76 < 250,,insufficient_rows,insufficient_rows
+517000,沪港深500ETF银华,passed,1255,2021-03-05,2026-05-12,0,0,,,,
+562810,上证指数增强ETF嘉实,passed,281,2025-03-13,2026-05-12,0,0,,,,
+159620,中证500成长ETF华夏,warning,908,2022-08-05,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+561370,中证2000ETF国泰,passed,633,2023-09-21,2026-05-12,0,0,,,,
+510600,上证50ETF申万菱信,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+511600,华安日日鑫ETF,passed,1778,2019-01-02,2026-05-12,0,0,,,,
+159889,智能汽车ETF国泰,warning,1126,2021-09-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159791,300ESGETF华夏,warning,1007,2022-03-08,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159885,碳中和ETF鹏华,warning,1228,2021-04-14,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+516710,新材料ETF华夏,passed,1143,2021-08-17,2026-05-12,0,0,,,,
+159808,创100ETF融通,warning,1373,2020-09-04,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159778,工业互联网ETF鹏华,warning,1024,2022-02-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515590,500等权ETF前海开源,passed,1522,2020-01-20,2026-05-12,0,0,,,,
+563980,800红利低波ETF鑫元,failed,121,2025-11-07,2026-05-12,0,0,too few rows: 121 < 250,,insufficient_rows,insufficient_rows
+517200,互联网ETF嘉实,passed,1269,2021-02-08,2026-05-12,0,0,,,,
+510200,上证券商ETF汇安,passed,1456,2020-05-08,2026-05-12,0,0,,,,
+530880,红利国企ETF银河,passed,361,2024-11-12,2026-05-12,0,0,,,,
+159018,石油ETF广发,failed,9,2026-04-27,2026-05-12,0,0,too few rows: 9 < 250,,insufficient_rows,insufficient_rows
+159877,医疗ETF南方,warning,1093,2021-11-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+588670,科创综指增强ETF嘉实,failed,220,2025-06-13,2026-05-12,0,0,too few rows: 220 < 250,,insufficient_rows,insufficient_rows
+159553,中证2000增强ETF海富通,warning,499,2024-04-15,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515360,沪深300ETF方正富邦,passed,1573,2019-11-01,2026-05-12,0,0,,,,
+159290,创业板综指增强ETF东财,failed,152,2025-09-17,2026-05-12,0,0,too few rows: 152 < 250,,insufficient_rows,insufficient_rows
+159372,创业板50ETF万家,failed,224,2025-06-09,2026-05-12,0,0,too few rows: 224 < 250,,insufficient_rows,insufficient_rows
+563850,食品ETF广发,failed,91,2025-12-19,2026-05-12,0,0,too few rows: 91 < 250,,insufficient_rows,insufficient_rows
+516660,新能源车ETF华安,passed,1260,2021-02-26,2026-05-12,0,0,,,,
+159295,创业综指ETF西部利得,failed,124,2025-11-04,2026-05-12,0,0,too few rows: 124 < 250,,insufficient_rows,insufficient_rows
+512380,MSCI中国ETF银华,passed,1703,2019-04-30,2026-05-12,0,0,,,,
+510020,超大盘ETF博时,passed,1777,2019-01-02,2026-05-12,0,0,,,,
+561780,1000增强ETF博时,passed,603,2023-11-10,2026-05-12,0,0,,,,
+560590,中证1000增强ETF鹏华,passed,630,2023-09-25,2026-05-12,0,0,,,,
+530000,上证50ETF天弘,passed,396,2024-09-13,2026-05-12,0,0,,,,
+562560,信息技术ETF华夏,passed,502,2024-04-12,2026-05-12,0,0,,,,
+159289,创业板综指ETF鹏华,failed,154,2025-09-15,2026-05-12,0,0,too few rows: 154 < 250,,insufficient_rows,insufficient_rows
+510190,上证50ETF华安,passed,1774,2019-01-02,2026-05-12,0,0,,,,
+159685,1000增强ETF天弘,warning,748,2023-04-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516960,机械ETF国泰,passed,1214,2021-05-07,2026-05-12,0,0,,,,
+516380,智能电动车ETF华宝,passed,1185,2021-06-18,2026-05-12,0,0,,,,
+159238,沪深300增强ETF景顺,failed,224,2025-06-09,2026-05-12,0,0,too few rows: 224 < 250,,insufficient_rows,insufficient_rows
+512160,MSCI中国A股ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+530530,上证580ETF华夏,failed,165,2025-08-29,2026-05-12,0,0,too few rows: 165 < 250,,insufficient_rows,insufficient_rows
+159730,家电ETF博时,warning,1056,2021-12-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560810,央企ESGETF融通,passed,342,2024-12-09,2026-05-12,0,0,,,,
+510770,G60创新ETF申万菱信,passed,1114,2021-09-28,2026-05-12,0,0,,,,
+589300,科创综指ETF嘉实,warning,257,2025-04-17,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159203,大盘成长ETF博时,failed,208,2025-06-30,2026-05-12,0,0,too few rows: 208 < 250,,insufficient_rows,insufficient_rows
+563090,上证50增强ETF易方达,passed,466,2024-06-06,2026-05-12,0,0,,,,
+517100,沪港深500ETF富国,passed,1258,2021-03-02,2026-05-12,0,0,,,,
+510710,上证50ETF博时,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+561920,疫苗ETF招商,passed,753,2023-03-29,2026-05-12,0,0,,,,
+515200,创新100ETF申万菱信,passed,1570,2019-11-15,2026-05-12,0,0,,,,
+563030,中证500增强ETF易方达,passed,765,2023-03-13,2026-05-12,0,0,,,,
+159861,碳中和50ETF国泰,warning,1235,2021-04-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159510,沪深300价值ETF华夏,warning,659,2023-08-16,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517850,张江ETF汇添富,passed,967,2022-05-16,2026-05-12,0,0,,,,
+516260,物联网ETF华夏,passed,1154,2021-08-02,2026-05-12,0,0,,,,
+510160,产业升级ETF南方,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+159556,中证2000增强ETF平安,warning,560,2024-01-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563930,上证增强ETF招商,failed,81,2026-01-06,2026-05-12,0,0,too few rows: 81 < 250,,insufficient_rows,insufficient_rows
+159836,创业板300ETF天弘,warning,1202,2021-05-25,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+516600,消费服务ETF工银,passed,1260,2021-02-26,2026-05-12,0,0,,,,
+510570,中证500ETF兴业,passed,1372,2020-08-12,2026-05-12,0,0,,,,
+159970,深100ETF工银,warning,1526,2020-01-10,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+159838,医药50ETF博时,warning,1155,2021-07-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560020,红利ETF汇添富,passed,622,2023-10-16,2026-05-12,0,0,,,,
+159332,央企红利ETF富国,passed,427,2024-08-01,2026-05-12,0,0,,,,
+516980,证券先锋ETF华富,passed,1178,2021-06-24,2026-05-12,0,0,,,,
+159912,深300ETF汇添富,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159617,中证500价值ETF华夏,warning,934,2022-06-30,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515770,MSCI中国A股ETF摩根,passed,1426,2020-06-19,2026-05-12,0,0,,,,
+159974,央企创新ETF富国,warning,1542,2019-12-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+515550,中证500ETF国联,passed,1527,2019-12-25,2026-05-12,0,0,,,,
+159760,医疗健康ETF泰康,warning,1061,2021-12-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159821,创业板ETF中银证券,warning,1336,2020-10-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560190,公用事业ETF鹏华,passed,323,2025-01-06,2026-05-12,0,0,,,,
+562010,绿色能源ETF华宝,passed,809,2023-01-03,2026-05-12,0,0,,,,
+563630,A500增强ETF国联安,failed,208,2025-07-01,2026-05-12,0,0,too few rows: 208 < 250,,insufficient_rows,insufficient_rows
+159521,国证2000ETF平安,warning,642,2023-09-07,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159701,物联网ETF招商,warning,1057,2021-12-23,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563890,国企红利ETF创金合信,failed,136,2025-10-17,2026-05-12,0,0,too few rows: 136 < 250,,insufficient_rows,insufficient_rows
+512240,A50ETF鹏华,passed,265,2025-04-07,2026-05-12,0,0,,,,
+512970,大湾区ETF平安,passed,1573,2019-11-11,2026-05-12,0,0,,,,
+159383,创业板50ETF华泰柏瑞,passed,300,2025-02-14,2026-05-12,0,0,,,,
+517080,沪港深500ETF汇添富,passed,1264,2021-02-22,2026-05-12,0,0,,,,
+159571,创业板200ETF富国,warning,567,2024-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values; daily close return exceeds 20% on 1 day(s),zero_or_low_liquidity; abnormal_return,zero_or_low_liquidity
+516890,新材料ETF平安,passed,1157,2021-07-28,2026-05-12,0,0,,,,
+512150,富时A50ETF汇安,passed,1768,2019-01-21,2026-05-12,0,0,,,,
+517160,长江保护ETF南方,passed,1047,2022-01-05,2026-05-12,0,0,,,,
+561060,国企红利ETF华安,passed,633,2023-09-21,2026-05-12,0,0,,,,
+510550,中证500ETF方正富邦,passed,1771,2019-01-16,2026-05-12,0,0,,,,
+516530,物流ETF银华,passed,1042,2022-01-17,2026-05-12,0,0,,,,
+159689,消费ETF南方,warning,764,2023-03-13,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159292,创业板综增强ETF华宝,failed,163,2025-09-02,2026-05-12,0,0,too few rows: 163 < 250,,insufficient_rows,insufficient_rows
+515150,一带一路ETF富国,passed,1528,2020-01-15,2026-05-12,0,0,,,,
+159355,800红利低波ETF华宝,passed,346,2024-12-03,2026-05-12,0,0,,,,
+560300,电信ETF汇添富,passed,577,2023-12-18,2026-05-12,0,0,,,,
+563870,通用航空ETF鹏华,failed,74,2026-01-15,2026-05-12,0,0,too few rows: 74 < 250,,insufficient_rows,insufficient_rows
+560650,核心50ETF民生加银,passed,936,2022-06-27,2026-05-12,0,0,,,,
+562340,中证500成长ETF银华,passed,486,2024-05-08,2026-05-12,0,0,,,,
+562390,中药ETF银华,passed,915,2022-07-28,2026-05-12,0,0,,,,
+159621,ESGETF国泰,warning,881,2022-09-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560560,碳中和ETF泰康,passed,1124,2021-09-13,2026-05-12,0,0,,,,
+159940,金融地产ETF广发,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512750,基本面50ETF嘉实,passed,1659,2019-07-05,2026-05-12,0,0,,,,
+512520,MSCI中国ETF华泰柏瑞,warning,1781,2019-01-02,2026-05-12,0,0,,daily close return exceeds 20% on 1 day(s),abnormal_return,abnormal_return
+159306,汽车零部件ETF平安,warning,482,2024-05-14,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512370,A500增强ETF华夏,failed,174,2025-08-18,2026-05-12,0,0,too few rows: 174 < 250,,insufficient_rows,insufficient_rows
+561320,交运ETF国泰,passed,826,2022-12-08,2026-05-12,0,0,,,,
+562330,中证500价值ETF银华,passed,740,2023-04-18,2026-05-12,0,0,,,,
+159211,深证100ETF富国,passed,260,2025-04-14,2026-05-12,0,0,,,,
+159370,创50ETF工银,passed,313,2025-01-20,2026-05-12,0,0,,,,
+516330,物联网ETF华泰柏瑞,passed,1230,2021-04-09,2026-05-12,0,0,,,,
+159717,ESGETF鹏华,warning,1112,2021-09-29,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159849,生物科技ETF招商,warning,1258,2021-03-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517010,沪港深500ETF易方达,passed,1145,2021-08-12,2026-05-12,0,0,,,,
+159743,湖北ETF博时,warning,1046,2022-01-11,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159872,智能网联汽车ETF鹏华,warning,1176,2021-07-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159973,民企ETF弘毅远方,warning,1622,2019-08-09,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560620,公用事业ETF万家,passed,385,2024-10-09,2026-05-12,0,0,,,,
+159640,碳中和龙头ETF工银,warning,920,2022-07-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159575,创业板200ETF银华,warning,565,2024-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560990,科技先锋ETF中金,passed,938,2022-06-27,2026-05-12,0,0,,,,
+563670,金融科技ETF鹏华,failed,139,2025-10-14,2026-05-12,0,0,too few rows: 139 < 250,,insufficient_rows,insufficient_rows
+510060,央企ETF工银,passed,1781,2019-01-02,2026-05-12,0,0,,,,
+515990,一带一路ETF汇添富,passed,1523,2020-01-15,2026-05-12,0,0,,,,
+159913,深价值ETF交银,warning,1738,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512190,浙商之江凤凰ETF,passed,1590,2019-09-09,2026-05-12,0,0,,,,
+159515,国企红利ETF鹏扬,warning,644,2023-09-06,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+589580,科创综指ETF兴银,failed,222,2025-06-11,2026-05-12,0,0,too few rows: 222 < 250,,insufficient_rows,insufficient_rows
+159800,中证800ETF鹏华,passed,441,2024-07-12,2026-05-12,0,0,,,,
+159709,物联网ETF工银,warning,1175,2021-07-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560550,碳中和ETF广发,passed,922,2022-07-19,2026-05-12,0,0,,,,
+510290,上证380ETF南方,passed,1780,2019-01-02,2026-05-12,0,0,,,,
+159923,中证A100ETF大成,warning,1780,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+563280,A50增强ETF富国,passed,499,2024-04-12,2026-05-12,0,0,,,,
+511670,华泰天天金ETF,passed,1082,2021-04-07,2026-05-12,0,0,,,,
+159931,金融地产ETF汇添富,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560060,碳中和ETF汇添富,passed,920,2022-07-21,2026-05-12,0,0,,,,
+561510,中药ETF华泰柏瑞,passed,910,2022-08-04,2026-05-12,0,0,,,,
+159729,互联网ETF汇添富,warning,1162,2021-07-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159240,A500增强ETF天弘,failed,217,2025-06-17,2026-05-12,0,0,too few rows: 217 < 250,,insufficient_rows,insufficient_rows
+511820,鹏华添利ETF,passed,1629,2019-01-02,2026-05-12,0,0,,,,
+516930,生物科技ETF民生加银,passed,1142,2021-08-18,2026-05-12,0,0,,,,
+510010,180治理ETF交银,passed,1765,2019-01-02,2026-05-12,0,0,,,,
+159720,智能车ETF泰康,warning,1163,2021-07-20,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+560330,沪深300价值ETF申万菱信,passed,718,2023-05-23,2026-05-12,0,0,,,,
+560130,食品ETF鹏华,failed,76,2026-01-13,2026-05-12,0,0,too few rows: 76 < 250,,insufficient_rows,insufficient_rows
+561960,央企回报ETF招商,passed,708,2023-06-06,2026-05-12,0,0,,,,
+512870,杭州湾区ETF南华,passed,1697,2019-02-22,2026-05-12,0,0,,,,
+159965,央视50ETF国联,warning,1707,2019-04-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517170,沪港深500ETF华夏,passed,1216,2021-04-20,2026-05-12,0,0,,,,
+512260,中证500低波动ETF华安,passed,1774,2019-01-11,2026-05-12,0,0,,,,
+159910,基本面120ETF嘉实,warning,1781,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517990,沪港深医药ETF招商,passed,964,2022-05-19,2026-05-12,0,0,,,,
+560520,红利低波100ETF大成,passed,497,2024-04-18,2026-05-12,0,0,,,,
+563590,A500红利低波动ETF国寿,failed,123,2025-11-05,2026-05-12,0,0,too few rows: 123 < 250,,insufficient_rows,insufficient_rows
+517030,沪港深300ETF易方达,passed,1115,2021-09-27,2026-05-12,0,0,,,,
+159642,碳中和ETF大成,warning,920,2022-07-21,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159918,中创400ETF嘉实,warning,1750,2019-01-02,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+562300,碳中和ETF银华,passed,1050,2022-01-05,2026-05-12,0,0,,,,
+159959,央企ETF银华,warning,1769,2019-01-18,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159291,创业板综增强ETF招商,failed,164,2025-09-01,2026-05-12,0,0,too few rows: 164 < 250,,insufficient_rows,insufficient_rows
+159228,红利低波ETF长城,failed,217,2025-06-18,2026-05-12,0,0,too few rows: 217 < 250,,insufficient_rows,insufficient_rows
+530280,上证180ETF平安,passed,309,2025-01-24,2026-05-12,0,0,,,,
+159391,大盘价值ETF博时,passed,254,2025-04-21,2026-05-12,0,0,,,,
+159976,湾创ETF工银,warning,1522,2020-01-17,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512180,MSCIA股ETF建信,passed,1772,2019-01-02,2026-05-12,0,0,,,,
+512360,MSCIA股ETF平安,passed,1697,2019-01-02,2026-05-12,0,0,,,,
+560950,中证500增强ETF汇添富,passed,671,2023-07-31,2026-05-12,0,0,,,,
+159578,深证主板50ETF南方,passed,464,2024-06-07,2026-05-12,0,0,,,,
+159528,国企改革ETF富国,passed,478,2024-05-20,2026-05-12,0,0,,,,
+159804,创中盘88ETF国寿,warning,1480,2020-03-31,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+517360,沪港深科技ETF华安,passed,1174,2021-07-05,2026-05-12,0,0,,,,
+560030,800价值ETF汇添富,passed,686,2023-07-10,2026-05-12,0,0,,,,
+159630,A100ETF汇添富,warning,852,2022-11-01,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+159653,ESG300ETF国联安,warning,723,2023-03-24,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+512390,中国低波ETF平安,passed,1680,2019-01-02,2026-05-12,0,0,,,,
+159933,金融地产ETF国投瑞银,warning,1731,2019-01-03,2026-05-12,0,0,,volume contains zero or negative values; amount contains zero or negative values,zero_or_low_liquidity,zero_or_low_liquidity
+510090,责任ETF建信,passed,1696,2019-01-03,2026-05-12,0,0,,,,
+560820,中证A50ETF新华,passed,254,2025-04-18,2026-05-12,0,0,,,,
+516720,ESGETF浦银,passed,1138,2021-08-13,2026-05-12,0,0,,,,
+517330,长江保护ETF易方达,passed,1046,2022-01-05,2026-05-12,0,0,,,,
+560000,智能电车ETF浦银,passed,1108,2021-09-30,2026-04-30,0,0,,,,

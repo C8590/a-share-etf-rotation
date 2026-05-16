@@ -1,0 +1,12 @@
+﻿metric_name,total_count,computable_count,unable_count,coverage_ratio,main_failure_reason,dependency,importance,notes
+tracking_error,50,0,50,0.0,missing_benchmark,ETF cache + confirmed benchmark index cache,P1,annualized standard deviation of ETF minus benchmark daily returns
+relative_return_20d,50,0,50,0.0,missing_benchmark,ETF cache + confirmed benchmark index cache,P1,ETF return minus benchmark return over the window
+benchmark_return_20d,50,0,50,0.0,missing_benchmark,confirmed benchmark index cache,P1,benchmark return over the window
+etf_return_20d,50,18,32,0.36,unable_to_compute,ETF cache,P2,standalone ETF return; not a benchmark-relative metric
+relative_return_60d,50,0,50,0.0,missing_benchmark,ETF cache + confirmed benchmark index cache,P1,ETF return minus benchmark return over the window
+benchmark_return_60d,50,0,50,0.0,missing_benchmark,confirmed benchmark index cache,P1,benchmark return over the window
+etf_return_60d,50,18,32,0.36,unable_to_compute,ETF cache,P2,standalone ETF return; not a benchmark-relative metric
+relative_return_120d,50,0,50,0.0,missing_benchmark,ETF cache + confirmed benchmark index cache,P1,ETF return minus benchmark return over the window
+benchmark_return_120d,50,0,50,0.0,missing_benchmark,confirmed benchmark index cache,P1,benchmark return over the window
+etf_return_120d,50,14,36,0.28,unable_to_compute,ETF cache,P2,standalone ETF return; not a benchmark-relative metric
+discount_premium,50,0,50,0.0,source_unavailable,NAV or IOPV source,P2,unavailable until NAV/IOPV data exists

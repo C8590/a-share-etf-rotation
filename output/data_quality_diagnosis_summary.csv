@@ -1,0 +1,14 @@
+﻿diagnosis_item,count,ratio,severity,suggested_action,examples,notes
+short_history,244,1.0,high,observe until minimum row count is met,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,new or short-history ETF cannot enter candidate scoring
+stale_cache,0,0.0,info,no action,,do not refresh the full market
+missing_cache,0,0.0,info,no action,,download only selected symbols if approved
+abnormal_return,4,0.016393,high,manual adjustment/source review,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰,do not treat jump as alpha
+low_liquidity,141,0.577869,medium,filter before candidate construction,159231 通用航空ETF华宝;159287 创业板综ETF博时;159009 创业板新能源ETF易方达;159017 石油ETF工银;159020 养殖ETF易方达,liquidity filter is not a score penalty
+manual_review_required,5,0.020492,high,manual confirmation required,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,quality issue cannot be auto-accepted
+refresh_needed,0,0.0,info,no action,,refresh does not imply QA pass
+candidate_excluded,244,1.0,high,gate before candidate pool,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,blocked_short_history is not a low score
+primary_failure_type:new_etf_short_history,244,1.0,high,see per-symbol recommended_action,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,grouped by primary_failure_type
+strategy_eligibility:blocked_manual_review,5,0.020492,high,see per-symbol recommended_action,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,grouped by strategy_eligibility
+strategy_eligibility:blocked_short_history,239,0.979508,high,see per-symbol recommended_action,159007 养殖ETF华泰柏瑞;159008 证券ETF景顺;159009 创业板新能源ETF易方达;159013 工业互联网ETF大成;159017 石油ETF工银,grouped by strategy_eligibility
+remediation_priority:P0_manual_review,5,0.020492,high,see per-symbol recommended_action,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,grouped by remediation_priority
+remediation_priority:P1_short_history_observe,239,0.979508,medium,see per-symbol recommended_action,159007 养殖ETF华泰柏瑞;159008 证券ETF景顺;159009 创业板新能源ETF易方达;159013 工业互联网ETF大成;159017 石油ETF工银,grouped by remediation_priority

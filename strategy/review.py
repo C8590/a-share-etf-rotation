@@ -12,6 +12,7 @@ DEFAULT_STRATEGY_STATUS = {
     "conservative": "defensive_only",
     "equal_weight_monthly": "recommended_for_observation",
     "reduced_equal_weight_monthly": "recommended_for_observation",
+    "momentum_rotation_monthly": "research_observation_candidate",
 }
 
 
@@ -20,7 +21,8 @@ STATUS_REASON = {
     "balanced": "Full-sample performance is good, but out-of-sample stability is not strong enough for recommendation.",
     "conservative": "Defensive profile can be useful in risk-off research, but it is not the main observation strategy.",
     "equal_weight_monthly": "Simple monthly equal-weight approach has shown better out-of-sample stability.",
-    "reduced_equal_weight_monthly": "Smaller monthly equal-weight basket is simple and suitable for observation alongside full equal weight.",
+    "reduced_equal_weight_monthly": "Fixed selected-basket equal-weight benchmark; useful as a stable baseline, not a dynamic rotation strategy.",
+    "momentum_rotation_monthly": "Dynamic close-momentum rotation is the next main observation candidate after additional live validation.",
 }
 
 

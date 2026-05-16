@@ -21,7 +21,7 @@ from backtest.portfolio import (
 )
 from data.storage import build_price_matrix
 from strategy.equal_weight import EqualWeightMonthlyStrategy
-from strategy.etf_rotation import ETFRotationStrategy, StrategyConfig, get_rebalance_dates
+from strategy.etf_rotation import ETFRotationStrategy, MomentumRotationMonthlyStrategy, StrategyConfig, get_rebalance_dates
 from strategy.reduced_equal_weight import ReducedEqualWeightMonthlyStrategy
 
 
@@ -55,13 +55,16 @@ class BacktestEngine:
 
         self.close = build_price_matrix(market_data, "close")
         self.open = build_price_matrix(market_data, "open")
+        self.amount = build_price_matrix(market_data, "amount")
         self.valuation_close = self.close.ffill()
         if strategy_config.strategy_type == "equal_weight_monthly":
             self.strategy = EqualWeightMonthlyStrategy(self.close, self.etf_info, selected_symbols=strategy_config.selected_symbols)
         elif strategy_config.strategy_type == "reduced_equal_weight_monthly":
             self.strategy = ReducedEqualWeightMonthlyStrategy(self.close, self.etf_info, selected_symbols=strategy_config.selected_symbols)
+        elif strategy_config.strategy_type == "momentum_rotation_monthly":
+            self.strategy = MomentumRotationMonthlyStrategy(self.close, self.etf_info, strategy_config, amount=self.amount)
         else:
-            self.strategy = ETFRotationStrategy(self.close, self.etf_info, strategy_config)
+            self.strategy = ETFRotationStrategy(self.close, self.etf_info, strategy_config, amount=self.amount)
 
     def run(self, output_dir: str | Path = "output", save_outputs: bool = True) -> dict[str, Any]:
         output_path = Path(output_dir)
@@ -109,6 +112,7 @@ class BacktestEngine:
                 should_rebalance = set(target) != set(current_holdings) or self.strategy_config.strategy_type in {
                     "equal_weight_monthly",
                     "reduced_equal_weight_monthly",
+                    "momentum_rotation_monthly",
                 }
                 if should_rebalance:
                     pending_signal = {

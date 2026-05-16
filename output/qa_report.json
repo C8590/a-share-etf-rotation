@@ -1,0 +1,2301 @@
+{
+  "schema_version": "1.0",
+  "data_schema_version": "1.0",
+  "data_layer": {
+    "passed": false,
+    "effective_etf_count": 916,
+    "latest_date": "2026-05-13",
+    "reasons": [
+      "data quality failed for 244 ETF(s)",
+      "ETF end-date coverage gap is 15 days"
+    ],
+    "coverage_report": "output/data_coverage_report.csv",
+    "quality_report": "output/data_quality_report.csv",
+    "data_quality_diagnosis_report": "output/data_quality_diagnosis.csv",
+    "data_quality_diagnosis_summary_report": "output/data_quality_diagnosis_summary.csv",
+    "data_quality_diagnosis": {
+      "total_failed": 244,
+      "short_history_count": 244,
+      "stale_cache_count": 0,
+      "missing_cache_count": 0,
+      "abnormal_return_count": 4,
+      "low_liquidity_count": 141,
+      "severe_quality_issue_count": 5,
+      "candidate_excluded_count": 244,
+      "manual_review_required_count": 5,
+      "refresh_needed_count": 0,
+      "history_status_counts": {
+        "short_history": 172,
+        "very_short_history": 72
+      },
+      "cache_status_counts": {
+        "fresh": 244
+      },
+      "strategy_eligibility_counts": {
+        "blocked_manual_review": 5,
+        "blocked_short_history": 239
+      },
+      "remediation_priority_counts": {
+        "P0_manual_review": 5,
+        "P1_short_history_observe": 239
+      },
+      "top_blocking_reasons": {
+        "new_etf_short_history": 244
+      },
+      "top_examples": [
+        {
+          "symbol": "159231",
+          "name": "通用航空ETF华宝",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_manual_review",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159246",
+          "name": "创业板人工智能ETF富国",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_manual_review",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159287",
+          "name": "创业板综ETF博时",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_manual_review",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159387",
+          "name": "创业板新能源ETF国泰",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_manual_review",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_manual_review",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159007",
+          "name": "养殖ETF华泰柏瑞",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_short_history",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159008",
+          "name": "证券ETF景顺",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_short_history",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159009",
+          "name": "创业板新能源ETF易方达",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_short_history",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159013",
+          "name": "工业互联网ETF大成",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_short_history",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159017",
+          "name": "石油ETF工银",
+          "primary_failure_type": "new_etf_short_history",
+          "history_status": "very_short_history",
+          "cache_status": "fresh",
+          "strategy_eligibility": "blocked_short_history",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        }
+      ]
+    },
+    "short_history_count": 244,
+    "stale_cache_count": 0,
+    "severe_quality_issue_count": 5,
+    "candidate_excluded_count": 244,
+    "manual_review_required_count": 5,
+    "refresh_needed_count": 0,
+    "top_blocking_reasons": {
+      "new_etf_short_history": 244
+    },
+    "top_examples": [
+      {
+        "symbol": "159231",
+        "name": "通用航空ETF华宝",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_manual_review",
+        "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+      },
+      {
+        "symbol": "159246",
+        "name": "创业板人工智能ETF富国",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_manual_review",
+        "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+      },
+      {
+        "symbol": "159287",
+        "name": "创业板综ETF博时",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_manual_review",
+        "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+      },
+      {
+        "symbol": "159387",
+        "name": "创业板新能源ETF国泰",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_manual_review",
+        "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+      },
+      {
+        "symbol": "560320",
+        "name": "N食品ETF富国",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_manual_review",
+        "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+      },
+      {
+        "symbol": "159007",
+        "name": "养殖ETF华泰柏瑞",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_short_history",
+        "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+      },
+      {
+        "symbol": "159008",
+        "name": "证券ETF景顺",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_short_history",
+        "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+      },
+      {
+        "symbol": "159009",
+        "name": "创业板新能源ETF易方达",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_short_history",
+        "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+      },
+      {
+        "symbol": "159013",
+        "name": "工业互联网ETF大成",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_short_history",
+        "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+      },
+      {
+        "symbol": "159017",
+        "name": "石油ETF工银",
+        "primary_failure_type": "new_etf_short_history",
+        "history_status": "very_short_history",
+        "cache_status": "fresh",
+        "strategy_eligibility": "blocked_short_history",
+        "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+      }
+    ],
+    "short_history_observation_pool_report": "output/short_history_observation_pool.csv",
+    "short_history_observation_summary_report": "output/short_history_observation_summary.csv",
+    "observation_pool": {
+      "total_observation_count": 244,
+      "very_short_history_count": 72,
+      "low_liquidity_watch_count": 141,
+      "manual_review_required_count": 5,
+      "estimated_eligible_within_20d_count": 14,
+      "estimated_eligible_within_60d_count": 50,
+      "unknown_estimate_count": 109,
+      "observation_status_counts": {
+        "manual_review_required": 5,
+        "very_short_history": 71,
+        "waiting_but_low_liquidity": 105,
+        "waiting_for_history": 63
+      },
+      "observation_priority_counts": {
+        "P0_manual_review": 5,
+        "P1_wait_for_history": 63,
+        "P2_low_liquidity_watch": 105,
+        "P3_archive_watch": 71
+      },
+      "top_examples": [
+        {
+          "symbol": "159231",
+          "name": "通用航空ETF华宝",
+          "history_status": "short_history",
+          "rows_needed": 1,
+          "estimated_calendar_date_until_eligible": "2026-05-18",
+          "observation_priority": "P0_manual_review",
+          "recommended_action": "manual review required before candidate gate reconsideration"
+        },
+        {
+          "symbol": "159387",
+          "name": "创业板新能源ETF国泰",
+          "history_status": "short_history",
+          "rows_needed": 27,
+          "estimated_calendar_date_until_eligible": "2026-06-24",
+          "observation_priority": "P0_manual_review",
+          "recommended_action": "manual review required before candidate gate reconsideration"
+        },
+        {
+          "symbol": "159246",
+          "name": "创业板人工智能ETF富国",
+          "history_status": "short_history",
+          "rows_needed": 49,
+          "estimated_calendar_date_until_eligible": "2026-07-24",
+          "observation_priority": "P0_manual_review",
+          "recommended_action": "manual review required before candidate gate reconsideration"
+        },
+        {
+          "symbol": "159287",
+          "name": "创业板综ETF博时",
+          "history_status": "short_history",
+          "rows_needed": 83,
+          "estimated_calendar_date_until_eligible": "2026-09-10",
+          "observation_priority": "P0_manual_review",
+          "recommended_action": "manual review required before candidate gate reconsideration"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "history_status": "very_short_history",
+          "rows_needed": 249,
+          "estimated_calendar_date_until_eligible": "unknown",
+          "observation_priority": "P0_manual_review",
+          "recommended_action": "manual review required before candidate gate reconsideration"
+        },
+        {
+          "symbol": "159213",
+          "name": "机器人ETF汇添富",
+          "history_status": "short_history",
+          "rows_needed": 2,
+          "estimated_calendar_date_until_eligible": "2026-05-19",
+          "observation_priority": "P1_wait_for_history",
+          "recommended_action": "recheck candidate gate after at least 2 new trading day(s), around 2026-05-19"
+        },
+        {
+          "symbol": "159382",
+          "name": "创业板人工智能ETF南方",
+          "history_status": "short_history",
+          "rows_needed": 6,
+          "estimated_calendar_date_until_eligible": "2026-05-25",
+          "observation_priority": "P1_wait_for_history",
+          "recommended_action": "recheck candidate gate after at least 6 new trading day(s), around 2026-05-25"
+        },
+        {
+          "symbol": "159208",
+          "name": "航空航天ETF万家",
+          "history_status": "short_history",
+          "rows_needed": 7,
+          "estimated_calendar_date_until_eligible": "2026-05-26",
+          "observation_priority": "P1_wait_for_history",
+          "recommended_action": "recheck candidate gate after at least 7 new trading day(s), around 2026-05-26"
+        },
+        {
+          "symbol": "159227",
+          "name": "航空航天ETF华夏",
+          "history_status": "short_history",
+          "rows_needed": 11,
+          "estimated_calendar_date_until_eligible": "2026-06-01",
+          "observation_priority": "P1_wait_for_history",
+          "recommended_action": "recheck candidate gate after at least 11 new trading day(s), around 2026-06-01"
+        },
+        {
+          "symbol": "159218",
+          "name": "卫星ETF招商",
+          "history_status": "short_history",
+          "rows_needed": 15,
+          "estimated_calendar_date_until_eligible": "2026-06-05",
+          "observation_priority": "P1_wait_for_history",
+          "recommended_action": "recheck candidate gate after at least 15 new trading day(s), around 2026-06-05"
+        }
+      ]
+    },
+    "total_observation_count": 244,
+    "very_short_history_count": 72,
+    "low_liquidity_watch_count": 141,
+    "estimated_eligible_within_20d_count": 14,
+    "estimated_eligible_within_60d_count": 50,
+    "unknown_estimate_count": 109,
+    "manual_review_list_report": "output/manual_review_list.csv",
+    "manual_review_summary_report": "output/manual_review_summary.csv",
+    "manual_review": {
+      "manual_review_count": 5,
+      "p0_manual_review_count": 5,
+      "abnormal_return_review_count": 4,
+      "low_liquidity_review_count": 2,
+      "very_short_history_review_count": 1,
+      "review_status_counts": {
+        "blocked_until_review": 5
+      },
+      "review_priority_counts": {
+        "P0_manual_review": 5
+      },
+      "top_examples": [
+        {
+          "symbol": "159231",
+          "name": "通用航空ETF华宝",
+          "manual_review_reason": "abnormal_return;requires_review;low_liquidity",
+          "review_priority": "P0_manual_review",
+          "review_status": "blocked_until_review",
+          "recommended_action": "keep blocked until manual review is recorded; verify abnormal return source/adjustment evidence; keep liquidity risk visible before any candidate use; do not auto-clear manual_review_required"
+        },
+        {
+          "symbol": "159246",
+          "name": "创业板人工智能ETF富国",
+          "manual_review_reason": "abnormal_return;requires_review",
+          "review_priority": "P0_manual_review",
+          "review_status": "blocked_until_review",
+          "recommended_action": "keep blocked until manual review is recorded; verify abnormal return source/adjustment evidence; do not auto-clear manual_review_required"
+        },
+        {
+          "symbol": "159287",
+          "name": "创业板综ETF博时",
+          "manual_review_reason": "abnormal_return;requires_review;low_liquidity",
+          "review_priority": "P0_manual_review",
+          "review_status": "blocked_until_review",
+          "recommended_action": "keep blocked until manual review is recorded; verify abnormal return source/adjustment evidence; keep liquidity risk visible before any candidate use; do not auto-clear manual_review_required"
+        },
+        {
+          "symbol": "159387",
+          "name": "创业板新能源ETF国泰",
+          "manual_review_reason": "abnormal_return;requires_review",
+          "review_priority": "P0_manual_review",
+          "review_status": "blocked_until_review",
+          "recommended_action": "keep blocked until manual review is recorded; verify abnormal return source/adjustment evidence; do not auto-clear manual_review_required"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "manual_review_reason": "unknown_quality_finding;very_short_history",
+          "review_priority": "P0_manual_review",
+          "review_status": "blocked_until_review",
+          "recommended_action": "keep blocked until manual review is recorded; do not promote by manual review alone; history must also accumulate; do not auto-clear manual_review_required"
+        }
+      ]
+    },
+    "manual_review_count": 5,
+    "p0_manual_review_count": 5,
+    "abnormal_return_review_count": 4,
+    "low_liquidity_review_count": 2,
+    "very_short_history_review_count": 1,
+    "trading_calendar_report": "output/trading_calendar_audit.csv",
+    "trading_calendar": {
+      "calendar_file": "data\\calendar\\a_share_trading_calendar.csv",
+      "status": "ok",
+      "source": "local_snapshot",
+      "start_date": "2010-01-04",
+      "end_date": "2026-12-31",
+      "latest_open_day": "2026-05-15",
+      "coverage_gap_days": 0,
+      "used_fallback": false,
+      "reason": "local trading calendar snapshot is available"
+    },
+    "failure_summary_report": "output/data_failure_summary.csv",
+    "failure_summary": {
+      "total_failed": 937,
+      "failure_type_counts": {
+        "abnormal_return": 132,
+        "insufficient_rows": 244,
+        "stale_end_date": 1,
+        "unknown": 1,
+        "zero_or_low_liquidity": 778
+      },
+      "severe_failed": 245,
+      "warning_failed": 837,
+      "top_examples": [
+        {
+          "symbol": "159007",
+          "name": "养殖ETF华泰柏瑞",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 15 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159008",
+          "name": "证券ETF景顺",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 8 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159009",
+          "name": "创业板新能源ETF易方达",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 18 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159013",
+          "name": "工业互联网ETF大成",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 8 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159017",
+          "name": "石油ETF工银",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 3 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159018",
+          "name": "石油ETF广发",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 9 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159019",
+          "name": "石油ETF华宝",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 11 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159020",
+          "name": "养殖ETF易方达",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 9 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159022",
+          "name": "科创创业人工智能ETF富国",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 10 < 250",
+          "severity": "severe"
+        },
+        {
+          "symbol": "159026",
+          "name": "石油ETF南方",
+          "failure_type": "insufficient_rows",
+          "failure_reason": "too few rows: 10 < 250",
+          "severity": "severe"
+        }
+      ]
+    },
+    "cache_metadata_audit_report": "output/cache_metadata_audit.csv",
+    "cache_metadata_audit": {
+      "total_cache_files": 1160,
+      "metadata_exists_count": 9,
+      "legacy_cache_without_metadata_count": 1151,
+      "unknown_adjustment_count": 1160,
+      "metadata_cache_mismatch_count": 0,
+      "top_examples": [
+        {
+          "symbol": "510300",
+          "name": "沪深300ETF华泰柏瑞",
+          "cache_file": "data\\cache\\510300.csv",
+          "metadata_file": "data\\cache_meta\\510300.json",
+          "status": "warning_unknown_adjustment",
+          "reason": "metadata exists but adjustment is unknown"
+        },
+        {
+          "symbol": "588000",
+          "name": "科创50ETF华夏",
+          "cache_file": "data\\cache\\588000.csv",
+          "metadata_file": "data\\cache_meta\\588000.json",
+          "status": "warning_unknown_adjustment",
+          "reason": "metadata exists but adjustment is unknown"
+        },
+        {
+          "symbol": "563360",
+          "name": "A500ETF华泰柏瑞",
+          "cache_file": "data\\cache\\563360.csv",
+          "metadata_file": "data\\cache_meta\\563360.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        },
+        {
+          "symbol": "159352",
+          "name": "A500ETF南方",
+          "cache_file": "data\\cache\\159352.csv",
+          "metadata_file": "data\\cache_meta\\159352.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        },
+        {
+          "symbol": "588200",
+          "name": "科创芯片ETF嘉实",
+          "cache_file": "data\\cache\\588200.csv",
+          "metadata_file": "data\\cache_meta\\588200.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        },
+        {
+          "symbol": "159338",
+          "name": "中证A500ETF国泰",
+          "cache_file": "data\\cache\\159338.csv",
+          "metadata_file": "data\\cache_meta\\159338.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        },
+        {
+          "symbol": "159915",
+          "name": "创业板ETF易方达",
+          "cache_file": "data\\cache\\159915.csv",
+          "metadata_file": "data\\cache_meta\\159915.json",
+          "status": "warning_unknown_adjustment",
+          "reason": "metadata exists but adjustment is unknown"
+        },
+        {
+          "symbol": "510500",
+          "name": "中证500ETF南方",
+          "cache_file": "data\\cache\\510500.csv",
+          "metadata_file": "data\\cache_meta\\510500.json",
+          "status": "warning_unknown_adjustment",
+          "reason": "metadata exists but adjustment is unknown"
+        },
+        {
+          "symbol": "510050",
+          "name": "上证50ETF华夏",
+          "cache_file": "data\\cache\\510050.csv",
+          "metadata_file": "data\\cache_meta\\510050.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        },
+        {
+          "symbol": "510310",
+          "name": "沪深300ETF易方达",
+          "cache_file": "data\\cache\\510310.csv",
+          "metadata_file": "data\\cache_meta\\510310.json",
+          "status": "warning_legacy_cache_without_metadata",
+          "reason": "legacy cache without metadata"
+        }
+      ]
+    },
+    "adjustment_audit_report": "output/adjustment_audit.csv",
+    "adjustment_audit": {
+      "total_checked": 1160,
+      "unknown_adjustment_count": 1160,
+      "fallback_used_count": 0,
+      "abnormal_return_symbols": [
+        "588200",
+        "510310",
+        "515880",
+        "159516",
+        "512480",
+        "159949",
+        "159845",
+        "512100",
+        "588080",
+        "159363",
+        "512000",
+        "512690",
+        "515220",
+        "159901",
+        "588220",
+        "512800",
+        "159922",
+        "512760",
+        "512890",
+        "159967",
+        "512170",
+        "512010",
+        "588050",
+        "560010",
+        "159952",
+        "159583",
+        "510100",
+        "512070",
+        "159633",
+        "159813"
+      ],
+      "possible_adjustment_issue_count": 132,
+      "top_examples": [
+        {
+          "symbol": "510300",
+          "name": "沪深300ETF华泰柏瑞",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "source does not expose an explicit qfq/hfq/none adjustment label"
+        },
+        {
+          "symbol": "588000",
+          "name": "科创50ETF华夏",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "source does not expose an explicit qfq/hfq/none adjustment label"
+        },
+        {
+          "symbol": "563360",
+          "name": "A500ETF华泰柏瑞",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        },
+        {
+          "symbol": "159352",
+          "name": "A500ETF南方",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        },
+        {
+          "symbol": "588200",
+          "name": "科创芯片ETF嘉实",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        },
+        {
+          "symbol": "159338",
+          "name": "中证A500ETF国泰",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        },
+        {
+          "symbol": "159915",
+          "name": "创业板ETF易方达",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "source does not expose an explicit qfq/hfq/none adjustment label"
+        },
+        {
+          "symbol": "510500",
+          "name": "中证500ETF南方",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "source does not expose an explicit qfq/hfq/none adjustment label"
+        },
+        {
+          "symbol": "510050",
+          "name": "上证50ETF华夏",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        },
+        {
+          "symbol": "510310",
+          "name": "沪深300ETF易方达",
+          "source": "akshare.fund_etf_hist_sina",
+          "adjust": "unknown",
+          "audit_status": "warning_unknown_adjustment",
+          "audit_reason": "legacy cache without metadata; adjustment cannot be confirmed"
+        }
+      ]
+    },
+    "cache_refresh_plan_report": "output/cache_refresh_plan.csv",
+    "cache_refresh_plan": {
+      "total_candidates": 1160,
+      "priority_counts": {
+        "P0_quality_failed": 244,
+        "P0_stale_end_date": 1,
+        "P1_legacy_unknown_adjustment": 787,
+        "P1_possible_adjustment_issue": 128
+      },
+      "reason_counts": {
+        "data_quality_failed": 244,
+        "legacy_cache_without_metadata": 1151,
+        "possible_adjustment_issue": 132,
+        "stale_end_date": 1,
+        "unknown_adjustment": 1160
+      },
+      "safe_to_auto_refresh_count": 788,
+      "manual_review_required_count": 372,
+      "top_examples": [
+        {
+          "symbol": "560000",
+          "name": "智能电车ETF浦银",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;stale_end_date",
+          "refresh_priority": "P0_stale_end_date",
+          "recommended_action": "pilot incremental refresh after backing up current cache and compare date coverage",
+          "requires_manual_review": false
+        },
+        {
+          "symbol": "159007",
+          "name": "养殖ETF华泰柏瑞",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159008",
+          "name": "证券ETF景顺",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159009",
+          "name": "创业板新能源ETF易方达",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159013",
+          "name": "工业互联网ETF大成",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159017",
+          "name": "石油ETF工银",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159018",
+          "name": "石油ETF广发",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159019",
+          "name": "石油ETF华宝",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159020",
+          "name": "养殖ETF易方达",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        },
+        {
+          "symbol": "159022",
+          "name": "科创创业人工智能ETF富国",
+          "refresh_reason": "legacy_cache_without_metadata;unknown_adjustment;data_quality_failed",
+          "refresh_priority": "P0_quality_failed",
+          "recommended_action": "manual triage quality failure, then targeted refresh only if source issue is plausible",
+          "requires_manual_review": true
+        }
+      ]
+    },
+    "pilot_refresh_report": "output/pilot_refresh_report.csv",
+    "pilot_refresh": {
+      "status": "ok",
+      "report": "output\\pilot_refresh_report.csv",
+      "last_run_id": "pilot_20260514_143548",
+      "attempted_count": 6,
+      "refreshed_ok_count": 6,
+      "skipped_count": 5,
+      "failed_count": 0,
+      "metadata_written_count": 6,
+      "end_date_improved_count": 0,
+      "top_examples": [
+        {
+          "symbol": "510300",
+          "name": "沪深300ETF华泰柏瑞",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "510500",
+          "name": "中证500ETF南方",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "512100",
+          "name": "中证1000ETF南方",
+          "refresh_status": "skipped_manual_review",
+          "skip_reason": "requires_manual_review=True",
+          "notes": ""
+        },
+        {
+          "symbol": "159915",
+          "name": "创业板ETF易方达",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "588000",
+          "name": "科创50ETF华夏",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "510880",
+          "name": "红利ETF华泰柏瑞",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "512880",
+          "name": "证券ETF国泰",
+          "refresh_status": "refreshed_ok",
+          "skip_reason": "",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\pilot_20260514_143548"
+        },
+        {
+          "symbol": "512480",
+          "name": "半导体ETF国联安",
+          "refresh_status": "skipped_manual_review",
+          "skip_reason": "requires_manual_review=True",
+          "notes": ""
+        },
+        {
+          "symbol": "159928",
+          "name": "消费ETF汇添富",
+          "refresh_status": "skipped_manual_review",
+          "skip_reason": "requires_manual_review=True",
+          "notes": ""
+        },
+        {
+          "symbol": "518880",
+          "name": "",
+          "refresh_status": "skipped_not_in_plan",
+          "skip_reason": "symbol is not in cache_refresh_plan candidates",
+          "notes": ""
+        }
+      ]
+    },
+    "missing_cache_repair_report": "output/missing_cache_repair_report.csv",
+    "missing_cache_repair": {
+      "status": "ok",
+      "report": "output\\missing_cache_repair_report.csv",
+      "last_run_id": "missing_20260514_150114",
+      "attempted_count": 3,
+      "repaired_ok_count": 0,
+      "download_failed_count": 0,
+      "still_missing_cache_count": 0,
+      "metadata_written_count": 3,
+      "quality_failed_after_repair_count": 3,
+      "top_examples": [
+        {
+          "symbol": "159032",
+          "name": "工业有色ETF易方达",
+          "repair_status": "quality_failed_after_repair",
+          "skip_reason": "",
+          "failure_reason": "too few rows: 1 < 250",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\missing_20260514_150114"
+        },
+        {
+          "symbol": "516840",
+          "name": "N汽车ETF南方",
+          "repair_status": "quality_failed_after_repair",
+          "skip_reason": "",
+          "failure_reason": "too few rows: 1 < 250",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\missing_20260514_150114"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "repair_status": "quality_failed_after_repair",
+          "skip_reason": "",
+          "failure_reason": "too few rows: 1 < 250",
+          "notes": "source=akshare.fund_etf_hist_sina; backup_dir=data\\cache_backup\\missing_20260514_150114"
+        }
+      ]
+    },
+    "source_preference_audit_report": "output/source_preference_audit.csv",
+    "source_preference_audit": {
+      "status": "ok",
+      "report": "output\\source_preference_audit.csv",
+      "total_symbols": 12,
+      "total_candidates": 36,
+      "em_qfq_success_count": 0,
+      "sina_success_count": 12,
+      "em_qfq_safe_to_promote_count": 0,
+      "manual_review_required_count": 0,
+      "preferred_candidate_counts": {
+        "sina_unknown": 12
+      },
+      "top_examples": [
+        {
+          "symbol": "510300",
+          "name": "华泰柏瑞沪深300ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "510500",
+          "name": "南方中证500ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "159915",
+          "name": "易方达创业板ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "588000",
+          "name": "华夏科创50ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "510880",
+          "name": "华泰柏瑞红利ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "512880",
+          "name": "国泰中证全指证券公司ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "512100",
+          "name": "南方中证1000ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "512480",
+          "name": "国联安中证全指半导体ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "159928",
+          "name": "汇添富中证主要消费ETF",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        },
+        {
+          "symbol": "159032",
+          "name": "工业有色ETF易方达",
+          "fetch_success": false,
+          "row_count": 0,
+          "end_date": "",
+          "preferred_candidate": "sina_unknown",
+          "safe_to_promote": false,
+          "requires_manual_review": false,
+          "preference_reason": "em_qfq failed; keep existing Sina fallback evidence"
+        }
+      ]
+    },
+    "source_diagnostics_report": "output/source_diagnostics_report.csv",
+    "source_diagnostics": {
+      "status": "ok",
+      "report": "output\\source_diagnostics_report.csv",
+      "total_symbols": 3,
+      "total_checks": 13,
+      "em_qfq_success_count": 0,
+      "em_none_success_count": 0,
+      "sina_success_count": 3,
+      "proxy_error_count": 9,
+      "timeout_count": 0,
+      "suggested_action": "fix proxy or EastMoney reachability first; keep Sina as current primary path",
+      "top_examples": [
+        {
+          "symbol": "510300",
+          "check_type": "akshare_em_qfq",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=1.510300 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "510300",
+          "check_type": "akshare_em_none",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=0&beg=20190101&end=20260514&secid=1.510300 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "510300",
+          "check_type": "raw_endpoint_probe",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=1.510300 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "159915",
+          "check_type": "akshare_em_qfq",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=0.159915 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "159915",
+          "check_type": "akshare_em_none",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=0&beg=20190101&end=20260514&secid=0.159915 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "159915",
+          "check_type": "raw_endpoint_probe",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=0.159915 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "560320",
+          "check_type": "akshare_em_qfq",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=1.560320 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "560320",
+          "check_type": "akshare_em_none",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=0&beg=20190101&end=20260514&secid=1.560320 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        },
+        {
+          "symbol": "560320",
+          "check_type": "raw_endpoint_probe",
+          "success": false,
+          "error_type": "ProxyError",
+          "error_message": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&beg=20190101&end=20260514&secid=1.560320 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "diagnosis": "proxy_or_network_blocked",
+          "suggested_action": "inspect HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and test EastMoney reachability outside AKShare"
+        }
+      ]
+    },
+    "etf_metadata_report": "output/etf_metadata.csv",
+    "etf_metadata_coverage_report": "output/etf_metadata_coverage.csv",
+    "etf_metadata": {
+      "status": "ok",
+      "etf_metadata_report": "output\\etf_metadata.csv",
+      "etf_metadata_coverage_report": "output\\etf_metadata_coverage.csv",
+      "total_etfs": 1461,
+      "required_field_coverage": {
+        "symbol": 1.0,
+        "name": 1.0,
+        "exchange": 1.0,
+        "metadata_source": 1.0,
+        "metadata_updated_at": 1.0
+      },
+      "recommended_field_coverage": {
+        "asset_class": 0.0,
+        "category": 1.0,
+        "sub_category": 1.0,
+        "fund_company": 0.0,
+        "inception_date": 0.0,
+        "tracking_index_name": 0.0,
+        "tracking_index_code": 0.0,
+        "fund_size": 0.0,
+        "fund_size_date": 0.0,
+        "management_fee": 0.0,
+        "custody_fee": 0.0,
+        "latest_amount": 0.9993,
+        "latest_price": 1.0,
+        "is_cross_border": 0.0,
+        "is_commodity": 0.0,
+        "is_bond": 0.0,
+        "is_money_market": 0.0,
+        "is_broad_based": 0.0,
+        "is_industry": 0.0,
+        "is_theme": 0.0,
+        "is_dividend": 0.0,
+        "is_sci_tech": 0.0,
+        "is_chinext": 0.0
+      },
+      "missing_required_fields": [],
+      "low_coverage_fields": [
+        "asset_class",
+        "fund_company",
+        "inception_date",
+        "tracking_index_name",
+        "tracking_index_code",
+        "fund_size",
+        "fund_size_date",
+        "management_fee",
+        "custody_fee",
+        "is_cross_border",
+        "is_commodity",
+        "is_bond",
+        "is_money_market",
+        "is_broad_based",
+        "is_industry",
+        "is_theme",
+        "is_dividend",
+        "is_sci_tech",
+        "is_chinext"
+      ],
+      "metadata_source": "akshare.fund_etf_spot_em;akshare.fund_name_em",
+      "top_examples": [
+        {
+          "symbol": "560000",
+          "name": "智能电车ETF浦银",
+          "field_completeness": 0.2667,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;latest_amount;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159804",
+          "name": "创中盘88ETF国寿",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159761",
+          "name": "新材料ETF国泰",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159763",
+          "name": "新材料ETF建信",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159766",
+          "name": "旅游ETF富国",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159767",
+          "name": "电池龙头ETF兴银",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159768",
+          "name": "房地产ETF银华",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159775",
+          "name": "电池ETF建信",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "159778",
+          "name": "工业互联网ETF鹏华",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        },
+        {
+          "symbol": "512690",
+          "name": "酒ETF鹏华",
+          "field_completeness": 0.3,
+          "missing_fields": "asset_class;fund_company;inception_date;tracking_index_name;tracking_index_code;fund_size;fund_size_date;management_fee;custody_fee;is_cross_border;is_commodity;is_bond;is_money_market;is_broad_based;is_industry;is_theme;is_dividend;is_sci_tech;is_chinext;inferred_category;inferred_tags",
+          "data_quality_status": "warning",
+          "inferred_category": "unknown",
+          "inferred_tags": ""
+        }
+      ]
+    },
+    "index_map_report": "output/index_map.csv",
+    "index_data_coverage_report": "output/index_data_coverage.csv",
+    "index_data": {
+      "status": "ok",
+      "index_map_report": "output\\index_map.csv",
+      "index_data_coverage_report": "output\\index_data_coverage.csv",
+      "total_index_mappings": 50,
+      "index_cache_written_count": 0,
+      "usable_benchmark_count": 0,
+      "manual_review_required_count": 9,
+      "fetch_success_count": 0,
+      "fetch_failed_count": 9,
+      "csindex_success_count": 0,
+      "eastmoney_failure_count": 18,
+      "schema_invalid_count": 9,
+      "low_coverage_indexes": [
+        "399006",
+        "000932",
+        "000300",
+        "000905",
+        "000015",
+        "000852",
+        "931865",
+        "399975",
+        "000688"
+      ],
+      "top_examples": [
+        {
+          "symbol": "159915",
+          "etf_name": "创业板ETF易方达",
+          "tracking_index_name": "创业板指",
+          "tracking_index_code": "399006",
+          "mapping_method": "config_manual",
+          "confidence": 0.95,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "159928",
+          "etf_name": "消费ETF汇添富",
+          "tracking_index_name": "中证主要消费",
+          "tracking_index_code": "000932",
+          "mapping_method": "config_manual",
+          "confidence": 0.9,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "510300",
+          "etf_name": "沪深300ETF华泰柏瑞",
+          "tracking_index_name": "沪深300",
+          "tracking_index_code": "000300",
+          "mapping_method": "config_manual",
+          "confidence": 0.95,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "510500",
+          "etf_name": "中证500ETF南方",
+          "tracking_index_name": "中证500",
+          "tracking_index_code": "000905",
+          "mapping_method": "config_manual",
+          "confidence": 0.95,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "510880",
+          "etf_name": "红利ETF华泰柏瑞",
+          "tracking_index_name": "上证红利",
+          "tracking_index_code": "000015",
+          "mapping_method": "config_manual",
+          "confidence": 0.9,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "512100",
+          "etf_name": "中证1000ETF南方",
+          "tracking_index_name": "中证1000",
+          "tracking_index_code": "000852",
+          "mapping_method": "config_manual",
+          "confidence": 0.95,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "512480",
+          "etf_name": "半导体ETF国联安",
+          "tracking_index_name": "中证全指半导体产品与设备",
+          "tracking_index_code": "931865",
+          "mapping_method": "config_manual",
+          "confidence": 0.85,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "512880",
+          "etf_name": "证券ETF国泰",
+          "tracking_index_name": "中证全指证券公司",
+          "tracking_index_code": "399975",
+          "mapping_method": "config_manual",
+          "confidence": 0.9,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "588000",
+          "etf_name": "科创50ETF华夏",
+          "tracking_index_name": "科创50",
+          "tracking_index_code": "000688",
+          "mapping_method": "config_manual",
+          "confidence": 0.95,
+          "requires_manual_review": false,
+          "usable_as_benchmark": true
+        },
+        {
+          "symbol": "159001",
+          "etf_name": "货币ETF易方达",
+          "tracking_index_name": "unable_to_confirm",
+          "tracking_index_code": "unable_to_confirm",
+          "mapping_method": "unable_to_confirm",
+          "confidence": 0.0,
+          "requires_manual_review": true,
+          "usable_as_benchmark": false
+        }
+      ]
+    },
+    "index_source_diagnostics_report": "output/index_source_diagnostics.csv",
+    "index_source_diagnostics": {
+      "status": "ok",
+      "index_source_diagnostics_report": "output\\index_source_diagnostics.csv",
+      "total_indexes_checked": 9,
+      "total_api_candidates": 45,
+      "success_count": 24,
+      "usable_source_count": 6,
+      "eastmoney_failure_count": 18,
+      "proxy_error_count": 18,
+      "timeout_count": 0,
+      "preferred_api_candidates": [
+        {
+          "index_code": "000015",
+          "index_name": "上证红利",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        },
+        {
+          "index_code": "000300",
+          "index_name": "沪深300",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        },
+        {
+          "index_code": "000852",
+          "index_name": "中证1000",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        },
+        {
+          "index_code": "000905",
+          "index_name": "中证500",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        },
+        {
+          "index_code": "000932",
+          "index_name": "中证主要消费",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        },
+        {
+          "index_code": "399975",
+          "index_name": "中证全指证券公司",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "row_count": 1784,
+          "end_date": "2026-05-14"
+        }
+      ],
+      "top_examples": [
+        {
+          "index_code": "399006",
+          "index_name": "创业板指",
+          "api_name": "akshare.index_zh_a_hist",
+          "source_family": "eastmoney",
+          "call_success": false,
+          "failure_type": "proxy_error",
+          "failure_reason": "HTTPSConnectionPool(host='80.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=b%3AMK0010%2Cm%3A1%2Bt%3A1%2Cm%3A0+t%3A5%2Cm%3A1%2Bs%3A3%2Cm%3A0%2Bt%3A5%2Cm%3A2&fields=f3%2Cf12%2Cf13 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
+        },
+        {
+          "index_code": "399006",
+          "index_name": "创业板指",
+          "api_name": "akshare.stock_zh_index_daily_em",
+          "source_family": "eastmoney",
+          "call_success": false,
+          "failure_type": "proxy_error",
+          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.399006&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260514 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
+        },
+        {
+          "index_code": "399006",
+          "index_name": "创业板指",
+          "api_name": "akshare.stock_zh_index_daily",
+          "source_family": "sina",
+          "call_success": true,
+          "failure_type": "schema_error",
+          "failure_reason": "missing required columns: amount",
+          "suggested_action": "do not use for benchmark cache until required OHLCV fields are present and normalized"
+        },
+        {
+          "index_code": "399006",
+          "index_name": "创业板指",
+          "api_name": "akshare.stock_zh_index_daily_tx",
+          "source_family": "tencent",
+          "call_success": true,
+          "failure_type": "schema_error",
+          "failure_reason": "missing required columns: volume",
+          "suggested_action": "do not use for benchmark cache until required OHLCV fields are present and normalized"
+        },
+        {
+          "index_code": "399006",
+          "index_name": "创业板指",
+          "api_name": "akshare.stock_zh_index_hist_csindex",
+          "source_family": "csindex",
+          "call_success": false,
+          "failure_type": "unknown",
+          "failure_reason": "Length mismatch: Expected axis has 0 elements, new values have 16 elements",
+          "suggested_action": "preserve diagnostic evidence and review source support before changing benchmark workflow"
+        },
+        {
+          "index_code": "000932",
+          "index_name": "中证主要消费",
+          "api_name": "akshare.index_zh_a_hist",
+          "source_family": "eastmoney",
+          "call_success": false,
+          "failure_type": "proxy_error",
+          "failure_reason": "HTTPSConnectionPool(host='80.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=b%3AMK0010%2Cm%3A1%2Bt%3A1%2Cm%3A0+t%3A5%2Cm%3A1%2Bs%3A3%2Cm%3A0%2Bt%3A5%2Cm%3A2&fields=f3%2Cf12%2Cf13 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
+        },
+        {
+          "index_code": "000932",
+          "index_name": "中证主要消费",
+          "api_name": "akshare.stock_zh_index_daily_em",
+          "source_family": "eastmoney",
+          "call_success": false,
+          "failure_type": "proxy_error",
+          "failure_reason": "HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.000932&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&klt=101&fqt=0&beg=20190101&end=20260514 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
+        },
+        {
+          "index_code": "000932",
+          "index_name": "中证主要消费",
+          "api_name": "akshare.stock_zh_index_daily",
+          "source_family": "sina",
+          "call_success": true,
+          "failure_type": "schema_error",
+          "failure_reason": "missing required columns: amount",
+          "suggested_action": "do not use for benchmark cache until required OHLCV fields are present and normalized"
+        },
+        {
+          "index_code": "000932",
+          "index_name": "中证主要消费",
+          "api_name": "akshare.stock_zh_index_daily_tx",
+          "source_family": "tencent",
+          "call_success": true,
+          "failure_type": "schema_error",
+          "failure_reason": "missing required columns: volume",
+          "suggested_action": "do not use for benchmark cache until required OHLCV fields are present and normalized"
+        },
+        {
+          "index_code": "000300",
+          "index_name": "沪深300",
+          "api_name": "akshare.index_zh_a_hist",
+          "source_family": "eastmoney",
+          "call_success": false,
+          "failure_type": "proxy_error",
+          "failure_reason": "HTTPSConnectionPool(host='80.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=b%3AMK0010%2Cm%3A1%2Bt%3A1%2Cm%3A0+t%3A5%2Cm%3A1%2Bs%3A3%2Cm%3A0%2Bt%3A5%2Cm%3A2&fields=f3%2Cf12%2Cf13 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+          "suggested_action": "fix proxy or network path to this source before rerunning update-index-data"
+        }
+      ],
+      "suggested_action": "review preferred candidates, then rerun update-index-data with an explicitly chosen source path"
+    },
+    "etf_metrics_report": "output/etf_metrics.csv",
+    "etf_metrics_coverage_report": "output/etf_metrics_coverage.csv",
+    "etf_metrics": {
+      "status": "ok",
+      "etf_metrics_report": "output\\etf_metrics.csv",
+      "etf_metrics_coverage_report": "output\\etf_metrics_coverage.csv",
+      "total_etfs": 50,
+      "metrics_computable_count": 0,
+      "tracking_error_computable_count": 0,
+      "relative_return_computable_count": 0,
+      "discount_premium_available_count": 0,
+      "no_index_cache_count": 9,
+      "missing_benchmark_count": 41,
+      "insufficient_overlap_count": 0,
+      "source_unavailable_count": 50,
+      "top_examples": [
+        {
+          "symbol": "159915",
+          "name": "创业板ETF易方达",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\399006.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "159928",
+          "name": "消费ETF汇添富",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000932.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "510300",
+          "name": "沪深300ETF华泰柏瑞",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000300.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "510500",
+          "name": "中证500ETF南方",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000905.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "510880",
+          "name": "红利ETF华泰柏瑞",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000015.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "512100",
+          "name": "中证1000ETF南方",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000852.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "512480",
+          "name": "半导体ETF国联安",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\931865.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "512880",
+          "name": "证券ETF国泰",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\399975.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "588000",
+          "name": "科创50ETF华夏",
+          "benchmark_status": "no_index_cache",
+          "tracking_error_status": "no_index_cache",
+          "failure_reason": "missing index cache: data\\index_cache\\000688.csv; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        },
+        {
+          "symbol": "159001",
+          "name": "货币ETF易方达",
+          "benchmark_status": "missing_benchmark",
+          "tracking_error_status": "missing_benchmark",
+          "failure_reason": "no confirmed benchmark mapping; NAV/IOPV data is not available; price-only data cannot produce discount/premium"
+        }
+      ]
+    },
+    "data_governance": {
+      "data_governance_runbook": "docs/research/data_governance_runbook.md",
+      "data_governance_status_report": "output/data_governance_status.json",
+      "allowed_to_enter_008b": false,
+      "allowed_to_enter_007b": false,
+      "next_recommended_action": "complete P0 manual review list and keep affected ETFs blocked",
+      "blocking_reasons": [
+        "data_quality_failed",
+        "end_date_coverage_gap",
+        "short_history",
+        "manual_review_required",
+        "no_used_factors",
+        "no_candidate_eligible",
+        "candidate_gate_blocked",
+        "factor_score_gate_blocked",
+        "no_usable_benchmark",
+        "data quality failed for 244 ETF(s)",
+        "ETF end-date coverage gap is 15 days"
+      ]
+    },
+    "data_governance_runbook": "docs/research/data_governance_runbook.md",
+    "data_governance_status_report": "output/data_governance_status.json",
+    "allowed_to_enter_008b": false,
+    "allowed_to_enter_007b": false,
+    "next_recommended_action": "complete P0 manual review list and keep affected ETFs blocked",
+    "blocking_reasons": [
+      "data_quality_failed",
+      "end_date_coverage_gap",
+      "short_history",
+      "manual_review_required",
+      "no_used_factors",
+      "no_candidate_eligible",
+      "candidate_gate_blocked",
+      "factor_score_gate_blocked",
+      "no_usable_benchmark",
+      "data quality failed for 244 ETF(s)",
+      "ETF end-date coverage gap is 15 days"
+    ]
+  },
+  "strategy_layer": {
+    "passed": true,
+    "checks": [
+      {
+        "strategy_name": "original",
+        "config_path": "config/strategy_original.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "rejected"
+      },
+      {
+        "strategy_name": "conservative",
+        "config_path": "config/strategy_conservative.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "defensive_only"
+      },
+      {
+        "strategy_name": "balanced",
+        "config_path": "config/strategy_balanced.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "research_only"
+      },
+      {
+        "strategy_name": "equal_weight_monthly",
+        "config_path": "config/strategy_equal_weight_monthly.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "recommended_for_observation"
+      },
+      {
+        "strategy_name": "reduced_equal_weight_monthly",
+        "config_path": "config/strategy_reduced_equal_weight_monthly.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "recommended_for_observation"
+      },
+      {
+        "strategy_name": "momentum_rotation_monthly",
+        "config_path": "config/strategy_momentum_rotation_monthly.yaml",
+        "config_exists": true,
+        "target_positions_ok": true,
+        "minimal_backtest_ok": true,
+        "future_leakage_check": "passed",
+        "fee_slippage_lot_check": "passed",
+        "strategy_status": "research_observation_candidate"
+      }
+    ],
+    "reasons": [],
+    "factor_score_report": "output/factor_score_report.csv",
+    "factor_score_detail_report": "output/factor_score_detail.csv",
+    "factor_score": {
+      "status": "ok",
+      "factor_score_report": "output\\factor_score_report.csv",
+      "factor_score_detail_report": "output\\factor_score_detail.csv",
+      "total_symbols": 50,
+      "score_computable_count": 24,
+      "unable_to_score_count": 26,
+      "enabled_factor_count": 10,
+      "used_factor_counts": {
+        "max_drawdown_60d": 24,
+        "avg_amount_20": 24,
+        "data_completeness": 24,
+        "volatility_20d": 16,
+        "momentum_20d": 13,
+        "momentum_60d": 13
+      },
+      "skipped_factor_counts": {
+        "momentum_120d": 50,
+        "tracking_error": 50,
+        "relative_return_60d": 50,
+        "fund_size": 50,
+        "management_fee": 50,
+        "discount_premium": 50,
+        "momentum_20d": 37,
+        "momentum_60d": 37,
+        "volatility_20d": 34,
+        "max_drawdown_60d": 26,
+        "avg_amount_20": 26,
+        "data_completeness": 26
+      },
+      "missing_required_factor_count": 0,
+      "top_examples": [
+        {
+          "symbol": "159001",
+          "name": "货币ETF易方达",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159003",
+          "name": "招商快线ETF",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159005",
+          "name": "快钱ETF汇添富",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159010",
+          "name": "港股通科技ETF博时",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159015",
+          "name": "恒生港股通科技ETF国联",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159016",
+          "name": "证券ETF广发",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159028",
+          "name": "港股汽车ETF天弘",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159032",
+          "name": "工业有色ETF易方达",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159101",
+          "name": "港股通科技ETF华夏",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        },
+        {
+          "symbol": "159102",
+          "name": "港股通生物科技ETF华安",
+          "total_score": "",
+          "score_status": "no_used_factors",
+          "used_factor_count": 0,
+          "skipped_factor_count": 12,
+          "notes": "no enabled factor produced a usable score"
+        }
+      ],
+      "factor_score_audit_report": "output\\factor_score_audit.csv",
+      "audit_status": "blocked_for_strategy_use",
+      "high_severity_findings": [
+        {
+          "audit_item": "source_unavailable_factor_count",
+          "severity": "high",
+          "count": 3,
+          "ratio": 0.25,
+          "finding": "3 configured factor(s) are fully source_unavailable: discount_premium, relative_return_60d, tracking_error.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "discount_premium is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "relative_return_60d is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "tracking_error is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "short_history_bias",
+          "severity": "high",
+          "count": 24,
+          "ratio": 1.0,
+          "finding": "24 of 24 scoreable symbols have short history or insufficient_rows quality flags.",
+          "affected_symbols": "159007,159008,159009,159013,159017,159018,159019,159020,159022,159026"
+        },
+        {
+          "audit_item": "missing_benchmark_dependency",
+          "severity": "high",
+          "count": 50,
+          "ratio": 1.0,
+          "finding": "Benchmark-dependent factors are unavailable for 50 symbol(s).",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "missing_nav_iopv_dependency",
+          "severity": "high",
+          "count": 50,
+          "ratio": 1.0,
+          "finding": "discount_premium is unavailable for 50 symbol(s).",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        }
+      ],
+      "warning_findings": [
+        {
+          "gate_item": "metadata_dependency_available",
+          "severity": "warning",
+          "threshold": "enabled metadata factors coverage >= 0.80",
+          "actual_value": "disabled=fund_size,management_fee",
+          "finding": "Metadata factors are disabled or below gate coverage.",
+          "suggested_action": "Keep fund size and fee out of candidates until metadata coverage is confirmed."
+        }
+      ],
+      "computable_ratio": 0.48,
+      "top_blocking_reasons": [
+        "Benchmark-dependent factors are unavailable for 50 symbol(s).",
+        "discount_premium is unavailable for 50 symbol(s).",
+        "24 of 24 scoreable symbols have short history or insufficient_rows quality flags.",
+        "3 configured factor(s) are fully source_unavailable: discount_premium, relative_return_60d, tracking_error.",
+        "discount_premium is used for 0 of 50 symbols.",
+        "relative_return_60d is used for 0 of 50 symbols.",
+        "tracking_error is used for 0 of 50 symbols."
+      ],
+      "audit_top_examples": [
+        {
+          "audit_item": "source_unavailable_factor_count",
+          "severity": "high",
+          "count": 3,
+          "ratio": 0.25,
+          "finding": "3 configured factor(s) are fully source_unavailable: discount_premium, relative_return_60d, tracking_error.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "discount_premium is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "relative_return_60d is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "factor_coverage_by_name",
+          "severity": "high",
+          "count": 0,
+          "ratio": 0.0,
+          "finding": "tracking_error is used for 0 of 50 symbols.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "short_history_bias",
+          "severity": "high",
+          "count": 24,
+          "ratio": 1.0,
+          "finding": "24 of 24 scoreable symbols have short history or insufficient_rows quality flags.",
+          "affected_symbols": "159007,159008,159009,159013,159017,159018,159019,159020,159022,159026"
+        },
+        {
+          "audit_item": "missing_benchmark_dependency",
+          "severity": "high",
+          "count": 50,
+          "ratio": 1.0,
+          "finding": "Benchmark-dependent factors are unavailable for 50 symbol(s).",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "missing_nav_iopv_dependency",
+          "severity": "high",
+          "count": 50,
+          "ratio": 1.0,
+          "finding": "discount_premium is unavailable for 50 symbol(s).",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        },
+        {
+          "audit_item": "unable_to_score_count",
+          "severity": "warning",
+          "count": 26,
+          "ratio": 0.52,
+          "finding": "26 of 50 symbols cannot be scored with current usable factors.",
+          "affected_symbols": "159001,159003,159005,159010,159015,159016,159028,159032,159101,159102"
+        },
+        {
+          "audit_item": "optional_factor_skipped_count",
+          "severity": "warning",
+          "count": 30,
+          "ratio": 0.05,
+          "finding": "30 optional symbol-factor rows were skipped instead of filled.",
+          "affected_symbols": "159007,159008,159009,159013,159017,159018,159019,159020,159022,159026"
+        },
+        {
+          "audit_item": "disabled_factor_count",
+          "severity": "warning",
+          "count": 2,
+          "ratio": 0.1667,
+          "finding": "2 configured factor(s) are disabled: fund_size, management_fee.",
+          "affected_symbols": "159001,159003,159005,159007,159008,159009,159010,159013,159015,159016"
+        }
+      ],
+      "factor_score_gate_report": "output\\factor_score_gate.csv",
+      "gate_status": "blocked_for_strategy_use",
+      "blocking_findings": [
+        {
+          "gate_item": "min_computable_ratio",
+          "severity": "high",
+          "threshold": ">= 0.80",
+          "actual_value": "0.4800 (24/50)",
+          "finding": "Computable ratio is 0.4800; minimum required before candidate use is 0.80.",
+          "suggested_action": "Keep factor score as an observation report until broad enough coverage exists."
+        },
+        {
+          "gate_item": "max_unable_to_score_ratio",
+          "severity": "high",
+          "threshold": "<= 0.20",
+          "actual_value": "0.5200 (26/50)",
+          "finding": "Unable-to-score ratio is 0.5200; maximum allowed before candidate use is 0.20.",
+          "suggested_action": "Treat no_used_factors as unscoreable, not as a low score."
+        },
+        {
+          "gate_item": "no_short_history_bias",
+          "severity": "high",
+          "threshold": "count = 0; must not cover all scoreable symbols",
+          "actual_value": "24/24 (1.0000)",
+          "finding": "Short-history bias affects 24 of 24 scoreable symbols.",
+          "suggested_action": "Require enough price history before producing an independent candidate strategy."
+        },
+        {
+          "gate_item": "benchmark_dependency_available",
+          "severity": "high",
+          "threshold": "enabled benchmark factors must not be fully source_unavailable",
+          "actual_value": "relative_return_60d, tracking_error",
+          "finding": "Benchmark-dependent enabled factors are unavailable.",
+          "suggested_action": "Confirm benchmark mapping and schema-valid index cache before candidate strategy use."
+        },
+        {
+          "gate_item": "nav_iopv_dependency_available",
+          "severity": "high",
+          "threshold": "enabled NAV/IOPV factors must not be fully source_unavailable",
+          "actual_value": "discount_premium",
+          "finding": "NAV/IOPV-dependent enabled factors are unavailable.",
+          "suggested_action": "Add trusted NAV or IOPV data before using discount/premium in candidates."
+        },
+        {
+          "gate_item": "no_source_unavailable_core_factors",
+          "severity": "high",
+          "threshold": "no enabled factor fully source_unavailable",
+          "actual_value": "discount_premium, relative_return_60d, tracking_error",
+          "finding": "3 enabled factor(s) are fully source_unavailable.",
+          "suggested_action": "Fix source dependencies before factor score can drive candidate construction."
+        },
+        {
+          "gate_item": "factor_coverage_minimum",
+          "severity": "high",
+          "threshold": "score_computable_count >= 30; min enabled factor coverage >= 0.80",
+          "actual_value": "score_computable_count=24; min_factor=discount_premium:0.0000",
+          "finding": "Factor coverage is not broad enough for candidate strategy use.",
+          "suggested_action": "Raise source coverage and sample size before entering ETF-GAP-008B."
+        }
+      ],
+      "passed_gate_count": 1,
+      "failed_gate_count": 8
+    },
+    "candidate_gate_report": "output/candidate_gate.csv",
+    "candidate_gate_summary_report": "output/candidate_gate_summary.csv",
+    "candidate_gate": {
+      "total_symbols": 269,
+      "eligible_count": 0,
+      "observation_only_count": 0,
+      "blocked_count": 269,
+      "blocked_short_history_count": 239,
+      "blocked_manual_review_count": 5,
+      "blocked_factor_gate_count": 269,
+      "blocked_no_used_factors_count": 25,
+      "low_liquidity_observation_count": 141,
+      "candidate_status_counts": {
+        "blocked_manual_review": 5,
+        "blocked_no_used_factors": 25,
+        "blocked_short_history": 239
+      },
+      "top_blocking_reasons": {
+        "exclude_from_candidate_pool": 244,
+        "short_history": 239,
+        "no_used_factors": 25,
+        "manual_review_required": 5
+      },
+      "top_examples": [
+        {
+          "symbol": "159231",
+          "name": "通用航空ETF华宝",
+          "candidate_status": "blocked_manual_review",
+          "block_reason": "manual_review_required;exclude_from_candidate_pool",
+          "observation_reason": "low_liquidity",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159246",
+          "name": "创业板人工智能ETF富国",
+          "candidate_status": "blocked_manual_review",
+          "block_reason": "manual_review_required;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159287",
+          "name": "创业板综ETF博时",
+          "candidate_status": "blocked_manual_review",
+          "block_reason": "manual_review_required;exclude_from_candidate_pool",
+          "observation_reason": "low_liquidity",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159387",
+          "name": "创业板新能源ETF国泰",
+          "candidate_status": "blocked_manual_review",
+          "block_reason": "manual_review_required;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "560320",
+          "name": "N食品ETF富国",
+          "candidate_status": "blocked_manual_review",
+          "block_reason": "manual_review_required;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "manual price-quality review before any strategy use or refresh acceptance"
+        },
+        {
+          "symbol": "159007",
+          "name": "养殖ETF华泰柏瑞",
+          "candidate_status": "blocked_short_history",
+          "block_reason": "short_history;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159008",
+          "name": "证券ETF景顺",
+          "candidate_status": "blocked_short_history",
+          "block_reason": "short_history;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159009",
+          "name": "创业板新能源ETF易方达",
+          "candidate_status": "blocked_short_history",
+          "block_reason": "short_history;exclude_from_candidate_pool",
+          "observation_reason": "low_liquidity",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159013",
+          "name": "工业互联网ETF大成",
+          "candidate_status": "blocked_short_history",
+          "block_reason": "short_history;exclude_from_candidate_pool",
+          "observation_reason": "",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        },
+        {
+          "symbol": "159017",
+          "name": "石油ETF工银",
+          "candidate_status": "blocked_short_history",
+          "block_reason": "short_history;exclude_from_candidate_pool",
+          "observation_reason": "low_liquidity",
+          "recommended_action": "keep observation_only until row_count reaches the minimum history requirement"
+        }
+      ]
+    }
+  },
+  "output_layer": {
+    "passed": true,
+    "reasons": [],
+    "required_files": [
+      "output/performance.json",
+      "output/benchmark_report.csv",
+      "output/oos_results.csv",
+      "output/walk_forward_results.csv",
+      "output/compare_signal.txt"
+    ]
+  },
+  "allow_small_observation": false,
+  "blocking_reasons": [
+    "data quality failed for 244 ETF(s)",
+    "ETF end-date coverage gap is 15 days"
+  ],
+  "recommended_for_observation": [
+    "equal_weight_monthly",
+    "reduced_equal_weight_monthly"
+  ],
+  "not_recommended": [
+    "original",
+    "balanced"
+  ],
+  "defensive_only": [
+    "conservative"
+  ],
+  "risk_note": "Research output only; no automatic trading or broker API execution is enabled."
+}

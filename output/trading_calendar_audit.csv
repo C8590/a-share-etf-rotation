@@ -1,0 +1,2 @@
+﻿calendar_file,exists,source,start_date,end_date,row_count,open_day_count,latest_open_day,today,coverage_gap_days,used_fallback,status,reason
+data\calendar\a_share_trading_calendar.csv,True,local_snapshot,2010-01-04,2026-12-31,4128,4128,2026-05-15,2026-05-16,0,False,ok,local trading calendar snapshot is available

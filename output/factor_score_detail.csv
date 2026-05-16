@@ -1,0 +1,601 @@
+﻿symbol,name,factor_name,raw_value,normalized_value,weight,direction,weighted_score,factor_status,missing_policy,source,reason
+159001,货币ETF易方达,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159001,货币ETF易方达,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159001,货币ETF易方达,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159001,货币ETF易方达,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159001,货币ETF易方达,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159001,货币ETF易方达,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159003,招商快线ETF,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159003,招商快线ETF,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159003,招商快线ETF,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159003,招商快线ETF,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159003,招商快线ETF,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159003,招商快线ETF,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159005,快钱ETF汇添富,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159005,快钱ETF汇添富,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159005,快钱ETF汇添富,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159005,快钱ETF汇添富,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159005,快钱ETF汇添富,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159005,快钱ETF汇添富,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159007,159007,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159007,159007,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159007,159007,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159007,159007,volatility_20d,0.0125214434985271,0.6726157127,0.5,lower_better,0.3363078563,used,skip,strategy_signal,ok
+159007,159007,max_drawdown_60d,-0.049,0.7561893204,0.2,higher_better,0.1512378641,used,skip,strategy_signal,ok
+159007,159007,avg_amount_20,20469658.933333334,0.1070040466,0.15,higher_better,0.016050607,used,skip,strategy_signal,ok
+159007,159007,data_completeness,0.125,0.1176470588,0.15,higher_better,0.0176470588,used,skip,strategy_signal,ok
+159007,159007,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159007,159007,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159007,159007,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159007,159007,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159007,159007,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159008,159008,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159008,159008,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159008,159008,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159008,159008,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159008,159008,max_drawdown_60d,-0.0117762512266929,0.9414045752,0.2,higher_better,0.188280915,used,skip,strategy_signal,ok
+159008,159008,avg_amount_20,39906478.0,0.2251515235,0.15,higher_better,0.0337727285,used,skip,strategy_signal,ok
+159008,159008,data_completeness,0.0666666666666666,0.0588235294,0.15,higher_better,0.0088235294,used,skip,strategy_signal,ok
+159008,159008,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159008,159008,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159008,159008,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159008,159008,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159008,159008,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159009,159009,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159009,159009,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159009,159009,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159009,159009,volatility_20d,0.0212924973277794,0.0659446105,0.5,lower_better,0.0329723053,used,skip,strategy_signal,ok
+159009,159009,max_drawdown_60d,-0.0306976744186046,0.8472567171,0.2,higher_better,0.1694513434,used,skip,strategy_signal,ok
+159009,159009,avg_amount_20,17690961.5,0.0901136239,0.15,higher_better,0.0135170436,used,skip,strategy_signal,ok
+159009,159009,data_completeness,0.15,0.1428571429,0.15,higher_better,0.0214285714,used,skip,strategy_signal,ok
+159009,159009,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159009,159009,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159009,159009,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159009,159009,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159009,159009,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159010,港股通科技ETF博时,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159010,港股通科技ETF博时,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159010,港股通科技ETF博时,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159010,港股通科技ETF博时,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159010,港股通科技ETF博时,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159010,港股通科技ETF博时,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159013,159013,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159013,159013,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159013,159013,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159013,159013,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159013,159013,max_drawdown_60d,-0.0118505013673654,0.9410351267,0.2,higher_better,0.1882070253,used,skip,strategy_signal,ok
+159013,159013,avg_amount_20,46091379.75,0.2627466945,0.15,higher_better,0.0394120042,used,skip,strategy_signal,ok
+159013,159013,data_completeness,0.0666666666666666,0.0588235294,0.15,higher_better,0.0088235294,used,skip,strategy_signal,ok
+159013,159013,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159013,159013,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159013,159013,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159013,159013,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159013,159013,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159015,恒生港股通科技ETF国联,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159015,恒生港股通科技ETF国联,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159015,恒生港股通科技ETF国联,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159015,恒生港股通科技ETF国联,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159015,恒生港股通科技ETF国联,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159015,恒生港股通科技ETF国联,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159016,证券ETF广发,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159016,证券ETF广发,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159016,证券ETF广发,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159016,证券ETF广发,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159016,证券ETF广发,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159016,证券ETF广发,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159017,159017,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159017,159017,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159017,159017,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159017,159017,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159017,159017,max_drawdown_60d,-0.0110998990918264,0.9447699196,0.2,higher_better,0.1889539839,used,skip,strategy_signal,ok
+159017,159017,avg_amount_20,16805077.0,0.0847287398,0.15,higher_better,0.012709311,used,skip,strategy_signal,ok
+159017,159017,data_completeness,0.025,0.0168067227,0.15,higher_better,0.0025210084,used,skip,strategy_signal,ok
+159017,159017,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159017,159017,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159017,159017,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159017,159017,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159017,159017,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159018,159018,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159018,159018,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159018,159018,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159018,159018,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159018,159018,max_drawdown_60d,-0.0420332355816226,0.7908540463,0.2,higher_better,0.1581708093,used,skip,strategy_signal,ok
+159018,159018,avg_amount_20,28609408.33333333,0.1564818367,0.15,higher_better,0.0234722755,used,skip,strategy_signal,ok
+159018,159018,data_completeness,0.075,0.0672268908,0.15,higher_better,0.0100840336,used,skip,strategy_signal,ok
+159018,159018,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159018,159018,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159018,159018,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159018,159018,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159018,159018,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159019,159019,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159019,159019,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159019,159019,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159019,159019,volatility_20d,0.009911533019263,0.8531364685,0.5,lower_better,0.4265682343,used,skip,strategy_signal,ok
+159019,159019,max_drawdown_60d,-0.0368217054263566,0.8167852036,0.2,higher_better,0.1633570407,used,skip,strategy_signal,ok
+159019,159019,avg_amount_20,36759198.63636363,0.2060206609,0.15,higher_better,0.0309030991,used,skip,strategy_signal,ok
+159019,159019,data_completeness,0.0916666666666666,0.0840336134,0.15,higher_better,0.012605042,used,skip,strategy_signal,ok
+159019,159019,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159019,159019,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159019,159019,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159019,159019,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159019,159019,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159020,159020,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159020,159020,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159020,159020,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159020,159020,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159020,159020,max_drawdown_60d,-0.0313418217433887,0.8440516151,0.2,higher_better,0.168810323,used,skip,strategy_signal,ok
+159020,159020,avg_amount_20,19420947.777777776,0.1006294142,0.15,higher_better,0.0150944121,used,skip,strategy_signal,ok
+159020,159020,data_completeness,0.075,0.0672268908,0.15,higher_better,0.0100840336,used,skip,strategy_signal,ok
+159020,159020,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159020,159020,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159020,159020,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159020,159020,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159020,159020,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159022,159022,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159022,159022,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159022,159022,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159022,159022,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159022,159022,max_drawdown_60d,-0.0210210210210209,0.8954051139,0.2,higher_better,0.1790810228,used,skip,strategy_signal,ok
+159022,159022,avg_amount_20,53753282.0,0.3093198718,0.15,higher_better,0.0463979808,used,skip,strategy_signal,ok
+159022,159022,data_completeness,0.0833333333333333,0.0756302521,0.15,higher_better,0.0113445378,used,skip,strategy_signal,ok
+159022,159022,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159022,159022,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159022,159022,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159022,159022,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159022,159022,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159026,159026,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159026,159026,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159026,159026,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159026,159026,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159026,159026,max_drawdown_60d,-0.0388349514563106,0.8067678386,0.2,higher_better,0.1613535677,used,skip,strategy_signal,ok
+159026,159026,avg_amount_20,23618449.2,0.1261440934,0.15,higher_better,0.018921614,used,skip,strategy_signal,ok
+159026,159026,data_completeness,0.0833333333333333,0.0756302521,0.15,higher_better,0.0113445378,used,skip,strategy_signal,ok
+159026,159026,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159026,159026,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159026,159026,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159026,159026,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159026,159026,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159028,港股汽车ETF天弘,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159028,港股汽车ETF天弘,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159028,港股汽车ETF天弘,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159028,港股汽车ETF天弘,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159028,港股汽车ETF天弘,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159028,港股汽车ETF天弘,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159030,159030,momentum_20d,,,0.3,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159030,159030,momentum_60d,,,0.45,higher_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159030,159030,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159030,159030,volatility_20d,,,0.5,lower_better,,skipped_missing_optional,skip,strategy_signal,optional factor is missing
+159030,159030,max_drawdown_60d,0.0,1.0,0.2,higher_better,0.2,used,skip,strategy_signal,ok
+159030,159030,avg_amount_20,24592710.0,0.1320661763,0.15,higher_better,0.0198099265,used,skip,strategy_signal,ok
+159030,159030,data_completeness,0.0083333333333333,0.0,0.15,higher_better,0.0,used,skip,strategy_signal,ok
+159030,159030,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159030,159030,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159030,159030,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159030,159030,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159030,159030,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159032,工业有色ETF易方达,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159032,工业有色ETF易方达,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159032,工业有色ETF易方达,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159032,工业有色ETF易方达,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159032,工业有色ETF易方达,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159032,工业有色ETF易方达,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159100,159100,momentum_20d,-0.0381558028616852,0.0,0.3,higher_better,0.0,used,skip,strategy_signal,ok
+159100,159100,momentum_60d,-0.015459723352319,0.2857208292,0.45,higher_better,0.1285743731,used,skip,strategy_signal,ok
+159100,159100,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159100,159100,volatility_20d,0.0154098997805767,0.4728286642,0.5,lower_better,0.2364143321,used,skip,strategy_signal,ok
+159100,159100,max_drawdown_60d,-0.1711309523809523,0.148498902,0.2,higher_better,0.0296997804,used,skip,strategy_signal,ok
+159100,159100,avg_amount_20,167379277.55,1.0,0.15,higher_better,0.15,used,skip,strategy_signal,ok
+159100,159100,data_completeness,0.975,0.974789916,0.15,higher_better,0.1462184874,used,skip,strategy_signal,ok
+159100,159100,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159100,159100,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159100,159100,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159100,159100,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159100,159100,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159101,港股通科技ETF华夏,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159101,港股通科技ETF华夏,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159101,港股通科技ETF华夏,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159101,港股通科技ETF华夏,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159101,港股通科技ETF华夏,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159101,港股通科技ETF华夏,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159102,港股通生物科技ETF华安,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159102,港股通生物科技ETF华安,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159102,港股通生物科技ETF华安,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159102,港股通生物科技ETF华安,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159102,港股通生物科技ETF华安,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159102,港股通生物科技ETF华安,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159103,159103,momentum_20d,0.0578947368421052,0.2847293041,0.3,higher_better,0.0854187912,used,skip,strategy_signal,ok
+159103,159103,momentum_60d,-0.1086474501108647,0.0,0.45,higher_better,0.0,used,skip,strategy_signal,ok
+159103,159103,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159103,159103,volatility_20d,0.0152310908003559,0.4851964188,0.5,lower_better,0.2425982094,used,skip,strategy_signal,ok
+159103,159103,max_drawdown_60d,-0.195364238410596,0.0279206584,0.2,higher_better,0.0055841317,used,skip,strategy_signal,ok
+159103,159103,avg_amount_20,6485859.2,0.0220029644,0.15,higher_better,0.0033004447,used,skip,strategy_signal,ok
+159103,159103,data_completeness,1.0,1.0,0.15,higher_better,0.15,used,skip,strategy_signal,ok
+159103,159103,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159103,159103,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159103,159103,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159103,159103,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159103,159103,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159105,恒生生物科技ETF易方达,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159105,恒生生物科技ETF易方达,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159105,恒生生物科技ETF易方达,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159105,恒生生物科技ETF易方达,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159105,恒生生物科技ETF易方达,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159105,恒生生物科技ETF易方达,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159106,159106,momentum_20d,0.139980824544583,0.5280628106,0.3,higher_better,0.1584188432,used,skip,strategy_signal,ok
+159106,159106,momentum_60d,0.1132958801498127,0.680495539,0.45,higher_better,0.3062229926,used,skip,strategy_signal,ok
+159106,159106,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159106,159106,volatility_20d,0.0138351166865344,0.5817523368,0.5,lower_better,0.2908761684,used,skip,strategy_signal,ok
+159106,159106,max_drawdown_60d,-0.0781395348837209,0.6111989162,0.2,higher_better,0.1222397832,used,skip,strategy_signal,ok
+159106,159106,avg_amount_20,2866081.2,0.0,0.15,higher_better,0.0,used,skip,strategy_signal,ok
+159106,159106,data_completeness,1.0,1.0,0.15,higher_better,0.15,used,skip,strategy_signal,ok
+159106,159106,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159106,159106,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159106,159106,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159106,159106,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159106,159106,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159107,创业板软件ETF富国,momentum_20d,0.0785219399538106,0.3458759588,0.3,higher_better,0.1037627876,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,momentum_60d,-0.0697211155378485,0.119351174,0.45,higher_better,0.0537080283,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159107,创业板软件ETF富国,volatility_20d,0.0192723503050452,0.2056729538,0.5,lower_better,0.1028364769,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,max_drawdown_60d,-0.2009756097560975,0.0,0.2,higher_better,0.0,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,avg_amount_20,46647545.85,0.2661273723,0.15,higher_better,0.0399191058,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,data_completeness,1.0,1.0,0.15,higher_better,0.15,used,skip,strategy_signal,ok
+159107,创业板软件ETF富国,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159107,创业板软件ETF富国,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159107,创业板软件ETF富国,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159107,创业板软件ETF富国,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159107,创业板软件ETF富国,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159108,159108,momentum_20d,0.1286919831223629,0.4945985118,0.3,higher_better,0.1483795535,used,skip,strategy_signal,ok
+159108,159108,momentum_60d,-0.0263876251137397,0.2522150311,0.45,higher_better,0.113496764,used,skip,strategy_signal,ok
+159108,159108,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159108,159108,volatility_20d,0.0168221107407222,0.3751496856,0.5,lower_better,0.1875748428,used,skip,strategy_signal,ok
+159108,159108,max_drawdown_60d,-0.1926523297491039,0.0414143787,0.2,higher_better,0.0082828757,used,skip,strategy_signal,ok
+159108,159108,avg_amount_20,10439315.75,0.0460342071,0.15,higher_better,0.0069051311,used,skip,strategy_signal,ok
+159108,159108,data_completeness,0.9166666666666666,0.9159663866,0.15,higher_better,0.137394958,used,skip,strategy_signal,ok
+159108,159108,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159108,159108,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159108,159108,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159108,159108,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159108,159108,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159109,恒生50ETF景顺,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159109,恒生50ETF景顺,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159109,恒生50ETF景顺,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159109,恒生50ETF景顺,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159109,恒生50ETF景顺,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159109,恒生50ETF景顺,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159117,港股通红利低波ETF鹏华,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159117,港股通红利低波ETF鹏华,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159117,港股通红利低波ETF鹏华,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159117,港股通红利低波ETF鹏华,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159117,港股通红利低波ETF鹏华,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159117,港股通红利低波ETF鹏华,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159118,港股通红利低波ETF华夏,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159118,港股通红利低波ETF华夏,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159118,港股通红利低波ETF华夏,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159118,港股通红利低波ETF华夏,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159118,港股通红利低波ETF华夏,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159118,港股通红利低波ETF华夏,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159119,800现金流ETF招商,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159119,800现金流ETF招商,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159119,800现金流ETF招商,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159119,800现金流ETF招商,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159119,800现金流ETF招商,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159119,800现金流ETF招商,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159120,港股通科技ETF国联安,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159120,港股通科技ETF国联安,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159120,港股通科技ETF国联安,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159120,港股通科技ETF国联安,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159120,港股通科技ETF国联安,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159120,港股通科技ETF国联安,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159121,港股通汽车ETF易方达,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159121,港股通汽车ETF易方达,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159121,港股通汽车ETF易方达,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159121,港股通汽车ETF易方达,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159121,港股通汽车ETF易方达,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159121,港股通汽车ETF易方达,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159122,159122,momentum_20d,0.1597989949748743,0.5868111934,0.3,higher_better,0.176043358,used,skip,strategy_signal,ok
+159122,159122,momentum_60d,0.1214771622934889,0.7055799873,0.45,higher_better,0.3175109943,used,skip,strategy_signal,ok
+159122,159122,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159122,159122,volatility_20d,0.0222459030964786,0.0,0.5,lower_better,0.0,used,skip,strategy_signal,ok
+159122,159122,max_drawdown_60d,-0.1115241635687733,0.4450860793,0.2,higher_better,0.0890172159,used,skip,strategy_signal,ok
+159122,159122,avg_amount_20,5665508.5,0.0170164301,0.15,higher_better,0.0025524645,used,skip,strategy_signal,ok
+159122,159122,data_completeness,1.0,1.0,0.15,higher_better,0.15,used,skip,strategy_signal,ok
+159122,159122,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159122,159122,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159122,159122,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159122,159122,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159122,159122,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159123,159123,momentum_20d,0.1065420560747663,0.4289379404,0.3,higher_better,0.1286813821,used,skip,strategy_signal,ok
+159123,159123,momentum_60d,0.0050933786078097,0.3487382408,0.45,higher_better,0.1569322083,used,skip,strategy_signal,ok
+159123,159123,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159123,159123,volatility_20d,0.0115588343213108,0.7391968991,0.5,lower_better,0.3695984496,used,skip,strategy_signal,ok
+159123,159123,max_drawdown_60d,-0.1686746987951808,0.1607205521,0.2,higher_better,0.0321441104,used,skip,strategy_signal,ok
+159123,159123,avg_amount_20,8602615.0,0.0348697486,0.15,higher_better,0.0052304623,used,skip,strategy_signal,ok
+159123,159123,data_completeness,0.8916666666666667,0.8907563025,0.15,higher_better,0.1336134454,used,skip,strategy_signal,ok
+159123,159123,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159123,159123,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159123,159123,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159123,159123,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159123,159123,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159125,港股通科技ETF招商,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159125,港股通科技ETF招商,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159125,港股通科技ETF招商,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159125,港股通科技ETF招商,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159125,港股通科技ETF招商,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159125,港股通科技ETF招商,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159126,港股通50ETF南方,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159126,港股通50ETF南方,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159126,港股通50ETF南方,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159126,港股通50ETF南方,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159126,港股通50ETF南方,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159126,港股通50ETF南方,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159127,港股通红利ETF南方,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159127,港股通红利ETF南方,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159127,港股通红利ETF南方,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159127,港股通红利ETF南方,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159127,港股通红利ETF南方,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159127,港股通红利ETF南方,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159128,港股科技ETF天弘,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159128,港股科技ETF天弘,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159128,港股科技ETF天弘,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159128,港股科技ETF天弘,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159128,港股科技ETF天弘,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159128,港股科技ETF天弘,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159129,159129,momentum_20d,0.0229396771452845,0.1811095863,0.3,higher_better,0.0543328759,used,skip,strategy_signal,ok
+159129,159129,momentum_60d,0.0370370370370369,0.4466799858,0.45,higher_better,0.2010059936,used,skip,strategy_signal,ok
+159129,159129,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159129,159129,volatility_20d,0.0155918689129805,0.4602423301,0.5,lower_better,0.2301211651,used,skip,strategy_signal,ok
+159129,159129,max_drawdown_60d,-0.1464174454828659,0.2714665941,0.2,higher_better,0.0542933188,used,skip,strategy_signal,ok
+159129,159129,avg_amount_20,46799718.15,0.2670523577,0.15,higher_better,0.0400578536,used,skip,strategy_signal,ok
+159129,159129,data_completeness,0.9666666666666668,0.9663865546,0.15,higher_better,0.1449579832,used,skip,strategy_signal,ok
+159129,159129,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_benchmark
+159129,159129,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159129,159129,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159129,159129,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159129,159129,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159130,恒生生物科技ETF鹏华,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159130,恒生生物科技ETF鹏华,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,tracking_error_status=missing_etf_cache
+159130,恒生生物科技ETF鹏华,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,benchmark_status=missing_benchmark
+159130,恒生生物科技ETF鹏华,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159130,恒生生物科技ETF鹏华,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159130,恒生生物科技ETF鹏华,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,discount_premium_status=source_unavailable
+159131,港股通信息技术ETF华宝,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159131,港股通信息技术ETF华宝,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159131,港股通信息技术ETF华宝,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159131,港股通信息技术ETF华宝,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159131,港股通信息技术ETF华宝,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159131,港股通信息技术ETF华宝,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159132,恒生生物科技ETF富国,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159132,恒生生物科技ETF富国,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159132,恒生生物科技ETF富国,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159132,恒生生物科技ETF富国,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159132,恒生生物科技ETF富国,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159132,恒生生物科技ETF富国,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159133,159133,momentum_20d,0.0214698596201485,0.1767525038,0.3,higher_better,0.0530257511,used,skip,strategy_signal,ok
+159133,159133,momentum_60d,0.0368818105616093,0.4462040493,0.45,higher_better,0.2007918222,used,skip,strategy_signal,ok
+159133,159133,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159133,159133,volatility_20d,0.0151286568212775,0.4922815121,0.5,lower_better,0.2461407561,used,skip,strategy_signal,ok
+159133,159133,max_drawdown_60d,-0.1462121212121212,0.2724882318,0.2,higher_better,0.0544976464,used,skip,strategy_signal,ok
+159133,159133,avg_amount_20,49679522.0,0.2845573598,0.15,higher_better,0.042683604,used,skip,strategy_signal,ok
+159133,159133,data_completeness,0.9083333333333332,0.9075630252,0.15,higher_better,0.1361344538,used,skip,strategy_signal,ok
+159133,159133,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159133,159133,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159133,159133,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159133,159133,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159133,159133,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159135,港股通科技ETF前海开源,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159135,港股通科技ETF前海开源,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159135,港股通科技ETF前海开源,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159135,港股通科技ETF前海开源,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159135,港股通科技ETF前海开源,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159135,港股通科技ETF前海开源,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159136,159136,momentum_20d,0.0804020100502511,0.3514491815,0.3,higher_better,0.1054347545,used,skip,strategy_signal,ok
+159136,159136,momentum_60d,0.0760760760760761,0.5663767205,0.45,higher_better,0.2548695242,used,skip,strategy_signal,ok
+159136,159136,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159136,159136,volatility_20d,0.0077882277632117,1.0,0.5,lower_better,0.5,used,skip,strategy_signal,ok
+159136,159136,max_drawdown_60d,-0.057899901864573,0.7119058281,0.2,higher_better,0.1423811656,used,skip,strategy_signal,ok
+159136,159136,avg_amount_20,2882299.95,9.85863e-05,0.15,higher_better,1.47879e-05,used,skip,strategy_signal,ok
+159136,159136,data_completeness,0.725,0.7226890756,0.15,higher_better,0.1084033613,used,skip,strategy_signal,ok
+159136,159136,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159136,159136,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159136,159136,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159136,159136,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159136,159136,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159137,港股通医疗ETF华宝,momentum_20d,,,0.3,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,momentum_60d,,,0.45,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,momentum_120d,,,0.25,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,volatility_20d,,,0.5,lower_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,max_drawdown_60d,,,0.2,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,avg_amount_20,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,data_completeness,,,0.15,higher_better,,source_unavailable,skip,strategy_signal,source unavailable: strategy_signal
+159137,港股通医疗ETF华宝,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159137,港股通医疗ETF华宝,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159137,港股通医疗ETF华宝,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159137,港股通医疗ETF华宝,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159137,港股通医疗ETF华宝,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159138,159138,momentum_20d,0.0766932270916334,0.3404549779,0.3,higher_better,0.1021364934,used,skip,strategy_signal,ok
+159138,159138,momentum_60d,0.0246445497630332,0.4086836545,0.45,higher_better,0.1839076445,used,skip,strategy_signal,ok
+159138,159138,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159138,159138,volatility_20d,0.0168681148939313,0.3719676973,0.5,lower_better,0.1859838487,used,skip,strategy_signal,ok
+159138,159138,max_drawdown_60d,-0.1903083700440528,0.053077285,0.2,higher_better,0.010615457,used,skip,strategy_signal,ok
+159138,159138,avg_amount_20,14126126.65,0.0684446336,0.15,higher_better,0.010266695,used,skip,strategy_signal,ok
+159138,159138,data_completeness,0.6333333333333333,0.6302521008,0.15,higher_better,0.0945378151,used,skip,strategy_signal,ok
+159138,159138,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159138,159138,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159138,159138,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159138,159138,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159138,159138,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159139,159139,momentum_20d,0.2957233848953593,0.9897413286,0.3,higher_better,0.2969223986,used,skip,strategy_signal,ok
+159139,159139,momentum_60d,0.2108843537414966,0.9797094008,0.45,higher_better,0.4408692303,used,skip,strategy_signal,ok
+159139,159139,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159139,159139,volatility_20d,0.0204255977096663,0.1259058144,0.5,lower_better,0.0629529072,used,skip,strategy_signal,ok
+159139,159139,max_drawdown_60d,-0.1395744680851065,0.3055153894,0.2,higher_better,0.0611030779,used,skip,strategy_signal,ok
+159139,159139,avg_amount_20,47277918.55,0.2699591178,0.15,higher_better,0.0404938677,used,skip,strategy_signal,ok
+159139,159139,data_completeness,0.7583333333333333,0.756302521,0.15,higher_better,0.1134453782,used,skip,strategy_signal,ok
+159139,159139,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159139,159139,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159139,159139,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159139,159139,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159139,159139,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159140,159140,momentum_20d,0.2991840435176791,1.0,0.3,higher_better,0.3,used,skip,strategy_signal,ok
+159140,159140,momentum_60d,0.2175021240441801,1.0,0.45,higher_better,0.45,used,skip,strategy_signal,ok
+159140,159140,momentum_120d,,,0.25,higher_better,,insufficient_coverage,skip,strategy_signal,coverage 0.0800 < required 0.2000
+159140,159140,volatility_20d,0.0204330801024104,0.1253882766,0.5,lower_better,0.0626941383,used,skip,strategy_signal,ok
+159140,159140,max_drawdown_60d,-0.1397121083827265,0.3048305287,0.2,higher_better,0.0609661057,used,skip,strategy_signal,ok
+159140,159140,avg_amount_20,69269711.8,0.4036371068,0.15,higher_better,0.060545566,used,skip,strategy_signal,ok
+159140,159140,data_completeness,0.7666666666666667,0.7647058824,0.15,higher_better,0.1147058824,used,skip,strategy_signal,ok
+159140,159140,tracking_error,,,0.2,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159140,159140,relative_return_60d,,,0.2,higher_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics
+159140,159140,fund_size,,,0.1,higher_better,,disabled,skip,etf_metadata,factor disabled by config
+159140,159140,management_fee,,,0.1,lower_better,,disabled,skip,etf_metadata,factor disabled by config
+159140,159140,discount_premium,,,0.1,lower_better,,source_unavailable,skip,etf_metrics,source unavailable: etf_metrics

@@ -1,0 +1,126 @@
+# ETF-GAP-008 configurable factor scoring skeleton.
+# Missing optional factors are skipped and never filled with zero.
+factors:
+  - name: momentum_20d
+    field: momentum_20
+    enabled: true
+    weight: 0.30
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Existing momentum factor from strategy signal output; optional in this independent report.
+  - name: momentum_60d
+    field: momentum_60
+    enabled: true
+    weight: 0.45
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Existing primary momentum factor from the current monthly rotation strategy.
+  - name: momentum_120d
+    field: momentum_120
+    enabled: true
+    weight: 0.25
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Existing long-window momentum factor.
+  - name: volatility_20d
+    field: volatility_20
+    enabled: true
+    weight: 0.50
+    direction: lower_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Existing volatility penalty expressed as a configurable lower-is-better factor.
+  - name: max_drawdown_60d
+    field: max_drawdown_60
+    enabled: true
+    weight: 0.20
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Drawdown values are negative, so higher is less severe and better.
+  - name: avg_amount_20
+    field: avg_amount_20
+    enabled: true
+    weight: 0.15
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Liquidity factor from existing indicator cache or signal details.
+  - name: data_completeness
+    field: data_completeness
+    enabled: true
+    weight: 0.15
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: strategy_signal
+    min_coverage_required: 0.20
+    notes: Completeness factor from existing indicator cache or signal details.
+  - name: tracking_error
+    field: tracking_error
+    status_field: tracking_error_status
+    enabled: true
+    weight: 0.20
+    direction: lower_better
+    required: false
+    missing_policy: skip
+    source: etf_metrics
+    min_coverage_required: 0.00
+    notes: Optional until schema-valid benchmark cache exists; missing values must be skipped.
+  - name: relative_return_60d
+    field: relative_return_60d
+    status_field: benchmark_status
+    enabled: true
+    weight: 0.20
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: etf_metrics
+    min_coverage_required: 0.00
+    notes: Optional benchmark-relative factor; unavailable when benchmark cache is missing.
+  - name: fund_size
+    field: fund_size
+    enabled: false
+    weight: 0.10
+    direction: higher_better
+    required: false
+    missing_policy: skip
+    source: etf_metadata
+    min_coverage_required: 0.80
+    notes: Disabled by default because current metadata source does not confirm fund size.
+  - name: management_fee
+    field: management_fee
+    enabled: false
+    weight: 0.10
+    direction: lower_better
+    required: false
+    missing_policy: skip
+    source: etf_metadata
+    min_coverage_required: 0.80
+    notes: Disabled by default because current metadata source does not confirm fees.
+  - name: discount_premium
+    field: discount_premium
+    status_field: discount_premium_status
+    enabled: true
+    weight: 0.10
+    direction: lower_better
+    required: false
+    missing_policy: skip
+    source: etf_metrics
+    min_coverage_required: 0.00
+    notes: Optional until NAV/IOPV source exists; price-only data must not be used.

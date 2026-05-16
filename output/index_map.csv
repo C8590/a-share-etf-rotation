@@ -1,0 +1,51 @@
+﻿symbol,etf_name,category,sub_category,tracking_index_name,tracking_index_code,index_source,mapping_method,confidence,requires_manual_review,usable_as_benchmark,notes
+159915,创业板ETF易方达,ETF,指数型-股票,创业板指,399006,config/index_map.yaml,config_manual,0.95,False,True,core_11 manual seed; ChiNext broad benchmark; ETF-GAP-006B keeps mapping confirmed but current CSIndex formal cache may remain unavailable until source support passes schema/quality
+159928,消费ETF汇添富,ETF,指数型-股票,中证主要消费,000932,config/index_map.yaml,config_manual,0.9,False,True,core_11 manual seed; sector benchmark
+510300,沪深300ETF华泰柏瑞,ETF,指数型-股票,沪深300,000300,config/index_map.yaml,config_manual,0.95,False,True,core_11 manual seed; broad CSI 300 benchmark
+510500,中证500ETF南方,ETF,指数型-股票,中证500,000905,config/index_map.yaml,config_manual,0.95,False,True,core_11 manual seed; CSI 500 benchmark
+510880,红利ETF华泰柏瑞,ETF,指数型-股票,上证红利,000015,config/index_map.yaml,config_manual,0.9,False,True,core_11 manual seed; dividend style benchmark
+512100,中证1000ETF南方,ETF,指数型-股票,中证1000,000852,config/index_map.yaml,config_manual,0.95,False,True,core_11 manual seed; CSI 1000 benchmark
+512480,半导体ETF国联安,ETF,指数型-股票,中证全指半导体产品与设备,931865,config/index_map.yaml,config_manual,0.85,False,True,"core_11 manual seed; sector benchmark, keep source trace in coverage; ETF-GAP-006B does not write formal cache if CSIndex returns missing required values"
+512880,证券ETF国泰,ETF,指数型-股票,中证全指证券公司,399975,config/index_map.yaml,config_manual,0.9,False,True,core_11 manual seed; sector benchmark
+588000,科创50ETF华夏,ETF,指数型-股票,科创50,000688,config/index_map.yaml,config_manual,0.95,False,True,core_11 manual seed; STAR 50 benchmark; ETF-GAP-006B does not write formal cache if CSIndex returns missing required values
+159001,货币ETF易方达,ETF,货币型-普通货币,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159003,招商快线ETF,ETF,货币型-普通货币,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159005,快钱ETF汇添富,ETF,货币型-普通货币,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159007,养殖ETF华泰柏瑞,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159008,证券ETF景顺,ETF,指数型-股票,中证全指证券公司,399975,name_inference,name_inferred,0.6,True,False,candidate inferred from ETF name; not a confirmed benchmark
+159009,创业板新能源ETF易方达,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159010,港股通科技ETF博时,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159013,工业互联网ETF大成,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159015,恒生港股通科技ETF国联,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159016,证券ETF广发,ETF,指数型-股票,中证全指证券公司,399975,name_inference,name_inferred,0.6,True,False,candidate inferred from ETF name; not a confirmed benchmark
+159017,石油ETF工银,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159018,石油ETF广发,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159019,石油ETF华宝,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159020,养殖ETF易方达,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159022,科创创业人工智能ETF富国,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159026,石油ETF南方,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159028,港股汽车ETF天弘,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159030,粮食ETF华夏,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159032,工业有色ETF易方达,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159100,巴西ETF华夏,ETF,指数型-海外股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159101,港股通科技ETF华夏,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159102,港股通生物科技ETF华安,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159103,金融科技ETF汇添富,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159105,恒生生物科技ETF易方达,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159106,民企300ETF前海开源,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159107,创业板软件ETF富国,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159108,工业软件ETF博时,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159109,恒生50ETF景顺,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159117,港股通红利低波ETF鹏华,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159118,港股通红利低波ETF华夏,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159119,800现金流ETF招商,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159120,港股通科技ETF国联安,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159121,港股通汽车ETF易方达,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159122,创业板新能源ETF富国,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159123,光伏ETF嘉实,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159125,港股通科技ETF招商,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159126,港股通50ETF南方,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159127,港股通红利ETF南方,ETF,指数型-股票,上证红利,000015,name_inference,name_inferred,0.6,True,False,candidate inferred from ETF name; not a confirmed benchmark
+159128,港股科技ETF天弘,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159129,化工ETF嘉实,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"
+159130,恒生生物科技ETF鹏华,ETF,指数型-股票,unable_to_confirm,unable_to_confirm,unconfirmed,unable_to_confirm,0.0,True,False,"no reliable metadata, manual config, or clear name candidate"

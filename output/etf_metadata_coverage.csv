@@ -1,0 +1,31 @@
+﻿field_name,total_count,non_null_count,missing_count,coverage_ratio,source,importance,notes
+symbol,1461,1461,0,1.0,akshare.fund_etf_spot_em,required,
+name,1461,1461,0,1.0,akshare.fund_etf_spot_em,required,
+exchange,1461,1461,0,1.0,symbol_prefix,required,
+asset_class,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+category,1461,1461,0,1.0,akshare.fund_etf_spot_em,recommended,
+sub_category,1461,1461,0,1.0,akshare.fund_name_em,recommended,
+fund_company,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+inception_date,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+tracking_index_name,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+tracking_index_code,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+fund_size,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+fund_size_date,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+management_fee,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+custody_fee,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+latest_amount,1461,1460,1,0.9993,akshare.fund_etf_spot_em,recommended,
+latest_price,1461,1461,0,1.0,akshare.fund_etf_spot_em,recommended,
+is_cross_border,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_commodity,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_bond,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_money_market,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_broad_based,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_industry,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_theme,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_dividend,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_sci_tech,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+is_chinext,1461,0,1461,0.0,not_available_current_source,recommended,current source does not confirm this field; keep unknown/unable_to_confirm
+inferred_category,1461,869,592,0.5948,name_inference,optional,derived from ETF name; do not treat as authoritative metadata
+inferred_tags,1461,1003,458,0.6865,name_inference,optional,derived from ETF name; do not treat as authoritative metadata
+metadata_source,1461,1461,0,1.0,not_available_current_source,required,current source does not confirm this field; keep unknown/unable_to_confirm
+metadata_updated_at,1461,1461,0,1.0,not_available_current_source,required,current source does not confirm this field; keep unknown/unable_to_confirm

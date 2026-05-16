@@ -1,0 +1,7 @@
+﻿strategy_name,strategy_status,reason,annual_return,max_drawdown,sharpe,calmar
+original,rejected,Legacy rotation profile is kept for comparison but is not suitable for observation.,,,,
+balanced,research_only,"Full-sample performance is good, but out-of-sample stability is not strong enough for recommendation.",,,,
+conservative,defensive_only,"Defensive profile can be useful in risk-off research, but it is not the main observation strategy.",,,,
+equal_weight_monthly,recommended_for_observation,Simple monthly equal-weight approach has shown better out-of-sample stability.,,,,
+reduced_equal_weight_monthly,recommended_for_observation,"Fixed selected-basket equal-weight benchmark; useful as a stable baseline, not a dynamic rotation strategy.",,,,
+momentum_rotation_monthly,research_observation_candidate,Dynamic close-momentum rotation is the next main observation candidate after additional live validation.,,,,

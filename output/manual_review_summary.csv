@@ -1,0 +1,8 @@
+﻿review_item,count,ratio,severity,examples,suggested_action,notes
+manual_review_count,5,1.0,high,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,keep blocked until human review is recorded,manual review list size
+p0_manual_review,5,1.0,high,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,review before any candidate gate reconsideration,P0 manual review cannot be auto-cleared
+abnormal_return_review,4,0.8,high,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰,inspect return outlier and adjustment/source evidence,abnormal returns may reflect source or adjustment issues
+low_liquidity_review,2,0.4,medium,159231 通用航空ETF华宝;159287 创业板综ETF博时,verify tradability and liquidity evidence,low liquidity remains a watch risk
+very_short_history_review,1,0.2,medium,560320 N食品ETF富国,confirm listing/new-fund status and wait for history,very short history cannot be promoted by review alone
+review_status:blocked_until_review,5,1.0,high,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,see per-symbol recommended_action,grouped by review_status
+review_priority:P0_manual_review,5,1.0,high,159231 通用航空ETF华宝;159246 创业板人工智能ETF富国;159287 创业板综ETF博时;159387 创业板新能源ETF国泰;560320 N食品ETF富国,see per-symbol recommended_action,grouped by review_priority

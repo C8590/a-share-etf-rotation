@@ -4,3 +4,4 @@ matplotlib>=3.7.0
 pyyaml>=6.0.0
 akshare>=1.14.0
 streamlit
+tqdm>=4.66.0

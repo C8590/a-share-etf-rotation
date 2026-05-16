@@ -1,0 +1,20 @@
+QA CHECK REPORT
+========================================
+Data layer: FAILED
+Strategy layer: PASSED
+Output layer: PASSED
+Allow 1000-3000 CNY small observation: NO
+
+Blocking reasons:
+- data quality failed for 244 ETF(s)
+- ETF end-date coverage gap is 15 days
+
+Recommended observation strategies:
+- equal_weight_monthly, reduced_equal_weight_monthly
+Not recommended strategies:
+- original, balanced
+Defensive-only strategies:
+- conservative
+
+Risk note:
+- Research output only. Do not use as an investment recommendation, automatic trading signal, or broker execution instruction.
