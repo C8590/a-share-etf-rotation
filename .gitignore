@@ -11,6 +11,9 @@ env/
 *.pem
 
 data/cache/
+data/cache_backup/
+data/cache_meta/
+data/source_eval/
 
 output/*
 !output/.gitkeep
