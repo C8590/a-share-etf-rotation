@@ -74,6 +74,7 @@ from data.manual_review import (
     summarize_manual_review,
     write_manual_review_report,
 )
+from data.manual_review_evidence import build_and_write_manual_review_evidence
 from data.observation_pool import (
     build_short_history_observation_pool,
     merge_observation_pool_into_qa_report,
@@ -1419,6 +1420,27 @@ def command_build_manual_review_list() -> dict[str, Any]:
     return summary
 
 
+def command_build_manual_review_evidence() -> dict[str, Any]:
+    evidence_path, decision_path, evidence_rows, decision_rows = build_and_write_manual_review_evidence(
+        project_root=Path("."),
+        output_dir="output",
+    )
+    keep_blocked_count = sum(1 for row in decision_rows if row.get("review_decision") == "keep_blocked")
+    unblock_allowed_count = sum(1 for row in decision_rows if str(row.get("unblock_allowed")).lower() in {"true", "1", "yes"})
+    print(f"Manual review evidence pack: {evidence_path}")
+    print(f"Manual review decision template: {decision_path}")
+    print(f"Evidence rows: {len(evidence_rows)}")
+    print(f"Default keep_blocked decisions: {keep_blocked_count}")
+    print(f"Unblock allowed rows: {unblock_allowed_count}")
+    return {
+        "evidence_pack": str(evidence_path),
+        "decision_template": str(decision_path),
+        "evidence_rows": len(evidence_rows),
+        "keep_blocked_count": keep_blocked_count,
+        "unblock_allowed_count": unblock_allowed_count,
+    }
+
+
 def command_summarize_data_governance() -> dict[str, Any]:
     output_path = Path("output")
     output_path.mkdir(parents=True, exist_ok=True)
@@ -2683,6 +2705,7 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("build-candidate-gate", help="build candidate eligibility gate without changing strategy outputs")
     subparsers.add_parser("build-observation-pool", help="build short-history ETF observation pool without refreshing cache")
     subparsers.add_parser("build-manual-review-list", help="build manual review list without refreshing cache or clearing blocks")
+    subparsers.add_parser("build-manual-review-evidence", help="build manual review evidence pack and keep-blocked decision template")
     subparsers.add_parser("summarize-data-governance", help="summarize data governance status without refreshing cache")
     subparsers.add_parser("summarize-qa-status", help="summarize QA failure actionability without refreshing cache")
     subparsers.add_parser("build-candidate-unblock-plan", help="build candidate unblock plan without changing candidate eligibility")
@@ -2779,6 +2802,8 @@ def main() -> None:
         command_build_observation_pool()
     elif args.command == "build-manual-review-list":
         command_build_manual_review_list()
+    elif args.command == "build-manual-review-evidence":
+        command_build_manual_review_evidence()
     elif args.command == "summarize-data-governance":
         command_summarize_data_governance()
     elif args.command == "summarize-qa-status":
