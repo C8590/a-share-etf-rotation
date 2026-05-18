@@ -46,6 +46,7 @@ CANDIDATE_UNBLOCK_SUMMARY_COLUMNS = [
 UNBLOCK_PATH_VALUES = {
     "wait_for_history",
     "manual_review_required",
+    "source_lag_blocker",
     "factor_gate_blocked",
     "no_used_factors",
     "benchmark_dependency_missing",
@@ -252,6 +253,13 @@ def classify_unblock_path(
             "P1_wait_for_history",
             "keep excluded and rerun candidate gate after minimum history is reached",
         )
+    if "source_lag" in _text(candidate_row.get("block_reason") or candidate_row.get("current_block_reason")):
+        return (
+            "source_lag_blocker",
+            "requires_data_dependency",
+            "P0_source_lag",
+            "keep blocked; diagnose provider/source lag; do not run full-market refresh for this alone",
+        )
     if status == "blocked_no_used_factors" or factor_status == "no_used_factors":
         if benchmark_missing:
             return (
@@ -346,6 +354,7 @@ def build_candidate_unblock_plan(
         notes = [
             "plan only; does not clear candidate gate",
             "no_used_factors is unscoreable evidence, not a low score" if path in {"no_used_factors", "benchmark_dependency_missing"} else "",
+            "source lag blocker; keep blocked; not fixable by ordinary refresh" if path == "source_lag_blocker" else "",
             "benchmark dependency also keeps 007B blocked" if benchmark_dependency_missing else "",
         ]
         row = {
@@ -376,6 +385,7 @@ def _summary_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         ("immediate_eligible", frame["unblock_status"].eq("eligible_after_conditions"), "info", "Rows that are immediately eligible after current conditions.", "none while QA and factor gate remain blocked"),
         ("wait_for_history", frame["unblock_path"].eq("wait_for_history"), "high", "Rows can only move by accumulating sufficient history.", "keep excluded and rerun candidate gate after minimum history"),
         ("manual_review_required", frame["unblock_path"].eq("manual_review_required"), "high", "Rows require manual price/source/liquidity review.", "complete manual review; do not auto unblock"),
+        ("source_lag_blocker", frame["unblock_path"].eq("source_lag_blocker"), "high", "Rows are blocked by single-symbol source lag or provider staleness.", "diagnose source lag; do not run full-market refresh for this alone"),
         ("no_used_factors", frame["current_candidate_status"].eq("blocked_no_used_factors"), "high", "Rows are unscoreable because no enabled factor is usable.", "fix factor dependencies; never treat as low score"),
         ("benchmark_dependency_missing", bool_col("can_be_unblocked_by_benchmark_update"), "high", "Benchmark/index dependency is missing for relevant factor paths.", "run diagnose-index-source and update-index-data in controlled environment"),
         ("factor_gate_blocked", bool_col("still_blocked_after_primary_fix"), "high", "Rows remain blocked after primary row-level fix while global gates are blocked.", "do not enter 008B until factor gate passes"),
@@ -437,6 +447,7 @@ def summarize_candidate_unblock_plan(rows: list[dict[str, Any]] | pd.DataFrame |
             "total_symbols": 0,
             "wait_for_history_count": 0,
             "manual_review_required_count": 0,
+            "source_lag_blocker_count": 0,
             "no_used_factors_count": 0,
             "factor_gate_blocked_count": 0,
             "benchmark_dependency_missing_count": 0,
@@ -451,11 +462,14 @@ def summarize_candidate_unblock_plan(rows: list[dict[str, Any]] | pd.DataFrame |
     ].to_dict("records")
     wait_count = int(frame["unblock_path"].eq("wait_for_history").sum())
     manual_count = int(frame["unblock_path"].eq("manual_review_required").sum())
+    source_lag_count = int(frame["unblock_path"].eq("source_lag_blocker").sum())
     no_used_count = int(frame["current_candidate_status"].eq("blocked_no_used_factors").sum())
     factor_blocked_count = int(bool_col("still_blocked_after_primary_fix").sum())
     benchmark_count = int(bool_col("can_be_unblocked_by_benchmark_update").sum())
     immediate_count = int(frame["unblock_status"].eq("eligible_after_conditions").sum())
-    if manual_count:
+    if source_lag_count:
+        next_action = "diagnose source lag and keep affected symbols blocked; do not run full-market refresh for this alone"
+    elif manual_count:
         next_action = "complete manual review first, then rerun candidate gate without auto-clearing blocks"
     elif wait_count:
         next_action = "keep short-history ETFs excluded until minimum rows are reached, then rerun candidate gate"
@@ -471,6 +485,7 @@ def summarize_candidate_unblock_plan(rows: list[dict[str, Any]] | pd.DataFrame |
         "total_symbols": int(len(frame)),
         "wait_for_history_count": wait_count,
         "manual_review_required_count": manual_count,
+        "source_lag_blocker_count": source_lag_count,
         "no_used_factors_count": no_used_count,
         "factor_gate_blocked_count": factor_blocked_count,
         "benchmark_dependency_missing_count": benchmark_count,

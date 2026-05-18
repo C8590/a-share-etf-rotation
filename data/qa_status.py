@@ -41,6 +41,7 @@ QA_STATUS_SUMMARY_COLUMNS = [
 
 ACTIONABILITY_VALUES = {
     "refresh_needed",
+    "source_diagnosis",
     "wait_for_history",
     "manual_review",
     "source_unavailable",
@@ -135,6 +136,8 @@ def classify_qa_failure_actionability(
         return "manual_review"
     if "short_history" in item or can_be_fixed_by_waiting:
         return "wait_for_history"
+    if "single_symbol_source_lag" in item or "provider_stale" in item or "source_lag_blocker" in item:
+        return "source_diagnosis"
     if refresh_text in {"true", "maybe"} or "coverage_gap" in item or "stale" in item:
         return "refresh_needed"
     if blocks_007b or "benchmark" in item or "index cache" in item:
@@ -213,6 +216,7 @@ def build_qa_status_breakdown(
     index_coverage = _read_csv(output_path / "index_data_coverage.csv")
     coverage = _read_csv(output_path / "data_coverage_report.csv")
     failure_summary = _read_csv(output_path / "data_failure_summary.csv")
+    source_lag = _read_csv(output_path / "source_lag_report.csv")
 
     total_coverage = len(coverage) if not coverage.empty else _int(data_layer.get("effective_etf_count"), 0)
     candidate_total = len(candidate_gate)
@@ -232,6 +236,18 @@ def build_qa_status_breakdown(
     gap_days = _int(governance.get("end_date_coverage_gap_days"), 0) or _parse_gap_days(reasons)
     stale_rows = failure_summary[failure_summary.get("failure_type", pd.Series(dtype=str)).astype(str).eq("stale_end_date")] if not failure_summary.empty and "failure_type" in failure_summary.columns else pd.DataFrame()
     stale_count = int(len(stale_rows)) if not stale_rows.empty else (1 if gap_days > 0 else 0)
+    source_lag_blocking = source_lag.get("exclude_from_candidate_pool", pd.Series(dtype=str)).astype(str).str.lower().isin(["true", "1", "yes"]) if not source_lag.empty else pd.Series(dtype=bool)
+    source_lag_count = int(source_lag_blocking.sum()) if not source_lag.empty else 0
+    source_lag_symbols = (
+        ",".join(source_lag.loc[source_lag_blocking, "symbol"].astype(str).str.zfill(6).head(10).tolist())
+        if not source_lag.empty and "symbol" in source_lag.columns
+        else ""
+    )
+    source_lag_status = (
+        str(source_lag["source_lag_status"].head(1).iloc[0])
+        if not source_lag.empty and "source_lag_status" in source_lag.columns
+        else ""
+    )
 
     rows: list[dict[str, Any]] = []
     if diagnosis_count or short_history_count:
@@ -258,6 +274,10 @@ def build_qa_status_breakdown(
             )
         )
     if gap_days > 0:
+        has_source_lag = source_lag_count > 0
+        root_cause = "single_symbol_source_lag" if has_source_lag else "stale_or_source_lag"
+        if has_source_lag and source_lag_status:
+            root_cause = "provider_stale" if source_lag_status == "provider_stale" else root_cause
         rows.append(
             _row(
                 qa_item="end_date_coverage_gap",
@@ -265,19 +285,23 @@ def build_qa_status_breakdown(
                 normalized_status="failed_actionable",
                 severity="high",
                 blocking=True,
-                actionability=classify_qa_failure_actionability("end_date_coverage_gap", root_cause="stale_or_source_lag", can_be_fixed_by_refresh="maybe"),
-                affected_count=stale_count,
-                affected_ratio=_ratio(stale_count, total_coverage),
-                root_cause="stale_or_source_lag",
-                governed_by="data_failure_summary + data_coverage_report + qa_report",
-                recommended_action="run update-data only in controlled environment or diagnose source lag",
-                can_be_fixed_by_refresh="maybe",
+                actionability=classify_qa_failure_actionability(
+                    "end_date_coverage_gap",
+                    root_cause=root_cause,
+                    can_be_fixed_by_refresh="maybe_after_source_available" if has_source_lag else "maybe",
+                ),
+                affected_count=source_lag_count or stale_count,
+                affected_ratio=_ratio(source_lag_count or stale_count, total_coverage),
+                root_cause=root_cause,
+                governed_by="source_lag_report + data_failure_summary + data_coverage_report + qa_report" if has_source_lag else "data_failure_summary + data_coverage_report + qa_report",
+                recommended_action=f"diagnose source lag for {source_lag_symbols}; keep blocked" if has_source_lag else "run update-data only in controlled environment or diagnose source lag",
+                can_be_fixed_by_refresh="maybe_after_source_available" if has_source_lag else "maybe",
                 can_be_fixed_by_waiting=False,
                 requires_manual_review=False,
                 blocks_candidate_pool=True,
                 blocks_007b=False,
                 blocks_008b=True,
-                notes="do not refresh full market in this QA-status step",
+                notes="ordinary full-market refresh is not recommended for this single-symbol source lag" if has_source_lag else "do not refresh full market in this QA-status step",
             )
         )
     if manual_count > 0:
@@ -409,6 +433,7 @@ def summarize_qa_status(rows: list[dict[str, Any]] | pd.DataFrame) -> dict[str, 
             "refresh_action_count": 0,
             "wait_for_history_count": 0,
             "manual_review_action_count": 0,
+            "source_diagnosis_count": 0,
             "blocks_007b": False,
             "blocks_008b": False,
             "next_recommended_action": "no QA status breakdown available",
@@ -421,9 +446,12 @@ def summarize_qa_status(rows: list[dict[str, Any]] | pd.DataFrame) -> dict[str, 
     blocks_008b = frame["blocks_008b"].astype(str).str.lower().isin(["true", "1", "yes"]).any()
     manual_count = int(actionability_counts.get("manual_review", 0))
     refresh_count = int(actionability_counts.get("refresh_needed", 0))
+    source_diag_count = int(actionability_counts.get("source_diagnosis", 0))
     wait_count = int(actionability_counts.get("wait_for_history", 0))
     if manual_count > 0:
         next_action = "complete P0 manual review, keep short-history ETFs excluded, and do not auto-unblock"
+    elif source_diag_count > 0:
+        next_action = "diagnose source lag for coverage-gap symbols; keep them blocked and do not run full-market refresh for this alone"
     elif refresh_count > 0:
         next_action = "diagnose source lag or run controlled update-data for the stale coverage item"
     elif wait_count > 0:
@@ -434,7 +462,7 @@ def summarize_qa_status(rows: list[dict[str, Any]] | pd.DataFrame) -> dict[str, 
         next_action = "clear factor and candidate gates before entering 008B"
     else:
         next_action = "review QA status and rerun qa-check"
-    governed_actions = {"wait_for_history", "manual_review", "governance_blocked", "already_governed", "source_unavailable", "refresh_needed"}
+    governed_actions = {"wait_for_history", "manual_review", "governance_blocked", "already_governed", "source_unavailable", "refresh_needed", "source_diagnosis"}
     governed_failure_count = int(frame[frame["actionability"].isin(governed_actions) & blocking]["qa_item"].nunique())
     return {
         "qa_status_breakdown_report": "output/qa_status_breakdown.csv",
@@ -442,6 +470,7 @@ def summarize_qa_status(rows: list[dict[str, Any]] | pd.DataFrame) -> dict[str, 
         "hard_failure_count": int(blocking.sum()),
         "governed_failure_count": governed_failure_count,
         "refresh_action_count": refresh_count,
+        "source_diagnosis_count": source_diag_count,
         "wait_for_history_count": wait_count,
         "manual_review_action_count": manual_count,
         "blocks_007b": bool(blocks_007b),
@@ -470,7 +499,7 @@ def build_qa_status_summary_rows(rows: list[dict[str, Any]] | pd.DataFrame) -> l
     rows_out: list[dict[str, Any]] = []
     for actionability, count in summary["actionability_counts"].items():
         examples = frame[frame["actionability"].eq(actionability)]["qa_item"].head(5).astype(str).tolist()
-        severity = "high" if actionability in {"refresh_needed", "manual_review", "source_unavailable", "governance_blocked", "wait_for_history"} else "info"
+        severity = "high" if actionability in {"refresh_needed", "source_diagnosis", "manual_review", "source_unavailable", "governance_blocked", "wait_for_history"} else "info"
         rows_out.append(
             {
                 "summary_item": f"actionability:{actionability}",
@@ -550,6 +579,7 @@ def merge_qa_status_into_qa_report(
             "hard_failure_count": qa_status["hard_failure_count"],
             "governed_failure_count": qa_status["governed_failure_count"],
             "refresh_action_count": qa_status["refresh_action_count"],
+            "source_diagnosis_count": qa_status["source_diagnosis_count"],
             "wait_for_history_count": qa_status["wait_for_history_count"],
             "manual_review_action_count": qa_status["manual_review_action_count"],
             "blocks_007b": qa_status["blocks_007b"],

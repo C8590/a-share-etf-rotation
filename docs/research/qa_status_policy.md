@@ -11,7 +11,13 @@ The current hard failures are:
 
 The first failure is governed by `data_quality_diagnosis`, `candidate_gate`, and `short_history_observation_pool`. It remains a hard QA failure because full-market QA requires all included ETF data to be usable, but the failure is not a full-market refresh task when the root cause is short history.
 
-The second failure is a coverage freshness issue. It may require a controlled `update-data` run or source-lag diagnosis, but this policy does not execute that refresh.
+The second failure is a coverage freshness issue. It may require a controlled `update-data` run or source-lag diagnosis, but this policy does not execute that refresh. If `source_lag_report.csv` identifies a single-symbol provider-stale blocker, QA status should use `actionability=source_diagnosis` instead of treating the item as an ordinary full-market refresh task.
+
+## Source Lag Is Not A Full-Market Refresh Task
+
+`source_diagnosis` means the stale symbol trails the broader market cache and should stay blocked while provider/source evidence is diagnosed. For example, if `560000` remains at `2026-04-30` while the market max cache date is `2026-05-13`, the right conclusion is source lag/provider stale, not "refresh every ETF again."
+
+Source-lag rows must remain excluded from the candidate pool and from ETF-GAP-008B until the provider path recovers or a controlled targeted refresh proves the cache can advance.
 
 ## Short History Is Not A Refresh Task
 
@@ -49,5 +55,6 @@ QA can move toward usable only when all of the following are true:
 
 - `output/qa_status_breakdown.csv`: one row per QA blocker or governance state, with actionability and next action.
 - `output/qa_status_summary.csv`: aggregate counts by actionability and stage blockers.
+- `output/source_lag_report.csv`: single-symbol coverage-gap driver classification for provider-stale/source-unavailable cases.
 - `qa_report.json -> data_layer.qa_status`: machine-readable summary for top-level QA review.
 - `data_governance_status.json -> qa_status`: governance-level summary used by the runbook.

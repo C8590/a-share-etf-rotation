@@ -566,11 +566,50 @@ QA_STATUS_SUMMARY_REQUIRED_COLUMNS = [
 ]
 QA_STATUS_ACTIONABILITY_ALLOWED_VALUES = {
     "refresh_needed",
+    "source_diagnosis",
     "wait_for_history",
     "manual_review",
     "source_unavailable",
     "governance_blocked",
     "already_governed",
+    "unknown",
+}
+SOURCE_LAG_REPORT_REQUIRED_COLUMNS = [
+    "symbol",
+    "name",
+    "source",
+    "cache_end_date",
+    "latest_expected_date",
+    "end_date_gap_days",
+    "market_max_cache_date",
+    "gap_vs_market_max_days",
+    "sina_end_date",
+    "eastmoney_qfq_status",
+    "eastmoney_none_status",
+    "source_lag_status",
+    "blocker_type",
+    "can_be_fixed_by_refresh",
+    "can_be_fixed_by_waiting",
+    "requires_source_diagnosis",
+    "exclude_from_candidate_pool",
+    "recommended_action",
+    "notes",
+]
+SOURCE_LAG_SUMMARY_REQUIRED_COLUMNS = [
+    "summary_item",
+    "count",
+    "severity",
+    "finding",
+    "suggested_action",
+    "examples",
+    "notes",
+]
+SOURCE_LAG_STATUS_ALLOWED_VALUES = {
+    "source_lag_confirmed",
+    "source_unavailable",
+    "provider_stale",
+    "proxy_blocked",
+    "market_wide_lag",
     "unknown",
 }
 CANDIDATE_UNBLOCK_PLAN_REQUIRED_COLUMNS = [
@@ -610,6 +649,7 @@ CANDIDATE_UNBLOCK_SUMMARY_REQUIRED_COLUMNS = [
 CANDIDATE_UNBLOCK_PATH_ALLOWED_VALUES = {
     "wait_for_history",
     "manual_review_required",
+    "source_lag_blocker",
     "factor_gate_blocked",
     "no_used_factors",
     "benchmark_dependency_missing",
@@ -890,6 +930,14 @@ OUTPUT_FILE_SCHEMAS: dict[str, dict[str, Any]] = {
     },
     "qa_status_summary": {
         "required": QA_STATUS_SUMMARY_REQUIRED_COLUMNS,
+        "allowed": {"severity": {"info", "medium", "high"}},
+    },
+    "source_lag_report": {
+        "required": SOURCE_LAG_REPORT_REQUIRED_COLUMNS,
+        "allowed": {"source_lag_status": SOURCE_LAG_STATUS_ALLOWED_VALUES},
+    },
+    "source_lag_summary": {
+        "required": SOURCE_LAG_SUMMARY_REQUIRED_COLUMNS,
         "allowed": {"severity": {"info", "medium", "high"}},
     },
     "candidate_unblock_plan": {
@@ -1565,6 +1613,17 @@ QA_REPORT_REQUIRED_SUMMARIES = {
         "blocks_008b",
         "next_recommended_action",
     ],
+    "source_lag": [
+        "source_lag_report",
+        "source_lag_summary_report",
+        "source_lag_count",
+        "source_lag_blocker_count",
+        "source_lag_symbols",
+        "coverage_gap_driver_symbols",
+        "source_lag_status_counts",
+        "next_source_lag_action",
+        "top_examples",
+    ],
 }
 QA_REPORT_REQUIRED_STRATEGY_SUMMARIES = {
     "factor_score": [
@@ -1712,7 +1771,7 @@ def validate_qa_report_schema(report: dict[str, Any]) -> None:
     if missing_data:
         raise SchemaValidationError(f"qa_report.data_layer missing fields: {', '.join(missing_data)}")
     for summary_name, required_fields in QA_REPORT_REQUIRED_SUMMARIES.items():
-        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "etf_metadata", "index_data", "index_007b_readiness", "etf_007b_metrics", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance", "qa_status"} and summary_name not in data_layer:
+        if summary_name in {"data_quality_diagnosis", "cache_refresh_plan", "pilot_refresh", "missing_cache_repair", "source_preference_audit", "source_diagnostics", "source_lag", "etf_metadata", "index_data", "index_007b_readiness", "etf_007b_metrics", "index_source_diagnostics", "etf_metrics", "observation_pool", "manual_review", "data_governance", "qa_status"} and summary_name not in data_layer:
             continue
         summary = data_layer.get(summary_name)
         if not isinstance(summary, dict):
@@ -1772,6 +1831,14 @@ def validate_data_governance_status_schema(report: dict[str, Any]) -> None:
     ]:
         if not isinstance(report.get(field), int):
             raise SchemaValidationError(f"data_governance_status.{field} must be int")
+    for field in ["source_lag_count", "source_lag_blocker_count"]:
+        if field in report and not isinstance(report.get(field), int):
+            raise SchemaValidationError(f"data_governance_status.{field} must be int when present")
+    for field in ["source_lag_symbols", "coverage_gap_driver_symbols"]:
+        if field in report and not isinstance(report.get(field), list):
+            raise SchemaValidationError(f"data_governance_status.{field} must be list")
+    if "next_source_lag_action" in report and not isinstance(report.get("next_source_lag_action"), str):
+        raise SchemaValidationError("data_governance_status.next_source_lag_action must be str")
     for field in ["allowed_to_enter_008b", "allowed_to_enter_007b"]:
         if not isinstance(report.get(field), bool):
             raise SchemaValidationError(f"data_governance_status.{field} must be bool")

@@ -97,6 +97,12 @@ from data.qa_status import (
 from data.schema import DATA_SCHEMA_VERSION, SCHEMA_VERSION
 from data.source_preference import run_source_preference_evaluation, summarize_source_preference_audit
 from data.source_diagnostics import run_source_diagnostics, summarize_source_diagnostics
+from data.source_lag import (
+    build_source_lag_report,
+    merge_source_lag_into_qa_report,
+    summarize_source_lag,
+    write_source_lag_report,
+)
 from data.storage import load_market_data
 from data.trading_calendar import audit_trading_calendar, get_trading_days, next_trading_day, summarize_trading_calendar_audit
 from signal.weekly_signal import build_signal_trade_plan, ensure_current_position, generate_weekly_signal_text
@@ -988,6 +994,13 @@ def command_qa_check() -> dict[str, Any]:
         summary_path=output_path / "data_quality_diagnosis_summary.csv",
     )
     quality_diagnosis_summary = summarize_quality_diagnosis(quality_diagnosis_rows)
+    source_lag_rows = build_source_lag_report(output_dir=output_path)
+    source_lag_report_path, source_lag_summary_path = write_source_lag_report(
+        source_lag_rows,
+        report_path=output_path / "source_lag_report.csv",
+        summary_path=output_path / "source_lag_summary.csv",
+    )
+    source_lag_summary = summarize_source_lag(source_lag_rows)
     candidate_gate_rows = build_candidate_gate_report(output_dir=output_path)
     write_candidate_gate_report(
         candidate_gate_rows,
@@ -1093,6 +1106,14 @@ def command_qa_check() -> dict[str, Any]:
             "source_preference_audit": summarize_source_preference_audit(report_path=output_path / "source_preference_audit.csv"),
             "source_diagnostics_report": "output/source_diagnostics_report.csv",
             "source_diagnostics": summarize_source_diagnostics(report_path=output_path / "source_diagnostics_report.csv"),
+            "source_lag_report": str(source_lag_report_path),
+            "source_lag_summary_report": str(source_lag_summary_path),
+            "source_lag": source_lag_summary,
+            "source_lag_count": source_lag_summary["source_lag_count"],
+            "source_lag_blocker_count": source_lag_summary["source_lag_blocker_count"],
+            "source_lag_symbols": source_lag_summary["source_lag_symbols"],
+            "coverage_gap_driver_symbols": source_lag_summary["coverage_gap_driver_symbols"],
+            "next_source_lag_action": source_lag_summary["next_source_lag_action"],
             "etf_metadata_report": "output/etf_metadata.csv",
             "etf_metadata_coverage_report": "output/etf_metadata_coverage.csv",
             "etf_metadata": summarize_etf_metadata(
@@ -1166,9 +1187,15 @@ def command_qa_check() -> dict[str, Any]:
     qa_status_summary = summarize_qa_status(qa_status_rows)
     data_governance_status["qa_status"] = qa_status_summary
     data_governance_status["governed_failures"] = qa_status_summary["governed_failure_count"]
-    data_governance_status["actionable_failures"] = qa_status_summary["refresh_action_count"] + qa_status_summary["manual_review_action_count"]
+    data_governance_status["actionable_failures"] = (
+        qa_status_summary["refresh_action_count"]
+        + qa_status_summary["manual_review_action_count"]
+        + qa_status_summary.get("source_diagnosis_count", 0)
+    )
     data_governance_status["next_refresh_action"] = (
-        "run update-data only in controlled environment or diagnose source lag"
+        source_lag_summary["next_source_lag_action"]
+        if source_lag_summary["source_lag_blocker_count"]
+        else "run update-data only in controlled environment or diagnose source lag"
         if qa_status_summary["refresh_action_count"]
         else "no refresh action from qa_status"
     )
@@ -1281,6 +1308,7 @@ def command_qa_check() -> dict[str, Any]:
             "hard_failure_count": qa_status_summary["hard_failure_count"],
             "governed_failure_count": qa_status_summary["governed_failure_count"],
             "refresh_action_count": qa_status_summary["refresh_action_count"],
+            "source_diagnosis_count": qa_status_summary["source_diagnosis_count"],
             "wait_for_history_count": qa_status_summary["wait_for_history_count"],
             "manual_review_action_count": qa_status_summary["manual_review_action_count"],
             "blocks_007b": qa_status_summary["blocks_007b"],
@@ -1455,6 +1483,8 @@ def command_summarize_data_governance() -> dict[str, Any]:
     print(f"Allowed 007B scope: {status.get('allowed_to_enter_007b_scope', 'blocked')}")
     print(f"ETF 007B computable count: {status.get('etf_007b_computable_count', 0)}")
     print(f"ETF 007B full scope available: {status.get('etf_007b_full_scope_available', False)}")
+    print(f"Source lag blockers: {status.get('source_lag_blocker_count', 0)}")
+    print(f"Coverage gap drivers: {', '.join(status.get('coverage_gap_driver_symbols', [])) if status.get('coverage_gap_driver_symbols') else 'None'}")
     print(f"Next recommended action: {status['next_recommended_action']}")
     print(f"Blocking reasons: {status['blocking_reasons']}")
     return status
@@ -1476,6 +1506,7 @@ def command_summarize_qa_status() -> dict[str, Any]:
     print(f"Hard failure rows: {summary['hard_failure_count']}")
     print(f"Governed failure rows: {summary['governed_failure_count']}")
     print(f"Refresh action count: {summary['refresh_action_count']}")
+    print(f"Source diagnosis count: {summary['source_diagnosis_count']}")
     print(f"Wait-for-history count: {summary['wait_for_history_count']}")
     print(f"Manual review action count: {summary['manual_review_action_count']}")
     print(f"Blocks 007B: {summary['blocks_007b']}")
@@ -1756,6 +1787,25 @@ def command_diagnose_source(
     print(f"Timeouts: {summary['timeout_count']}")
     print(f"Suggested action: {summary['suggested_action']}")
     return rows
+
+
+def command_diagnose_source_lag() -> dict[str, Any]:
+    output_path = Path("output")
+    rows = build_source_lag_report(output_dir=output_path)
+    report_path, summary_path = write_source_lag_report(
+        rows,
+        report_path=output_path / "source_lag_report.csv",
+        summary_path=output_path / "source_lag_summary.csv",
+    )
+    summary = summarize_source_lag(rows)
+    merge_source_lag_into_qa_report(output_path / "qa_report.json", summary=summary)
+    print(f"Source lag report generated: {report_path}")
+    print(f"Source lag summary generated: {summary_path}")
+    print(f"Source lag symbols: {summary['source_lag_count']}")
+    print(f"Source lag blockers: {summary['source_lag_blocker_count']}")
+    print(f"Coverage gap drivers: {', '.join(summary['coverage_gap_driver_symbols']) if summary['coverage_gap_driver_symbols'] else 'None'}")
+    print(f"Next source lag action: {summary['next_source_lag_action']}")
+    return summary
 
 
 def command_update_etf_metadata(
@@ -2732,6 +2782,7 @@ def parse_args() -> argparse.Namespace:
     diagnose_source_parser.add_argument("--max-count", type=int, default=5)
     diagnose_source_parser.add_argument("--timeout", type=float, default=8.0)
     diagnose_source_parser.add_argument("--retries", type=int, default=1)
+    subparsers.add_parser("diagnose-source-lag", help="diagnose single-symbol source lag blockers without refreshing cache")
     metadata_parser = subparsers.add_parser("update-etf-metadata", help="build ETF metadata reports without changing price cache")
     metadata_parser.add_argument("--source", choices=["akshare"], default="akshare")
     metadata_parser.add_argument("--max-count", type=int, default=None)
@@ -2832,6 +2883,8 @@ def main() -> None:
         command_eval_source_preference(pool=args.pool, symbols=args.symbols, max_count=args.max_count)
     elif args.command == "diagnose-source":
         command_diagnose_source(symbols=args.symbols, max_count=args.max_count, timeout=args.timeout, retries=args.retries)
+    elif args.command == "diagnose-source-lag":
+        command_diagnose_source_lag()
     elif args.command == "update-etf-metadata":
         command_update_etf_metadata(source=args.source, max_count=args.max_count, dry_run=args.dry_run)
     elif args.command == "update-index-data":
