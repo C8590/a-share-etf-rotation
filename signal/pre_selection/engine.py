@@ -43,6 +43,8 @@ class PreSelectionConfig:
     balanced_candidates: int = 3
     defense_candidates: int = 0
     min_candidate_score: float = 0.0
+    min_effective_etf_count: int = 3
+    min_sector_etf_count: int = 3
     min_sector_breadth: float = 0.25
 
 
@@ -108,7 +110,7 @@ class PreSelectionEngine:
         """Classify the market as 进攻、均衡 or 防守 from broad ETF breadth."""
 
         usable = [item for item in metrics if item.filter_passed]
-        if not usable:
+        if len(usable) < self.config.min_effective_etf_count:
             return MarketState.DEFENSE.value
 
         broad = [
@@ -137,18 +139,28 @@ class PreSelectionEngine:
             members = [item for item in metrics if item.filter_passed and item.sector == sector]
             if not members:
                 continue
-            sector_momentum = float(
-                np.nanmean([0.60 * item.momentum_medium + 0.40 * item.momentum_short for item in members])
-            )
-            sector_acceleration = float(np.nanmean([item.acceleration for item in members]))
-            sector_breadth = float(np.mean([item.momentum_short > 0 and item.above_trend for item in members]))
-            sector_risk = float(
-                np.nanmean([max(item.volatility, 0.0) + abs(min(item.max_drawdown, 0.0)) * 0.5 for item in members])
-            )
-            score = 0.50 * sector_momentum + 0.25 * sector_acceleration + 0.20 * sector_breadth - 0.35 * sector_risk
+            member_count = len(members)
+            enough_members = member_count >= self.config.min_sector_etf_count
+            if enough_members:
+                sector_momentum = float(
+                    np.nanmean([0.60 * item.momentum_medium + 0.40 * item.momentum_short for item in members])
+                )
+                sector_acceleration = float(np.nanmean([item.acceleration for item in members]))
+                sector_breadth = float(np.mean([item.momentum_short > 0 and item.above_trend for item in members]))
+                sector_risk = float(
+                    np.nanmean([max(item.volatility, 0.0) + abs(min(item.max_drawdown, 0.0)) * 0.5 for item in members])
+                )
+                score = 0.50 * sector_momentum + 0.25 * sector_acceleration + 0.20 * sector_breadth - 0.35 * sector_risk
+            else:
+                sector_momentum = 0.0
+                sector_acceleration = 0.0
+                sector_breadth = 0.0
+                sector_risk = 0.0
+                score = 0.0
             rows.append(
                 {
                     "sector": sector,
+                    "sector_member_count": member_count,
                     "sector_momentum": sector_momentum,
                     "sector_acceleration": sector_acceleration,
                     "sector_breadth": sector_breadth,
@@ -160,6 +172,7 @@ class PreSelectionEngine:
             return pd.DataFrame(
                 columns=[
                     "sector",
+                    "sector_member_count",
                     "sector_momentum",
                     "sector_acceleration",
                     "sector_breadth",
@@ -255,7 +268,7 @@ class PreSelectionEngine:
             if not normalized.empty:
                 latest_dates.append(pd.Timestamp(normalized.index.max()).normalize())
         if not latest_dates:
-            raise ValueError("预选模型没有可用行情数据，无法确定交易日期。")
+            return pd.Timestamp.today().normalize()
         return max(latest_dates)
 
     def _build_metrics(
@@ -359,6 +372,7 @@ class PreSelectionEngine:
             sector_info = sector_by_name.get(item.sector, {})
             sector_score = float(sector_info.get("sector_score", 0.0) or 0.0)
             sector_breadth = float(sector_info.get("sector_breadth", 0.0) or 0.0)
+            sector_member_count = int(sector_info.get("sector_member_count", 0) or 0)
             sector_rank = int(sector_info.get("sector_rank", 0) or 0)
             raw_score = (
                 0.40 * item.momentum_medium
@@ -374,6 +388,7 @@ class PreSelectionEngine:
                 and item.above_trend
                 and item.momentum_short > 0
                 and item.momentum_medium > 0
+                and sector_member_count >= self.config.min_sector_etf_count
                 and sector_score > 0
                 and sector_breadth >= self.config.min_sector_breadth
                 and raw_score > self.config.min_candidate_score
@@ -392,6 +407,7 @@ class PreSelectionEngine:
                 "generated_at": generated_at,
                 "_eligible": eligible,
                 "_sector_rank": sector_rank,
+                "_sector_member_count": sector_member_count,
                 "_sector_score": sector_score,
                 "_sector_breadth": sector_breadth,
                 "_filter_reason": item.filter_reason,
@@ -428,8 +444,7 @@ class PreSelectionEngine:
             return min(self.config.max_candidates, self.config.balanced_candidates)
         return min(self.config.max_candidates, self.config.defense_candidates)
 
-    @staticmethod
-    def _reason(row: Mapping[str, Any], selected: bool, market_state: str, candidate_limit: int) -> str:
+    def _reason(self, row: Mapping[str, Any], selected: bool, market_state: str, candidate_limit: int) -> str:
         if row["_filter_reason"]:
             return f"过滤：{row['_filter_reason']}。"
         if market_state == MarketState.DEFENSE.value and candidate_limit <= 0:
@@ -438,13 +453,15 @@ class PreSelectionEngine:
             return "未入选：价格未站上趋势均线，右侧确认不足。"
         if float(row["_momentum_short"]) <= 0 or float(row["_momentum_medium"]) <= 0:
             return "未入选：短中期动量未同时转正。"
+        if int(row["_sector_member_count"]) < self.config.min_sector_etf_count:
+            return f"未入选：所属板块有效ETF不足{self.config.min_sector_etf_count}只。"
         if float(row["_sector_score"]) <= 0:
             return "未入选：所属板块动量得分不为正。"
-        if float(row["_sector_breadth"]) < PreSelectionConfig.min_sector_breadth:
+        if float(row["_sector_breadth"]) < self.config.min_sector_breadth:
             return "未入选：所属板块广度不足。"
         if selected:
             return (
-                f"入选：市场状态为{market_state}，板块排名第{int(row['_sector_rank'])}，"
+                f"入选：市场状态为{market_state}，板块入选：所属板块排名第{int(row['_sector_rank'])}，"
                 f"ETF预选排名第{int(row['rank'])}，动量、加速度、广度和风险综合得分靠前。"
             )
         return f"未入选：满足右侧条件，但综合排名未进入前{candidate_limit}。"
