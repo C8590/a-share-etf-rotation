@@ -6,10 +6,11 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 
 - QA exit status: `failed`
 - Data quality failed ETF count: `244`
-- ETF end-date coverage gap days: `15`
-- Candidate gate: `0` eligible / `269` blocked / `269` total
+- ETF end-date coverage gap days: `18`
+- Candidate gate: `0` eligible / `270` blocked / `270` total
 - Blocked short history: `239`
 - P0 manual review: `5`
+- Source lag blockers: `1` (`560000`)
 - Blocked no-used-factors: `25`
 - Observation pool count: `244`
 - Very short history count: `72`
@@ -20,7 +21,8 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 - Allowed to enter ETF-GAP-007B: `YES`
 - QA status hard failure rows: `5`
 - QA status governed failure rows: `5`
-- QA status refresh-action count: `1`
+- QA status refresh-action count: `0`
+- QA status source-diagnosis count: `1`
 - QA status wait-for-history count: `244`
 - QA status manual-review action count: `5`
 - Candidate unblock immediate eligible count: `0`
@@ -52,7 +54,8 @@ Current blocking reasons:
 - `candidate_gate_blocked`
 - `factor_score_gate_blocked`
 - `data quality failed for 244 ETF(s)`
-- `ETF end-date coverage gap is 15 days`
+- `ETF end-date coverage gap is 18 days`
+- `source_lag_blocker`
 
 Next recommended action: complete P0 manual review list and keep affected ETFs blocked
 
@@ -69,6 +72,8 @@ Next recommended action: complete P0 manual review list and keep affected ETFs b
 - `output/factor_score_gate.csv`: factor-score gate findings. Blocking rows mean factor scores cannot drive candidate construction.
 - `output/qa_status_breakdown.csv`: QA failure actionability split. It explains what can be fixed by waiting, manual review, controlled refresh/source diagnosis, or source repair.
 - `output/qa_status_summary.csv`: aggregate QA-status findings and next actions.
+- `output/source_lag_report.csv`: single-symbol source lag/provider-stale blockers. It explains when a coverage gap is not a full-market refresh task.
+- `output/source_lag_summary.csv`: aggregate source-lag blocker counts and next source-diagnosis action.
 - `output/candidate_unblock_plan.csv`: per-symbol unblock path plan. It does not mark any ETF eligible.
 - `output/candidate_unblock_summary.csv`: aggregate candidate-unblock counts and next actions.
 - `output/factor_008b_readiness.csv`: ETF-GAP-008B readiness check. It does not generate candidates or change factor scores.
@@ -87,6 +92,7 @@ Use `qa_item`, `actionability`, `root_cause`, `governed_by`, and the `blocks_*` 
 
 - `wait_for_history` means the ETF is not a refresh target; it needs enough trading rows and a rerun of the gates.
 - `refresh_needed` means a controlled update or source-lag diagnosis may be appropriate, but this runbook does not refresh data.
+- `source_diagnosis` means the gap is attributed to a source-lag/provider-stale blocker; keep affected symbols blocked and diagnose the provider/source path.
 - `manual_review` means a human must verify the listed evidence and no automatic unblocking is allowed.
 - `source_unavailable` means benchmark or source dependencies are absent, blocking ETF-GAP-007B.
 - `governance_blocked` means the issue is already represented by a gate and still blocks candidate use.
@@ -101,6 +107,15 @@ Use `primary_failure_type`, `history_status`, `cache_status`, `liquidity_status`
 - `P0_manual_review` means suspicious evidence must be reviewed before any candidate use.
 - `requires_refresh=False` confirms the current short-history set is not a cache-refresh queue.
 - `low_liquidity` is a tradability risk, not a low score.
+
+## How To Read `source_lag_report.csv`
+
+Use `source_lag_status`, `blocker_type`, `can_be_fixed_by_refresh`, and `recommended_action`.
+
+- `provider_stale` / `source_lag_confirmed` means the symbol trails the market max cache date and should remain blocked.
+- `proxy_blocked` means an alternate provider path is unavailable in the current environment.
+- `market_wide_lag` means many symbols lag together; only then consider a controlled market-wide refresh.
+- `source_lag_blocker` does not relax QA. It explains why the coverage gap is not an ordinary refresh queue.
 
 ## How To Read `candidate_gate.csv`
 
@@ -275,3 +290,5 @@ ETF-GAP-007B can be considered in `small_scope` when benchmark/index evidence is
 - `qa_status_summary`: `output\qa_status_summary.csv`
 - `short_history_observation_pool`: `output\short_history_observation_pool.csv`
 - `short_history_observation_summary`: `output\short_history_observation_summary.csv`
+- `source_lag_report`: `output\source_lag_report.csv`
+- `source_lag_summary`: `output\source_lag_summary.csv`

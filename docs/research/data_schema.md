@@ -2240,3 +2240,41 @@ Known `status` values:
 - `strategy_layer.factor_score.top_examples`
 
 If factor scoring has not run, the summary is parseable with `status=not_run`, zero counts, and empty examples. Factor scoring and gating are informational in ETF-GAP-008A-FIX and do not relax existing QA hard gates.
+# Source Lag Reports
+
+`output/source_lag_report.csv` records single-symbol coverage-gap drivers that are not ordinary full-market refresh tasks.
+
+Required columns:
+
+- `symbol`
+- `name`
+- `source`
+- `cache_end_date`
+- `latest_expected_date`
+- `end_date_gap_days`
+- `market_max_cache_date`
+- `gap_vs_market_max_days`
+- `sina_end_date`
+- `eastmoney_qfq_status`
+- `eastmoney_none_status`
+- `source_lag_status`
+- `blocker_type`
+- `can_be_fixed_by_refresh`
+- `can_be_fixed_by_waiting`
+- `requires_source_diagnosis`
+- `exclude_from_candidate_pool`
+- `recommended_action`
+- `notes`
+
+`output/source_lag_summary.csv` aggregates source-lag blocker counts and suggested source-diagnosis action.
+
+Allowed `source_lag_status` values:
+
+- `source_lag_confirmed`
+- `source_unavailable`
+- `provider_stale`
+- `proxy_blocked`
+- `market_wide_lag`
+- `unknown`
+
+`qa_report.json -> data_layer.source_lag` and `data_governance_status.json` expose source-lag counts, symbols, coverage-gap drivers, and next source-lag action. These fields explain the blocker; they do not relax QA.

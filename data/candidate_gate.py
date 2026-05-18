@@ -106,16 +106,21 @@ def evaluate_candidate_eligibility(
     name: str = "",
     diagnosis_row: dict[str, Any] | None = None,
     factor_score_row: dict[str, Any] | None = None,
+    source_lag_row: dict[str, Any] | None = None,
     factor_gate_status: str = "unknown",
 ) -> dict[str, Any]:
     diagnosis = diagnosis_row or {}
     factor = factor_score_row or {}
+    source_lag = source_lag_row or {}
     symbol = str(symbol).zfill(6)
     requires_manual_review = _bool_value(diagnosis.get("requires_manual_review", False))
-    exclude_from_candidate_pool = _bool_value(diagnosis.get("exclude_from_candidate_pool", False))
+    source_lag_blocked = _bool_value(source_lag.get("exclude_from_candidate_pool", False))
+    exclude_from_candidate_pool = _bool_value(diagnosis.get("exclude_from_candidate_pool", False)) or source_lag_blocked
     strategy_eligibility = _text(diagnosis.get("strategy_eligibility"))
+    if source_lag_blocked and not strategy_eligibility:
+        strategy_eligibility = "blocked_quality_failed"
     history_status = _text(diagnosis.get("history_status") or "unknown")
-    cache_status = _text(diagnosis.get("cache_status") or "unknown")
+    cache_status = _text(diagnosis.get("cache_status") or source_lag.get("source_lag_status") or "unknown")
     liquidity_status = _text(diagnosis.get("liquidity_status") or "unknown")
     price_quality_status = _text(diagnosis.get("price_quality_status") or "unknown")
     remediation_priority = _text(diagnosis.get("remediation_priority"))
@@ -128,8 +133,13 @@ def evaluate_candidate_eligibility(
         observation_reasons.append("low_liquidity")
     if factor_score_status == "no_used_factors":
         notes.append("no_used_factors is unscoreable evidence, not a low score")
+    if source_lag_blocked:
+        notes.append("source lag blocker; keep blocked; not fixable by ordinary refresh")
 
-    if requires_manual_review:
+    if source_lag_blocked:
+        candidate_status = "blocked_quality_failed"
+        block_reasons.append("source_lag_blocker")
+    elif requires_manual_review:
         candidate_status = "blocked_manual_review"
         block_reasons.append("manual_review_required")
     elif strategy_eligibility == "blocked_short_history" or history_status in {"short_history", "very_short_history"}:
@@ -157,7 +167,7 @@ def evaluate_candidate_eligibility(
     blocked = candidate_status in BLOCKED_STATUSES or exclude_from_candidate_pool
     gate_passed = candidate_status == "eligible" and not blocked
     data_quality_status = "failed" if diagnosis else "not_in_diagnosis"
-    recommended_action = _text(diagnosis.get("recommended_action"))
+    recommended_action = _text(source_lag.get("recommended_action")) or _text(diagnosis.get("recommended_action"))
     if not recommended_action:
         if candidate_status == "blocked_factor_gate":
             recommended_action = "keep factor score in observation mode; do not enter ETF-GAP-008B"
@@ -172,7 +182,7 @@ def evaluate_candidate_eligibility(
 
     row = {
         "symbol": symbol,
-        "name": _text(name or diagnosis.get("name") or factor.get("name")),
+        "name": _text(name or diagnosis.get("name") or factor.get("name") or source_lag.get("name")),
         "category": _text(diagnosis.get("category")),
         "sub_category": _text(diagnosis.get("sub_category")),
         "candidate_status": candidate_status,
@@ -193,7 +203,7 @@ def evaluate_candidate_eligibility(
         "factor_score_status": factor_score_status,
         "factor_gate_status": factor_gate_status,
         "recommended_action": recommended_action,
-        "notes": "; ".join([_text(diagnosis.get("notes")), *notes]).strip("; "),
+        "notes": "; ".join([_text(diagnosis.get("notes")), _text(source_lag.get("notes")), *notes]).strip("; "),
     }
     return {column: row.get(column, "") for column in CANDIDATE_GATE_COLUMNS}
 
@@ -205,16 +215,24 @@ def build_candidate_gate_report(
     factor_score_path: str | Path | None = None,
     factor_gate_path: str | Path | None = None,
     etf_metrics_path: str | Path | None = None,
+    source_lag_path: str | Path | None = None,
     diagnosis: pd.DataFrame | None = None,
     factor_score: pd.DataFrame | None = None,
     factor_gate: pd.DataFrame | None = None,
     etf_metrics: pd.DataFrame | None = None,
+    source_lag: pd.DataFrame | None = None,
 ) -> list[dict[str, Any]]:
     output_path = Path(output_dir)
     diagnosis_frame = diagnosis if diagnosis is not None else _read_csv(diagnosis_path or output_path / "data_quality_diagnosis.csv")
     factor_frame = factor_score if factor_score is not None else _read_csv(factor_score_path or output_path / "factor_score_report.csv")
     factor_gate_frame = factor_gate if factor_gate is not None else _read_csv(factor_gate_path or output_path / "factor_score_gate.csv")
     metrics_frame = etf_metrics if etf_metrics is not None else _read_csv(etf_metrics_path or output_path / "etf_metrics.csv")
+    if source_lag is not None:
+        source_lag_frame = source_lag
+    elif source_lag_path is not None or all(item is None for item in [diagnosis, factor_score, factor_gate, etf_metrics]):
+        source_lag_frame = _read_csv(source_lag_path or output_path / "source_lag_report.csv")
+    else:
+        source_lag_frame = pd.DataFrame()
 
     gate_status = _factor_gate_status(factor_gate_frame)
 
@@ -229,8 +247,9 @@ def build_candidate_gate_report(
 
     diagnosis_by_symbol = by_symbol(diagnosis_frame)
     factor_by_symbol = by_symbol(factor_frame)
+    source_lag_by_symbol = by_symbol(source_lag_frame)
     metrics_by_symbol = by_symbol(metrics_frame)
-    symbols = sorted(set(diagnosis_by_symbol) | set(factor_by_symbol))
+    symbols = sorted(set(diagnosis_by_symbol) | set(factor_by_symbol) | set(source_lag_by_symbol))
     rows: list[dict[str, Any]] = []
     status_order = {
         "blocked_manual_review": 0,
@@ -245,19 +264,21 @@ def build_candidate_gate_report(
     for symbol in symbols:
         diagnosis_row = dict(diagnosis_by_symbol.get(symbol, {}))
         factor_row = dict(factor_by_symbol.get(symbol, {}))
+        source_lag_row = dict(source_lag_by_symbol.get(symbol, {}))
         metrics_row = dict(metrics_by_symbol.get(symbol, {}))
         if diagnosis_row:
             if not _text(diagnosis_row.get("category")):
                 diagnosis_row["category"] = metrics_row.get("category", "")
             if not _text(diagnosis_row.get("sub_category")):
                 diagnosis_row["sub_category"] = metrics_row.get("sub_category", "")
-        name = _text(diagnosis_row.get("name") or factor_row.get("name") or metrics_row.get("name"))
+        name = _text(diagnosis_row.get("name") or factor_row.get("name") or metrics_row.get("name") or source_lag_row.get("name"))
         rows.append(
             evaluate_candidate_eligibility(
                 symbol=symbol,
                 name=name,
                 diagnosis_row=diagnosis_row,
                 factor_score_row=factor_row,
+                source_lag_row=source_lag_row,
                 factor_gate_status=gate_status,
             )
         )

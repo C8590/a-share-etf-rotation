@@ -13,6 +13,7 @@ from data.candidate_unblock import summarize_candidate_unblock_plan
 from data.etf_007b import summarize_007b_small_scope
 from data.index_readiness import summarize_007b_readiness
 from data.qa_status import summarize_qa_status
+from data.source_lag import summarize_source_lag
 from strategy.factor_readiness import summarize_008b_readiness
 
 
@@ -109,6 +110,8 @@ def _report_paths(output_dir: Path) -> dict[str, str]:
         "factor_score_gate": str(output_dir / "factor_score_gate.csv"),
         "qa_status_breakdown": str(output_dir / "qa_status_breakdown.csv"),
         "qa_status_summary": str(output_dir / "qa_status_summary.csv"),
+        "source_lag_report": str(output_dir / "source_lag_report.csv"),
+        "source_lag_summary": str(output_dir / "source_lag_summary.csv"),
         "candidate_unblock_plan": str(output_dir / "candidate_unblock_plan.csv"),
         "candidate_unblock_summary": str(output_dir / "candidate_unblock_summary.csv"),
         "factor_008b_readiness": str(output_dir / "factor_008b_readiness.csv"),
@@ -236,7 +239,14 @@ def build_data_governance_status(
         next_action = "review governance status and consider controlled next-stage research"
 
     qa_status_summary = summarize_qa_status(_read_csv(output_path / "qa_status_breakdown.csv"))
-    actionable_failures = qa_status_summary["refresh_action_count"] + qa_status_summary["manual_review_action_count"]
+    source_lag_summary = summarize_source_lag(report_path=output_path / "source_lag_report.csv")
+    if source_lag_summary["source_lag_blocker_count"] and "source_lag_blocker" not in blocking_reasons:
+        blocking_reasons.append("source_lag_blocker")
+    actionable_failures = (
+        qa_status_summary["refresh_action_count"]
+        + qa_status_summary["manual_review_action_count"]
+        + qa_status_summary.get("source_diagnosis_count", 0)
+    )
     candidate_unblock_summary = summarize_candidate_unblock_plan(report_path=output_path / "candidate_unblock_plan.csv")
     factor_008b_summary = summarize_008b_readiness(report_path=output_path / "factor_008b_readiness.csv")
     if index_007b_summary["readiness_status"] != "not_run":
@@ -262,6 +272,12 @@ def build_data_governance_status(
         "estimated_eligible_within_20d_count": estimated_20,
         "estimated_eligible_within_60d_count": estimated_60,
         "manual_review_count": manual_count,
+        "source_lag_count": source_lag_summary["source_lag_count"],
+        "source_lag_symbols": source_lag_summary["source_lag_symbols"],
+        "source_lag_blocker_count": source_lag_summary["source_lag_blocker_count"],
+        "coverage_gap_driver_symbols": source_lag_summary["coverage_gap_driver_symbols"],
+        "next_source_lag_action": source_lag_summary["next_source_lag_action"],
+        "source_lag": source_lag_summary,
         "factor_gate_status": factor_status,
         "allowed_to_enter_008b": bool(allowed_008b),
         "allowed_to_enter_007b": bool(allowed_007b),
@@ -270,7 +286,11 @@ def build_data_governance_status(
         "qa_status": qa_status_summary,
         "governed_failures": qa_status_summary["governed_failure_count"],
         "actionable_failures": actionable_failures,
-        "next_refresh_action": "run update-data only in controlled environment or diagnose source lag" if qa_status_summary["refresh_action_count"] else "no refresh action from qa_status",
+        "next_refresh_action": (
+            source_lag_summary["next_source_lag_action"]
+            if source_lag_summary["source_lag_blocker_count"]
+            else ("run update-data only in controlled environment or diagnose source lag" if qa_status_summary["refresh_action_count"] else "no refresh action from qa_status")
+        ),
         "next_manual_review_action": "complete P0 manual review list; do not auto-unblock" if qa_status_summary["manual_review_action_count"] else "no manual review action from qa_status",
         "candidate_unblock_status": candidate_unblock_summary,
         "immediate_eligible_count": candidate_unblock_summary["immediate_eligible_count"],
@@ -319,6 +339,7 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 - Candidate gate: `{status.get("candidate_eligible_count")}` eligible / `{status.get("candidate_blocked_count")}` blocked / `{status.get("candidate_total")}` total
 - Blocked short history: `{status.get("blocked_short_history_count")}`
 - P0 manual review: `{status.get("manual_review_count")}`
+- Source lag blockers: `{status.get("source_lag_blocker_count", 0)}` (`{", ".join(status.get("coverage_gap_driver_symbols", []))}`)
 - Blocked no-used-factors: `{status.get("blocked_no_used_factors_count")}`
 - Observation pool count: `{status.get("observation_pool_count")}`
 - Very short history count: `{status.get("very_short_history_count")}`
@@ -330,6 +351,7 @@ Generated from existing reports only. This runbook does not refresh cache, chang
 - QA status hard failure rows: `{status.get("qa_status", {}).get("hard_failure_count", 0)}`
 - QA status governed failure rows: `{status.get("governed_failures", 0)}`
 - QA status refresh-action count: `{status.get("qa_status", {}).get("refresh_action_count", 0)}`
+- QA status source-diagnosis count: `{status.get("qa_status", {}).get("source_diagnosis_count", 0)}`
 - QA status wait-for-history count: `{status.get("qa_status", {}).get("wait_for_history_count", 0)}`
 - QA status manual-review action count: `{status.get("qa_status", {}).get("manual_review_action_count", 0)}`
 - Candidate unblock immediate eligible count: `{status.get("immediate_eligible_count", 0)}`
@@ -369,6 +391,8 @@ Next recommended action: {status.get("next_recommended_action")}
 - `output/factor_score_gate.csv`: factor-score gate findings. Blocking rows mean factor scores cannot drive candidate construction.
 - `output/qa_status_breakdown.csv`: QA failure actionability split. It explains what can be fixed by waiting, manual review, controlled refresh/source diagnosis, or source repair.
 - `output/qa_status_summary.csv`: aggregate QA-status findings and next actions.
+- `output/source_lag_report.csv`: single-symbol source lag/provider-stale blockers. It explains when a coverage gap is not a full-market refresh task.
+- `output/source_lag_summary.csv`: aggregate source-lag blocker counts and next source-diagnosis action.
 - `output/candidate_unblock_plan.csv`: per-symbol unblock path plan. It does not mark any ETF eligible.
 - `output/candidate_unblock_summary.csv`: aggregate candidate-unblock counts and next actions.
 - `output/factor_008b_readiness.csv`: ETF-GAP-008B readiness check. It does not generate candidates or change factor scores.
@@ -387,6 +411,7 @@ Use `qa_item`, `actionability`, `root_cause`, `governed_by`, and the `blocks_*` 
 
 - `wait_for_history` means the ETF is not a refresh target; it needs enough trading rows and a rerun of the gates.
 - `refresh_needed` means a controlled update or source-lag diagnosis may be appropriate, but this runbook does not refresh data.
+- `source_diagnosis` means the gap is attributed to a source-lag/provider-stale blocker; keep affected symbols blocked and diagnose the provider/source path.
 - `manual_review` means a human must verify the listed evidence and no automatic unblocking is allowed.
 - `source_unavailable` means benchmark or source dependencies are absent, blocking ETF-GAP-007B.
 - `governance_blocked` means the issue is already represented by a gate and still blocks candidate use.
@@ -401,6 +426,15 @@ Use `primary_failure_type`, `history_status`, `cache_status`, `liquidity_status`
 - `P0_manual_review` means suspicious evidence must be reviewed before any candidate use.
 - `requires_refresh=False` confirms the current short-history set is not a cache-refresh queue.
 - `low_liquidity` is a tradability risk, not a low score.
+
+## How To Read `source_lag_report.csv`
+
+Use `source_lag_status`, `blocker_type`, `can_be_fixed_by_refresh`, and `recommended_action`.
+
+- `provider_stale` / `source_lag_confirmed` means the symbol trails the market max cache date and should remain blocked.
+- `proxy_blocked` means an alternate provider path is unavailable in the current environment.
+- `market_wide_lag` means many symbols lag together; only then consider a controlled market-wide refresh.
+- `source_lag_blocker` does not relax QA. It explains why the coverage gap is not an ordinary refresh queue.
 
 ## How To Read `candidate_gate.csv`
 
