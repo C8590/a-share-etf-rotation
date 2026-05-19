@@ -42,6 +42,29 @@ from ui.signal_parser import (
     strategy_row,
     target_symbols,
 )
+from ui.governance_parser import (
+    CANDIDATE_STATUS_OPTIONS,
+    FIELD_LABELS,
+    KEY_LABELS,
+    OBSERVATION_STATUS_OPTIONS,
+    QA_ACTIONABILITY_OPTIONS,
+    QA_BLOCK_SCOPE_OPTIONS,
+    format_action,
+    format_bool_status,
+    format_decimal,
+    format_display_value,
+    format_field_label,
+    format_percent,
+    format_status,
+    get_007b_summary,
+    get_008b_summary,
+    get_candidate_gate_summary,
+    get_governance_status,
+    get_manual_review_summary,
+    get_qa_status,
+    get_report_downloads,
+    localize_dataframe_values,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -1282,6 +1305,492 @@ def render_logs() -> None:
             st.text_area("stderr", _safe_log_text(item["stderr"]), height=120, key=f"log_stderr_{idx}")
 
 
+def _display_warnings(warnings: list[str]) -> None:
+    for warning in [item for item in warnings if item]:
+        st.warning(warning)
+
+
+def _select_columns(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    return frame[[column for column in columns if column in frame.columns]].copy()
+
+
+def _show_raw_frame(frame: pd.DataFrame, empty_text: str, height: int = 360) -> None:
+    if frame.empty:
+        st.caption(empty_text)
+    else:
+        st.dataframe(frame, hide_index=True, width="stretch", height=height)
+
+
+GOVERNANCE_COLUMN_LABELS = FIELD_LABELS
+
+
+def _status_tone(value: Any) -> str:
+    text = str(value).strip().lower()
+    if isinstance(value, bool):
+        return "success" if value else "danger"
+    if any(token in text for token in ["blocked", "forbidden", "failed", "false", "禁止", "阻断", "失败"]):
+        return "danger"
+    if any(token in text for token in ["small_scope", "warning", "research", "wait", "observe", "manual", "小范围", "观察", "复核"]):
+        return "warning"
+    if any(token in text for token in ["ready", "passed", "ok", "true", "allow", "computed", "eligible", "可用", "通过", "允许"]):
+        return "success"
+    if any(token in text for token in ["governed", "readonly", "info", "只读", "治理"]):
+        return "info"
+    return "neutral"
+
+
+def _badge_html(text: Any, tone: str | None = None) -> str:
+    return f"<span class=\"gov-badge gov-badge-{tone or _status_tone(text)}\">{escape(str(text))}</span>"
+
+
+def _notice_box(title: str, items: list[str], tone: str = "info") -> None:
+    body = "".join(f"<li>{escape(item)}</li>" for item in items)
+    st.markdown(
+        f"<div class=\"gov-notice gov-notice-{tone}\"><div class=\"gov-notice-title\">{escape(title)}</div><ul>{body}</ul></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_status_bar() -> None:
+    st.markdown(
+        "<div class=\"gov-status-bar\">"
+        f"{_badge_html('只读模式', 'info')}"
+        f"{_badge_html('不刷新数据', 'info')}"
+        f"{_badge_html('不生成策略', 'info')}"
+        f"{_badge_html('不自动交易', 'info')}"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def render_governance_metric_grid(items: list[dict[str, Any]], columns: int = 4) -> None:
+    cards = []
+    for item in items:
+        label = escape(str(item["label"]))
+        value = item.get("value", "—")
+        tone = item.get("tone") or _status_tone(value)
+        is_badge = bool(item.get("badge", False))
+        value_html = _badge_html(value, tone) if is_badge else escape(_card_value(value))
+        cards.append(
+            "<div class=\"gov-card\">"
+            f"<div class=\"gov-card-label\">{label}</div>"
+            f"<div class=\"gov-card-value {'gov-card-value-badge' if is_badge else ''}\">{value_html}</div>"
+            "</div>"
+        )
+    st.markdown(f"<div class=\"gov-card-grid gov-card-grid-{columns}\">{''.join(cards)}</div>", unsafe_allow_html=True)
+
+
+def _localize_governance_frame(frame: pd.DataFrame, columns: list[str] | None = None) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    out = _select_columns(frame, columns) if columns else frame.copy()
+    out = localize_dataframe_values(out)
+    return out.rename(columns={col: GOVERNANCE_COLUMN_LABELS.get(col, col) for col in out.columns})
+
+
+def _filter_select(frame: pd.DataFrame, column: str, label: str, key: str) -> list[str]:
+    if frame.empty or column not in frame.columns:
+        st.warning(f"缺少字段：{format_field_label(column)}")
+        return []
+    options = sorted([str(item) for item in frame[column].dropna().astype(str).unique() if str(item).strip()])
+    label_to_raw = {format_display_value(option): option for option in options}
+    selected_labels = st.multiselect(label, list(label_to_raw.keys()), key=key)
+    return [label_to_raw[item] for item in selected_labels]
+
+
+def _option_select(label: str, options: list[tuple[str, Any]], key: str) -> Any:
+    labels = [item[0] for item in options]
+    selected_label = st.selectbox(label, labels, key=key)
+    return dict(options)[selected_label]
+
+
+def _apply_choice_filter(frame: pd.DataFrame, column: str, selected: list[str]) -> pd.DataFrame:
+    if not selected or frame.empty or column not in frame.columns:
+        return frame
+    return frame[frame[column].astype(str).isin(selected)].copy()
+
+
+def _show_governance_frame(frame: pd.DataFrame, empty_text: str, columns: list[str] | None = None, height: int = 360) -> None:
+    _show_raw_frame(_localize_governance_frame(frame, columns), empty_text, height=height)
+
+
+def _render_manual_review_badges(frame: pd.DataFrame) -> None:
+    if frame.empty:
+        return
+    rows = []
+    for _, row in frame.head(5).iterrows():
+        symbol = escape(str(row.get("symbol", "")))
+        name = escape(str(row.get("name", "")))
+        priority = row.get("review_priority", "P0_manual_review")
+        status = row.get("review_status", "blocked_until_review")
+        rows.append(
+            "<div class=\"manual-review-row\">"
+            f"<span class=\"manual-review-name\">{symbol} {name}</span>"
+            f"{_badge_html(format_status(priority), 'danger')}"
+            f"{_badge_html(format_status(status), 'warning')}"
+            "</div>"
+        )
+    st.markdown(f"<div class=\"manual-review-list\">{''.join(rows)}</div>", unsafe_allow_html=True)
+
+
+def _allowed_007b_text(status: dict[str, Any]) -> str:
+    if status["allowed_to_enter_007b"] and status["allowed_to_enter_007b_scope"] == "small_scope":
+        return "允许，小范围研究"
+    return "允许" if status["allowed_to_enter_007b"] else "禁止"
+
+
+def render_governance_overview() -> None:
+    status = get_governance_status(PROJECT_ROOT)
+    _display_warnings(status["warnings"])
+    summary_007b = get_007b_summary(PROJECT_ROOT)
+    source_lag_symbols = status.get("source_lag_blocker_symbols") or status.get("source_lag_symbols") or ["560000"]
+    source_lag_text = "、".join(str(symbol) for symbol in source_lag_symbols)
+    st.subheader("总览")
+    st.caption("这里看治理状态、QA 闸门、候选池阻断，以及 007B/008B 能否进入下一阶段。")
+    render_governance_metric_grid(
+        [
+            {"label": KEY_LABELS["overall_project_status"], "value": format_status(status["overall_project_status"]), "badge": True},
+            {"label": "007B", "value": _allowed_007b_text(status), "badge": True, "tone": "success"},
+            {"label": KEY_LABELS["allowed_to_enter_007b_scope"], "value": f"{summary_007b['computed_valid_count']} 只 ETF", "badge": True, "tone": "warning"},
+            {"label": "008B", "value": "允许" if status["allowed_to_enter_008b"] else "禁止，条件未满足", "badge": True},
+        ],
+        columns=4,
+    )
+    render_governance_metric_grid(
+        [
+            {"label": KEY_LABELS["candidate_eligible_count"], "value": status["candidate_eligible_count"]},
+            {"label": KEY_LABELS["candidate_blocked_count"], "value": status["candidate_blocked_count"], "tone": "danger"},
+            {"label": KEY_LABELS["data_quality_failed_count"], "value": status["data_quality_failed_count"], "tone": "danger"},
+            {"label": KEY_LABELS["end_date_coverage_gap_days"], "value": status["end_date_coverage_gap_days"], "tone": "warning"},
+            {"label": KEY_LABELS["manual_review_count"], "value": status["manual_review_count"], "tone": "warning"},
+            {"label": KEY_LABELS["factor_gate_status"], "value": format_status(status["factor_gate_status"]), "badge": True},
+        ],
+        columns=3,
+    )
+    _notice_box(
+        "当前结论",
+        [
+            "系统已完成数据治理和准入门禁，但仍未达到正式候选策略条件。",
+            f"007B 已支持 {summary_007b['computed_valid_count']} 只 ETF 的小范围真实指标验证，仅用于研究观察。",
+            "008B 仍未放行，不能生成多因子候选策略。",
+            f"候选池当前 {status['candidate_eligible_count']} 只可用，全部未通过候选门禁。",
+            f"行情覆盖滞后主要由 {source_lag_text} 的数据源滞后触发，不建议为该单标的执行全市场刷新。",
+            "本页面只读展示，不构成投资建议。",
+        ],
+        tone="info",
+    )
+    with st.expander("阻断原因", expanded=False):
+        _show_governance_frame(pd.DataFrame({"blocking_reason": status["blocking_reasons"]}), "当前没有阻断原因。", height=220)
+
+
+def render_governance_qa_status() -> None:
+    qa = get_qa_status(PROJECT_ROOT)
+    status = get_governance_status(PROJECT_ROOT)
+    _display_warnings(qa["warnings"])
+    st.subheader("质量保证")
+    st.caption("这里展示 QA 硬闸门、根本原因和建议处理方式。qa-check 仍然失败，但失败项已被治理分层，不是未知系统故障。")
+    _notice_box(
+        "QA 硬闸门",
+        [
+            f"QA 硬闸门仍为阻断状态。{status['data_quality_failed_count']} 只 ETF 属于历史数据不足，应继续观察。",
+            f"行情覆盖滞后主要由 560000 数据源滞后触发，当前属于 source lag blocker。",
+            f"{status['manual_review_count']} 只 ETF 需要人工复核。",
+        ],
+        tone="warning",
+    )
+    frame = qa["breakdown"].copy()
+    wait_count = int(frame.loc[frame["actionability"].astype(str).eq("wait_for_history"), "affected_count"].astype(float).sum()) if {"actionability", "affected_count"}.issubset(frame.columns) else 0
+    manual_count = int(frame.loc[frame["actionability"].astype(str).eq("manual_review"), "affected_count"].astype(float).sum()) if {"actionability", "affected_count"}.issubset(frame.columns) else 0
+    refresh_count = int(frame.loc[frame["actionability"].astype(str).eq("refresh_needed"), "affected_count"].astype(float).sum()) if {"actionability", "affected_count"}.issubset(frame.columns) else 0
+    blocks_007b = "是" if "blocks_007b" in frame.columns and frame["blocks_007b"].map(lambda value: str(value).lower() in {"true", "1", "yes"}).any() else "否"
+    blocks_008b = "是" if "blocks_008b" in frame.columns and frame["blocks_008b"].map(lambda value: str(value).lower() in {"true", "1", "yes"}).any() else "否"
+    render_governance_metric_grid(
+        [
+            {"label": "QA 硬阻断", "value": qa["blocking_count"], "tone": "danger"},
+            {"label": "需等待历史", "value": wait_count, "tone": "warning"},
+            {"label": "需人工复核", "value": manual_count, "tone": "warning"},
+            {"label": "需受控刷新", "value": refresh_count, "tone": "warning"},
+            {"label": "阻断 007B", "value": blocks_007b, "badge": True},
+            {"label": "阻断 008B", "value": blocks_008b, "badge": True},
+        ],
+        columns=3,
+    )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        selected_actionability = _option_select("处理方式筛选", QA_ACTIONABILITY_OPTIONS, "qa_actionability_filter")
+    with col2:
+        block_scope = _option_select("阻断范围筛选", QA_BLOCK_SCOPE_OPTIONS, "qa_block_scope_filter")
+    with col3:
+        blocking_only = st.checkbox("只看阻断项", value=True, key="qa_blocking_only")
+    if selected_actionability:
+        frame = _apply_choice_filter(frame, "actionability", [selected_actionability])
+    if block_scope != "all":
+        has_007b = frame["blocks_007b"].map(lambda value: str(value).lower() in {"true", "1", "yes"}) if "blocks_007b" in frame.columns else pd.Series(False, index=frame.index)
+        has_008b = frame["blocks_008b"].map(lambda value: str(value).lower() in {"true", "1", "yes"}) if "blocks_008b" in frame.columns else pd.Series(False, index=frame.index)
+        if block_scope == "007b":
+            frame = frame[has_007b & ~has_008b].copy()
+        elif block_scope == "008b":
+            frame = frame[has_008b & ~has_007b].copy()
+        elif block_scope == "both":
+            frame = frame[has_007b & has_008b].copy()
+        elif block_scope == "none":
+            frame = frame[~has_007b & ~has_008b].copy()
+    if blocking_only:
+        if "blocking" in frame.columns:
+            frame = frame[frame["blocking"].map(lambda value: str(value).lower() in {"true", "1", "yes"})].copy()
+        else:
+            st.warning("缺少字段：是否阻断")
+    columns = ["qa_item", "root_cause", "actionability", "blocking", "blocks_007b", "blocks_008b", "recommended_action"]
+    _show_governance_frame(frame, "尚未生成 qa_status_breakdown.csv，或筛选后无结果。", columns, height=420)
+
+
+def render_governance_candidate_gate() -> None:
+    candidate = get_candidate_gate_summary(PROJECT_ROOT)
+    _display_warnings(candidate["warnings"])
+    st.subheader("候选池")
+    st.caption("候选池门禁只说明是否满足研究候选条件，不代表 ETF 好坏。")
+    st.info("历史不足、无可用因子、低流动性都不能解释为低分，只能解释为暂不满足候选条件。")
+    render_governance_metric_grid(
+        [
+            {"label": "可进入候选池", "value": candidate["eligible_count"], "tone": "success"},
+            {"label": "候选阻断", "value": candidate["blocked_count"], "tone": "danger"},
+            {"label": "历史不足阻断", "value": candidate["blocked_short_history_count"], "tone": "warning"},
+            {"label": "人工复核阻断", "value": candidate["blocked_manual_review_count"], "tone": "danger"},
+            {"label": "无可用因子阻断", "value": candidate["blocked_no_used_factors_count"], "tone": "danger"},
+            {"label": "因子门禁阻断", "value": candidate["factor_gate_blocked_count"], "tone": "danger"},
+        ],
+        columns=3,
+    )
+    gate = candidate["gate"].copy()
+    cols = st.columns(4)
+    with cols[0]:
+        selected_status = _option_select("候选状态筛选", CANDIDATE_STATUS_OPTIONS, "candidate_status_filter")
+    with cols[1]:
+        selected_reason = _filter_select(gate, "block_reason", "阻断原因筛选", "candidate_block_reason_filter")
+    with cols[2]:
+        selected_observation = _filter_select(gate, "observation_reason", "观察原因筛选", "candidate_observation_reason_filter")
+    with cols[3]:
+        manual_only = st.checkbox("仅看需要人工复核", value=False, key="candidate_manual_filter")
+    if selected_status:
+        if selected_status == "eligible":
+            gate = gate[gate["eligibility_status"].astype(str).eq("eligible")].copy() if "eligibility_status" in gate.columns else gate
+        elif selected_status == "factor_gate_blocked":
+            gate = gate[gate["factor_gate_status"].astype(str).eq("blocked_for_strategy_use")].copy() if "factor_gate_status" in gate.columns else gate
+        elif selected_status == "observation_only":
+            gate = gate[gate["candidate_status"].astype(str).str.contains("observation", case=False, na=False)].copy() if "candidate_status" in gate.columns else gate
+        else:
+            gate = _apply_choice_filter(gate, "candidate_status", [selected_status])
+    gate = _apply_choice_filter(gate, "block_reason", selected_reason)
+    gate = _apply_choice_filter(gate, "observation_reason", selected_observation)
+    if manual_only:
+        if "requires_manual_review" in gate.columns:
+            gate = gate[gate["requires_manual_review"].map(lambda value: str(value).lower() in {"true", "1", "yes"})].copy()
+        else:
+            st.warning("缺少字段：需要人工复核")
+    _show_governance_frame(
+        gate,
+        "尚未生成 candidate_gate.csv，或筛选后无结果。",
+        ["symbol", "name", "candidate_status", "eligibility_status", "block_reason", "observation_reason", "requires_manual_review", "factor_gate_status", "recommended_action"],
+        height=460,
+    )
+
+
+def render_governance_007b() -> None:
+    summary = get_007b_summary(PROJECT_ROOT)
+    _display_warnings(summary["warnings"])
+    st.subheader("007B 可计算样本")
+    st.caption(
+        f"当前仅 {summary['computed_valid_count']} 只 ETF 已具备真实 tracking error / relative return 计算条件。"
+        "它们只是“指标可计算样本”，不是买入名单，不代表进入候选池。"
+    )
+    st.warning("007B 当前仅用于指标验证和研究观察，不接入策略评分、候选池或回测。")
+    render_governance_metric_grid(
+        [
+            {"label": "小范围验证", "value": "可用", "badge": True, "tone": "success"},
+            {"label": "指标可计算", "value": summary["computed_valid_count"], "tone": "success"},
+            {"label": "缺少指数缓存", "value": summary["no_index_cache_count"], "tone": "warning"},
+            {"label": "缺少基准指数", "value": summary["missing_benchmark_count"], "tone": "warning"},
+            {"label": "全范围可用", "value": format_bool_status(summary["full_scope_available"]), "badge": True},
+        ],
+        columns=5,
+    )
+    computed = summary["computed_valid"].copy()
+    if not computed.empty:
+        computed["benchmark"] = computed.apply(
+            lambda row: f"{row.get('tracking_index_code', '')} {row.get('tracking_index_name', '')}".strip(),
+            axis=1,
+        )
+    if "tracking_error" in computed.columns:
+        computed["tracking_error"] = computed["tracking_error"].map(lambda value: format_decimal(value, digits=4))
+    for column in ["relative_return_20d", "relative_return_60d", "relative_return_120d"]:
+        if column in computed.columns:
+            computed[column] = computed[column].map(format_percent)
+    if "validation_status" in computed.columns:
+        computed["validation_status"] = computed["validation_status"].map(format_status)
+    if not computed.empty:
+        computed["candidate_display_status"] = "仅用于指标验证"
+    computed_display = _select_columns(
+        computed,
+        ["symbol", "name", "benchmark", "tracking_error", "relative_return_20d", "relative_return_60d", "relative_return_120d", "validation_status", "candidate_display_status"],
+    ).rename(
+        columns={
+            "symbol": "ETF 代码",
+            "name": "ETF 名称",
+            "benchmark": "基准指数",
+            "tracking_error": "跟踪误差",
+            "relative_return_20d": "20日相对收益",
+            "relative_return_60d": "60日相对收益",
+            "relative_return_120d": "120日相对收益",
+            "validation_status": "验证状态",
+            "candidate_display_status": "候选状态",
+        }
+    )
+    st.markdown(f"**{summary['computed_valid_count']} 只指标可计算 ETF**")
+    _show_raw_frame(computed_display, "暂无指标可计算 ETF。", height=320)
+    with st.expander(f"仍缺少指数缓存的 {summary['no_index_cache_count']} 只", expanded=False):
+        _show_governance_frame(summary["no_index_cache"], "暂无缺少指数缓存记录。", ["symbol", "name", "tracking_index_code", "tracking_index_name", "failure_reason"], height=260)
+    with st.expander(f"仍缺少基准指数的 {summary['missing_benchmark_count']} 只", expanded=False):
+        _show_governance_frame(summary["missing_benchmark"], "暂无缺少基准指数记录。", ["symbol", "name", "failure_reason"], height=420)
+
+
+def render_governance_008b() -> None:
+    summary = get_008b_summary(PROJECT_ROOT)
+    _display_warnings(summary["warnings"])
+    st.subheader("008B 准入检查")
+    st.caption("008B 仍未放行。当前不能生成 factor_score_candidates.csv，也不能把多因子评分接入正式候选池。")
+    st.error("008B 不可启动，多因子评分保持观察状态。")
+    blocker_items = [
+        ("候选池无可用 ETF", summary["candidate_eligible_count"]),
+        ("因子门禁阻断", format_status(summary["factor_gate_status"])),
+        ("可评分比例不足", "阻断"),
+        ("不可评分比例过高", "阻断"),
+        ("历史数据不足偏差", "阻断"),
+        ("无可用因子", "阻断"),
+        ("折溢价数据不可用", "阻断"),
+        ("元数据覆盖不足", "观察"),
+    ]
+    render_governance_metric_grid(
+        [{"label": key, "value": value, "badge": not isinstance(value, int)} for key, value in blocker_items],
+        columns=4,
+    )
+    show_all = st.checkbox("展示全部检查项", value=False, key="008b_show_all_readiness")
+    readiness = summary["readiness"] if show_all else summary["blockers"]
+    _show_governance_frame(
+        readiness,
+        "当前没有 008B 阻断项。",
+        ["readiness_item", "current_status", "blocking", "actual_value", "remediation_action", "notes"],
+        height=420,
+    )
+    with st.expander("因子评分门禁", expanded=False):
+        _show_governance_frame(summary["factor_gate"], "尚未生成 factor_score_gate.csv。", ["gate_item", "status", "actual_value", "finding", "suggested_action"], height=360)
+    with st.expander("因子评分审计", expanded=False):
+        _show_governance_frame(summary["factor_audit"], "尚未生成 factor_score_audit.csv。", ["audit_item", "status", "count", "finding", "suggested_action"], height=360)
+
+
+def render_governance_observation_review() -> None:
+    summary = get_manual_review_summary(PROJECT_ROOT)
+    _display_warnings(summary["warnings"])
+    st.subheader("观察池")
+    st.caption("这里看短历史观察池、低流动性观察，以及需要人工复核的 P0 项。")
+    st.markdown("**A. 短历史观察池**")
+    render_governance_metric_grid(
+        [
+            {"label": "观察池总数", "value": summary["observation_total"]},
+            {"label": "极短历史", "value": summary["very_short_history_count"], "tone": "warning"},
+            {"label": "低流动性观察", "value": summary["low_liquidity_watch_count"], "tone": "warning"},
+            {"label": "20日内预计可用", "value": summary["estimated_eligible_within_20d"], "tone": "success"},
+            {"label": "60日内预计可用", "value": summary["estimated_eligible_within_60d"], "tone": "success"},
+            {"label": "未知预计时间", "value": summary["unknown_estimate_count"], "tone": "warning"},
+        ],
+        columns=3,
+    )
+    observation = summary["observation_pool"].copy()
+    cols = st.columns(3)
+    with cols[0]:
+        selected_observation_status = _option_select("观察池筛选", OBSERVATION_STATUS_OPTIONS, "observation_status_filter")
+    with cols[1]:
+        selected_priority = _filter_select(observation, "observation_priority", "观察优先级筛选", "observation_priority_filter")
+    with cols[2]:
+        low_liquidity_only = st.checkbox("仅看低流动性观察", value=False, key="observation_liquidity_filter")
+    if selected_observation_status:
+        if selected_observation_status == "very_short_history":
+            observation = _apply_choice_filter(observation, "history_status", [selected_observation_status])
+        elif selected_observation_status == "low_liquidity_watch":
+            low_liquidity_only = True
+        else:
+            observation = _apply_choice_filter(observation, "observation_status", [selected_observation_status])
+    observation = _apply_choice_filter(observation, "observation_priority", selected_priority)
+    if low_liquidity_only:
+        if "low_liquidity_flag" in observation.columns:
+            observation = observation[observation["low_liquidity_flag"].map(lambda value: str(value).lower() in {"true", "1", "yes"})].copy()
+        else:
+            st.warning("缺少字段：低流动性观察")
+    _show_governance_frame(
+        observation,
+        "暂无观察池记录，或筛选后无结果。",
+        ["symbol", "name", "row_count", "rows_needed", "observation_status", "observation_priority", "low_liquidity_flag", "estimated_trading_days_until_eligible", "recommended_action"],
+        height=420,
+    )
+    st.markdown("**B. 人工复核**")
+    st.warning("5 只 P0 项在人工复核完成前保持 blocked，不自动解锁。")
+    _render_manual_review_badges(summary["manual_review"])
+    manual_cols = ["symbol", "name", "review_priority", "manual_review_reason", "recommended_checks", "review_status"]
+    _show_governance_frame(summary["manual_review"], "暂无人工复核清单。", manual_cols, height=360)
+
+
+def render_governance_downloads() -> None:
+    st.subheader("下载")
+    st.caption("这里按主题下载已存在的治理报告；按钮只读取本地文件，不触发重算或刷新。")
+    groups = get_report_downloads(PROJECT_ROOT)
+    for group_name, rows in groups.items():
+        st.markdown(f"**{group_name}**")
+        for item in rows:
+            path = Path(item["path"])
+            cols = st.columns([3, 1])
+            cols[0].caption(f"{item['display_name']}（{item['relative_path']}）")
+            if not item["exists"]:
+                cols[1].caption("文件不存在")
+                continue
+            cols[1].download_button(
+                label="下载",
+                data=path.read_bytes(),
+                file_name=path.name,
+                mime="application/octet-stream",
+                key=f"governance_download_{group_name}_{item['filename']}",
+            )
+
+
+def render_governance_dashboard() -> None:
+    st.title("A-ETF-OPEN")
+    st.caption("只读治理驾驶舱｜展示 QA、候选门禁、007B 小范围验证与 008B 准入状态")
+    _render_status_bar()
+    st.sidebar.header("状态说明")
+    st.sidebar.info("当前页面只展示已生成报告：QA 仍硬阻断，007B 仅小范围研究验证，008B 仍禁止。")
+    st.sidebar.markdown("**数据来源**")
+    st.sidebar.caption("output/ 下已存在的 JSON/CSV 报告。")
+    st.sidebar.markdown("**安全边界**")
+    st.sidebar.caption("不刷新 ETF 或指数缓存，不生成策略候选，不连接券商 API，不提供自动交易入口。")
+    tabs = st.tabs(["总览", "QA", "候选池", "007B", "008B", "观察池", "下载"])
+    with tabs[0]:
+        render_governance_overview()
+    with tabs[1]:
+        render_governance_qa_status()
+    with tabs[2]:
+        render_governance_candidate_gate()
+    with tabs[3]:
+        render_governance_007b()
+    with tabs[4]:
+        render_governance_008b()
+    with tabs[5]:
+        render_governance_observation_review()
+    with tabs[6]:
+        render_governance_downloads()
+    st.divider()
+    st.caption("安全边界：只读展示；不刷新 cache，不改策略/回测/信号文件，不连接券商，不自动交易，不构成投资建议。")
+
+
 def render_advanced_diagnostics(data: DashboardData | None = None) -> None:
     with st.expander("高级诊断信息", expanded=False):
         st.caption("以下内容用于排查本地面板、命令输出和环境问题，普通使用时无需查看。")
@@ -1313,6 +1822,9 @@ def render_advanced_diagnostics(data: DashboardData | None = None) -> None:
 
 
 def render_page() -> None:
+    render_governance_dashboard()
+    return
+
     data = load_dashboard_data(PROJECT_ROOT)
     observation_cash = default_observation_cash()
     selected_date, selected_strategy, observation_cash, command_ran = render_sidebar(data, observation_cash)
@@ -1373,7 +1885,7 @@ def render_page() -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="A股 ETF 低频量化观察面板", layout="wide")
+    st.set_page_config(page_title="A-ETF-OPEN 只读治理驾驶舱", layout="wide")
     st.markdown(
         """
         <style>
@@ -1520,6 +2032,168 @@ def main() -> None:
             font-size: 20px;
         }
 
+        .gov-status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            padding: 0.2rem 0 0.65rem;
+            border-bottom: 1px solid rgba(49, 51, 63, 0.08);
+            margin-bottom: 0.55rem;
+        }
+
+        .gov-card-grid {
+            display: grid;
+            gap: 0.55rem;
+            margin: 0.35rem 0 0.7rem;
+        }
+
+        .gov-card-grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .gov-card-grid-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .gov-card-grid-5 {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+
+        .gov-card {
+            min-height: 78px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 0.68rem 0.75rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .gov-card-label {
+            color: rgba(15, 23, 42, 0.58);
+            font-size: 12px;
+            line-height: 1.25;
+            margin-bottom: 0.32rem;
+        }
+
+        .gov-card-value {
+            color: rgba(15, 23, 42, 0.96);
+            font-size: 23px;
+            font-weight: 700;
+            line-height: 1.22;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gov-card-value-badge {
+            font-size: 15px;
+            white-space: normal;
+        }
+
+        .gov-badge {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            min-height: 24px;
+            padding: 0.16rem 0.48rem;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 650;
+            line-height: 1.25;
+            white-space: normal;
+        }
+
+        .gov-badge-success {
+            color: #146c43;
+            background: #d1e7dd;
+            border: 1px solid rgba(20, 108, 67, 0.16);
+        }
+
+        .gov-badge-warning {
+            color: #8a5a00;
+            background: #fff3cd;
+            border: 1px solid rgba(138, 90, 0, 0.18);
+        }
+
+        .gov-badge-danger {
+            color: #b42318;
+            background: #f8d7da;
+            border: 1px solid rgba(180, 35, 24, 0.16);
+        }
+
+        .gov-badge-info {
+            color: #0b5ed7;
+            background: #dbeafe;
+            border: 1px solid rgba(11, 94, 215, 0.14);
+        }
+
+        .gov-badge-neutral {
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid rgba(71, 85, 105, 0.14);
+        }
+
+        .gov-notice {
+            margin: 0.55rem 0 0.85rem;
+            padding: 0.72rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+        }
+
+        .gov-notice-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .gov-notice ul {
+            margin: 0;
+            padding-left: 1.1rem;
+        }
+
+        .gov-notice-info {
+            color: #17324d;
+            background: #eff6ff;
+            border-color: rgba(29, 78, 216, 0.14);
+        }
+
+        .gov-notice-warning {
+            color: #5f4500;
+            background: #fffbeb;
+            border-color: rgba(180, 83, 9, 0.16);
+        }
+
+        .gov-notice-danger {
+            color: #7f1d1d;
+            background: #fef2f2;
+            border-color: rgba(185, 28, 28, 0.16);
+        }
+
+        .manual-review-list {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 0.35rem;
+            margin: 0.35rem 0 0.65rem;
+        }
+
+        .manual-review-row {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.38rem 0.55rem;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .manual-review-name {
+            min-width: 13rem;
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 650;
+        }
+
         div[data-testid="stMetric"] {
             padding: 0.45rem 0.55rem;
             border: 1px solid rgba(49, 51, 63, 0.14);
@@ -1569,6 +2243,13 @@ def main() -> None:
 
             .summary-metric-grid {
                 position: static;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .gov-card-grid,
+            .gov-card-grid-3,
+            .gov-card-grid-4,
+            .gov-card-grid-5 {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
