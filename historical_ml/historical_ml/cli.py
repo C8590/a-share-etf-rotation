@@ -9,6 +9,7 @@ from .config import HistoricalMLConfig
 from .io_utils import read_price_data, read_table, write_table
 from .labeler import FutureLabeler
 from .ml_baseline import run_baseline_from_file, run_baseline
+from .ml_stability import run_ml_stability_from_file
 from .replay_engine import HistoricalReplayEngine
 from .reports import generate_entry_threshold_report
 from .review_queue import build_manual_review_queue
@@ -54,6 +55,10 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--out", required=True)
     train.add_argument("--target", choices=["both", "good_entry", "bad_entry"], default="both")
     train.add_argument("--format", choices=["csv", "parquet"], default="csv")
+
+    stability = sub.add_parser("ml-stability", help="run offline ML stability diagnostics")
+    stability.add_argument("--samples", required=True, help="entry_candidate_samples_labeled CSV/parquet")
+    stability.add_argument("--out", required=True)
     return p
 
 
@@ -129,6 +134,10 @@ def main(argv=None) -> int:
 
     if args.command == "train-baseline":
         run_baseline_from_file(args.samples, out_dir, target=args.target, output_format=args.format)
+        return 0
+
+    if args.command == "ml-stability":
+        run_ml_stability_from_file(args.samples, out_dir)
         return 0
 
     parser.error("unknown command")
