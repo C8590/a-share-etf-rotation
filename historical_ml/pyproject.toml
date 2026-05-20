@@ -1,0 +1,10 @@
+[project]
+name = "aetfv2-historical-ml"
+version = "0.1.0"
+description = "Historical replay sample factory for aetfv2 entry calibration"
+requires-python = ">=3.10"
+dependencies = ["pandas>=2.0", "numpy>=1.24"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
