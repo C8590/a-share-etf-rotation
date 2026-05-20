@@ -106,12 +106,15 @@ def generate_entry_threshold_report(
         lines.append(tbl.head(10).to_markdown(index=False) if not tbl.empty else "样本不足。")
         lines.append("")
 
-    lines.append("## 4. 阈值与参数建议")
+    lines.extend(_build_phase2_diagnostics(complete, config))
+    lines.append("")
+
+    lines.append("## 5. 阈值与参数建议")
     lines.append("")
     lines.extend(_build_recommendations(complete, config))
     lines.append("")
 
-    lines.append("## 5. 风险提示")
+    lines.append("## 6. 风险提示")
     lines.append("")
     lines.append("- historical_ml 只产样本、标签、统计结论和参数建议，不直接修改 entry 规则。")
     lines.append("- 未来表现标签只在 label 阶段使用，不能回流到 replay 特征生成。")
@@ -122,6 +125,122 @@ def generate_entry_threshold_report(
         Path(out_path).parent.mkdir(parents=True, exist_ok=True)
         Path(out_path).write_text(report, encoding="utf-8")
     return report
+
+
+def _build_phase2_diagnostics(complete: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:
+    lines: list[str] = []
+    lines.append("## 4. Phase 2 Quality Diagnostics")
+    lines.append("")
+
+    for col in ["market_state", "sector_state"]:
+        lines.append(f"### {col} x auto_label")
+        lines.append(_cross_tab_markdown(complete, col, "auto_label"))
+        lines.append("")
+
+    for col in ["momentum_score", "acceleration_score", "trend_maturity", "sector_rank", "etf_rank"]:
+        lines.append(f"### {col} bucket success rate")
+        lines.append(_bucket_success_markdown(complete, col, config))
+        lines.append("")
+
+    lines.append("### was_selected=True and bad_entry Top 20")
+    lines.append(_top_samples_markdown(complete, complete["was_selected"].astype(bool) & (complete["auto_label"] == "bad_entry")))
+    lines.append("")
+
+    lines.append("### was_bought=True and bad_entry Top 20")
+    lines.append(_top_samples_markdown(complete, complete["was_bought"].astype(bool) & (complete["auto_label"] == "bad_entry")))
+    lines.append("")
+
+    lines.append("### was_candidate=False and large future_return_10d Top 20")
+    lines.append(
+        _top_samples_markdown(
+            complete,
+            (~complete["was_candidate"].astype(bool)) & (complete["future_return_10d"] >= config.missed_big_winner_return_10d),
+            sort_col="future_return_10d",
+            ascending=False,
+        )
+    )
+    return lines
+
+
+def _cross_tab_markdown(df: pd.DataFrame, row_col: str, label_col: str) -> str:
+    if df.empty or row_col not in df.columns or label_col not in df.columns:
+        return "No rows."
+    table = pd.crosstab(df[row_col].fillna("<missing>"), df[label_col].fillna("<missing>"))
+    if table.empty:
+        return "No rows."
+    table["total"] = table.sum(axis=1)
+    return table.reset_index().to_markdown(index=False)
+
+
+def _bucket_success_markdown(df: pd.DataFrame, col: str, config: HistoricalMLConfig) -> str:
+    if df.empty or col not in df.columns:
+        return "No rows."
+    required = ["auto_label", "future_return_10d", "was_bought"]
+    if any(c not in df.columns for c in required):
+        return "No rows."
+    tmp = df[[col, *required]].copy()
+    tmp[col] = pd.to_numeric(tmp[col], errors="coerce")
+    tmp = tmp.dropna(subset=[col])
+    if tmp.empty:
+        return "No rows."
+
+    if tmp[col].nunique() >= 2:
+        try:
+            tmp["bucket"] = pd.qcut(tmp[col], q=min(config.report_feature_bins, tmp[col].nunique()), duplicates="drop")
+        except ValueError:
+            tmp["bucket"] = tmp[col].astype(str)
+    else:
+        tmp["bucket"] = tmp[col].astype(str)
+
+    table = tmp.groupby("bucket", observed=False).agg(
+        sample_count=("auto_label", "count"),
+        good_count=("auto_label", lambda s: int((s == "good_entry").sum())),
+        bad_count=("auto_label", lambda s: int((s == "bad_entry").sum())),
+        good_rate=("auto_label", lambda s: float((s == "good_entry").mean())),
+        bad_rate=("auto_label", lambda s: float((s == "bad_entry").mean())),
+        avg_return_10d=("future_return_10d", "mean"),
+        bought_rate=("was_bought", "mean"),
+    ).reset_index()
+    table["bucket"] = table["bucket"].astype(str)
+    return table.to_markdown(index=False)
+
+
+def _top_samples_markdown(
+    df: pd.DataFrame,
+    mask: pd.Series,
+    sort_col: str = "future_return_10d",
+    ascending: bool = True,
+) -> str:
+    if df.empty:
+        return "No rows."
+    cols = [
+        "trade_date",
+        "execution_date",
+        "code",
+        "name",
+        "sector",
+        "market_state",
+        "sector_state",
+        "momentum_score",
+        "acceleration_score",
+        "entry_score",
+        "trend_maturity",
+        "sector_rank",
+        "etf_rank",
+        "was_candidate",
+        "was_selected",
+        "was_bought",
+        "future_return_10d",
+        "future_max_drawdown_10d",
+        "exclude_reason",
+    ]
+    present = [c for c in cols if c in df.columns]
+    sub = df.loc[mask, present].copy()
+    if sub.empty:
+        return "No rows."
+    if sort_col in sub.columns:
+        sub = sub.sort_values(sort_col, ascending=ascending)
+    return sub.head(20).to_markdown(index=False)
 
 
 def _build_recommendations(complete: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:

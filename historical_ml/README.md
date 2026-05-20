@@ -46,6 +46,7 @@ python -m historical_ml.cli run-all \
 - `entry_candidate_samples_labeled`
 - `manual_review_queue`
 - `entry_threshold_report.md`
+- `replay_audit_report.md`
 
 若开启 daily partitions，每天还会写入：
 

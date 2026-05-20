@@ -4,6 +4,7 @@ import pandas as pd
 
 from .feature_builder import build_etf_features_for_day
 from .config import HistoricalMLConfig
+from .schemas import REPLAY_FORBIDDEN_LABEL_COLUMNS
 
 
 def assert_signal_execution_separation(samples: pd.DataFrame) -> None:
@@ -20,6 +21,21 @@ def assert_required_columns(df: pd.DataFrame, columns: list[str], table_name: st
     missing = [c for c in columns if c not in df.columns]
     if missing:
         raise AssertionError(f"{table_name} missing columns: {missing}")
+
+
+def assert_no_replay_label_columns(df: pd.DataFrame, table_name: str) -> None:
+    leaked = [c for c in REPLAY_FORBIDDEN_LABEL_COLUMNS if c in df.columns]
+    leaked += [c for c in df.columns if c.startswith("future_return_") and c not in leaked]
+    if leaked:
+        raise AssertionError(f"{table_name} contains future label columns in replay stage: {sorted(leaked)}")
+
+
+def assert_source_is_historical_replay(df: pd.DataFrame, table_name: str) -> None:
+    if "source" not in df.columns:
+        raise AssertionError(f"{table_name} missing source column")
+    values = set(df["source"].dropna().astype(str).unique())
+    if values != {"historical_replay"}:
+        raise AssertionError(f"{table_name} source must be historical_replay only; got {sorted(values)}")
 
 
 def assert_no_future_feature_leakage(price_df: pd.DataFrame, trade_date, config: HistoricalMLConfig) -> None:

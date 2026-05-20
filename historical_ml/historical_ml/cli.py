@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .audit import generate_replay_audit_report
 from .config import HistoricalMLConfig
 from .io_utils import read_price_data, read_table, write_table
 from .labeler import FutureLabeler
@@ -35,6 +36,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     report = sub.add_parser("report", help="generate manual review queue and entry threshold report")
     report.add_argument("--labeled-samples", required=True)
+    report.add_argument("--daily-etf-samples", default=None)
+    report.add_argument("--daily-sector-samples", default=None)
+    report.add_argument("--daily-decision-snapshot", default=None)
+    report.add_argument("--unlabeled-samples", default=None)
     report.add_argument("--out", required=True)
     report.add_argument("--format", choices=["csv", "parquet"], default="csv")
 
@@ -79,6 +84,15 @@ def main(argv=None) -> int:
         review = build_manual_review_queue(labeled, config=config)
         write_table(review, out_dir, "manual_review_queue", args.format)
         generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
+        audit_inputs = {
+            "daily_etf_samples": read_table(args.daily_etf_samples) if args.daily_etf_samples else None,
+            "daily_sector_samples": read_table(args.daily_sector_samples) if args.daily_sector_samples else None,
+            "daily_decision_snapshot": read_table(args.daily_decision_snapshot) if args.daily_decision_snapshot else None,
+            "entry_candidate_samples_unlabeled": read_table(args.unlabeled_samples) if args.unlabeled_samples else None,
+        }
+        audit_inputs = {k: v for k, v in audit_inputs.items() if v is not None}
+        if audit_inputs:
+            generate_replay_audit_report(audit_inputs, labeled, out_dir / "replay_audit_report.md", config=config)
         return 0
 
     if args.command == "run-all":
@@ -91,6 +105,13 @@ def main(argv=None) -> int:
         review = build_manual_review_queue(labeled, config=config)
         write_table(review, out_dir, "manual_review_queue", config.output_format)
         generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
+        audit_outputs = {
+            "daily_etf_samples": outputs["daily_etf_samples"],
+            "daily_sector_samples": outputs["daily_sector_samples"],
+            "daily_decision_snapshot": outputs["daily_decision_snapshot"],
+            "entry_candidate_samples_unlabeled": outputs["entry_candidate_samples"],
+        }
+        generate_replay_audit_report(audit_outputs, labeled, out_dir / "replay_audit_report.md", config=config)
         return 0
 
     parser.error("unknown command")

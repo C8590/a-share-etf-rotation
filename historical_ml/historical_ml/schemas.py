@@ -122,6 +122,8 @@ FUTURE_LABEL_COLUMNS = [
     "label_status",
 ]
 
+REPLAY_FORBIDDEN_LABEL_COLUMNS = FUTURE_LABEL_COLUMNS.copy()
+
 REVIEW_QUEUE_COLUMNS = [
     "review_reason",
     "review_priority",
