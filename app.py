@@ -32,6 +32,7 @@ def _enable_project_signal_submodules() -> None:
 _enable_project_signal_submodules()
 
 from data.universe import UNIVERSE_META_PATH, build_universe_stage_counts
+from data.sector_map import load_etf_sector_map
 from data.storage import normalize_symbol as normalize_etf_symbol
 from data.trading_calendar import get_next_trading_day, load_a_share_trading_calendar
 from data.portfolio_store import (
@@ -720,6 +721,11 @@ def _normal_etf_code(value: Any) -> str:
     return code.zfill(6) if code.isdigit() else code
 
 
+@st.cache_data(ttl=300, show_spinner=False)
+def _load_sector_records() -> dict[str, dict[str, Any]]:
+    return load_etf_sector_map(PROJECT_ROOT / "config" / "etf_sector_map.yaml")
+
+
 def _value_from_columns(row: pd.Series, columns: tuple[str, ...], default: str = "") -> str:
     for col in columns:
         if col in row.index and not _is_missing_display_value(row.get(col)):
@@ -777,6 +783,15 @@ def build_v2_etf_lookup(
     cases: pd.DataFrame | None = None,
 ) -> dict[str, dict[str, str]]:
     lookup: dict[str, dict[str, str]] = {}
+    for code, record in _load_sector_records().items():
+        normalized = _normal_etf_code(code)
+        item = lookup.setdefault(normalized, {"ETF代码": normalized})
+        if not _is_missing_display_value(record.get("name")):
+            item["ETF名称"] = _clean_display_value(record.get("name"), NAME_MISSING_TEXT)
+            item["名称来源"] = "ETF 行业主题映射"
+        item["入选板块"] = _clean_display_value(record.get("sector_l2") or record.get("sector"), "行业未录入")
+        item["主题"] = _clean_display_value(record.get("theme"), "主题未录入")
+        item["风险分组"] = _clean_display_value(record.get("risk_group"), "风险分组未录入")
     _merge_v2_reference_frame(entry if entry is not None else _load_v2_output_frame("entry_signal.csv"), "entry_signal.csv", lookup)
     _merge_v2_reference_frame(pre_selection if pre_selection is not None else _load_v2_output_frame("pre_selection_result.csv"), "pre_selection_result.csv", lookup)
     _merge_v2_reference_frame(cases if cases is not None else _load_v2_output_frame("signal_cases.csv"), "signal_cases.csv", lookup)
@@ -841,6 +856,8 @@ def build_v2_candidate_table(
                     "ETF代码": symbol,
                     "ETF名称": _clean_display_value(item.get("etf_name") or info.get("ETF名称"), NAME_MISSING_TEXT),
                     "入选板块": _clean_display_value(item.get("level1_sector") or info.get("入选板块"), "无"),
+                    "主题": _clean_display_value(info.get("主题"), "主题未录入"),
+                    "风险分组": _clean_display_value(info.get("风险分组"), "风险分组未录入"),
                     "排名": _clean_display_value(item.get("etf_rank"), "无"),
                     "买入动作": _candidate_action_text(item.get("entry_action")),
                     "建议仓位": _clean_display_value(item.get("target_weight"), "0"),
@@ -858,6 +875,8 @@ def build_v2_candidate_table(
                     "ETF代码": symbol or text,
                     "ETF名称": _clean_display_value(info.get("ETF名称"), text or NAME_MISSING_TEXT),
                     "入选板块": _clean_display_value(info.get("入选板块") or row.get("modular_selected_sectors"), "无"),
+                    "主题": _clean_display_value(info.get("主题"), "主题未录入"),
+                    "风险分组": _clean_display_value(info.get("风险分组"), "风险分组未录入"),
                     "买入动作": "候选观察（不是买入）",
                     "完整原因": _clean_display_value(info.get("完整原因") or row.get("v2_reason"), "无"),
                     "名称来源": info.get("名称来源", "未匹配"),
@@ -886,6 +905,8 @@ def build_v2_action_table(
                 "ETF代码": normalized or NAME_MISSING_TEXT,
                 "ETF名称": info.get("ETF名称", NAME_MISSING_TEXT),
                 "入选板块": _clean_display_value(info.get("入选板块"), "无"),
+                "主题": _clean_display_value(info.get("主题"), "主题未录入"),
+                "风险分组": _clean_display_value(info.get("风险分组"), "风险分组未录入"),
                 action_label: final_action,
                 "是否实际买入": "是" if normalized in actual_buy_symbols or _is_actual_buy_action(final_action) else "否",
                 "建议仓位": _clean_display_value(info.get("建议仓位"), "0"),
@@ -908,8 +929,8 @@ def build_v2_status_cards(row: pd.Series, comparison_row: pd.Series, cases: pd.D
         ("当前信号版本", _clean_display_value(row.get("signal_version", "V2_MODULAR"), "V2_MODULAR")),
         ("市场状态", _clean_display_value(row.get("modular_market_state", row.get("v2_market_state")), "未生成")),
         ("是否有实际买入计划", "是" if actual_buy_count > 0 else "否"),
-        ("V2 候选数量", candidate_count),
-        ("V2 实际买入数量", actual_buy_count),
+        ("候选数量", candidate_count),
+        ("实际买入数量", actual_buy_count),
         ("当前后验样本状态", sample_state),
     ]
 
@@ -1316,8 +1337,9 @@ def render_sidebar_layout(sidebar_open: bool) -> None:
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 36px;
-            padding: 0.38rem 0.72rem;
+            min-width: 96px;
+            min-height: 42px;
+            padding: 0.48rem 0.88rem;
             border: 1px solid rgba(49, 51, 63, 0.24);
             border-radius: 6px;
             background: #ffffff;
@@ -1358,7 +1380,7 @@ def render_sidebar_layout(sidebar_open: bool) -> None:
 
 
 def render_sidebar_toggle(sidebar_open: bool) -> None:
-    label = "收起侧栏" if sidebar_open else "☰ 展开侧栏"
+    label = "收起侧栏" if sidebar_open else "展开侧栏"
     href = sidebar_toggle_href(not sidebar_open)
     container = st.sidebar if sidebar_open else st
     container.markdown(
@@ -1527,7 +1549,7 @@ def render_overview(overview: dict[str, Any], selected_date: date, observation_c
 
 
 def render_v2_native_tab(data: DashboardData, selected_date: date, observation_cash: float) -> None:
-    st.subheader("V2 模块化信号")
+    st.subheader("日频右侧确认型 ETF 动量轮动策略")
     row = _selected_strategy_row(data, MAIN_STRATEGY)
     comparison = _load_control_output("v1_v2_comparison.csv")
     cases = _load_control_output("signal_cases.csv")
@@ -1545,7 +1567,7 @@ def render_v2_native_tab(data: DashboardData, selected_date: date, observation_c
         ],
         class_name="compact-metric-grid strategy-metric-grid",
     )
-    st.info("当前主信号来自 V2_MODULAR。候选 ETF 表示进入观察池，不等于实际买入；买入计划只看 entry 输出的真实买入动作和建议仓位。")
+    st.info("当前主策略只有一个：日频右侧确认型 ETF 动量轮动策略。候选 ETF 表示进入观察池，不等于实际买入；买入计划只看 entry 输出的真实买入动作和建议仓位。")
     if execution["date"] == "待确认":
         st.warning(f"预计执行日：待确认。原因：{execution['reason']}")
 
@@ -1564,18 +1586,18 @@ def render_v2_native_tab(data: DashboardData, selected_date: date, observation_c
 
 
 def render_v2_calibration_tab() -> None:
-    st.subheader("V2 校准研究")
+    st.subheader("校准研究")
     render_control_foundation_summary()
     with st.expander("输出文件状态", expanded=False):
         show_dataframe_or_empty(build_output_file_status(), key="calibration_output_file_status", height=320)
 
 
 def render_legacy_v1_tab(data: DashboardData) -> None:
-    st.subheader("V1 传统信号")
-    st.info("旧版 V1 信号仅用于对照；当前主信号来自 V2_MODULAR。")
+    st.subheader("历史对照 / 旧版参考")
+    st.warning("该页面仅用于历史对照，不参与当前日频动量策略，不参与 risk_warning 门控，不作为当前交易建议来源。")
     comparison = _load_control_output("v1_v2_comparison.csv")
     row = _latest_control_row(comparison)
-    with st.expander("旧版 V1 信号，仅用于对照", expanded=True):
+    with st.expander("旧版参考信号，仅用于历史对照", expanded=True):
         if row.empty:
             st.caption("暂无 V1/V2 对照数据。重新生成信号后会写入 v1_v2_comparison.csv。")
             return
@@ -1666,6 +1688,7 @@ def build_etf_pool_view(data: DashboardData) -> pd.DataFrame:
         base = data.rankings.copy()
     if base.empty:
         return pd.DataFrame()
+    sector_records = _load_sector_records()
 
     if "symbol" in base.columns:
         base["symbol"] = base["symbol"].astype(str).str.zfill(6)
@@ -1681,6 +1704,7 @@ def build_etf_pool_view(data: DashboardData) -> pd.DataFrame:
     rows = []
     for _, item in base.iterrows():
         symbol = str(item.get("symbol", "")).zfill(6)
+        sector_record = sector_records.get(symbol, {})
         success = str(item.get("success", "True")).lower() not in {"false", "0", "no", "否"}
         included = symbol in ranked_symbols if ranked_symbols else success
         reason = _clean_pool_text(item.get("filter_reason") or item.get("failure_reason") or item.get("error"), "")
@@ -1693,7 +1717,10 @@ def build_etf_pool_view(data: DashboardData) -> pd.DataFrame:
         rows.append(
             {
                 "symbol": symbol,
-                "name": _clean_pool_text(item.get("name", data.etf_names.get(symbol, "")), "未记录名称"),
+                "name": _clean_pool_text(item.get("name") or data.etf_names.get(symbol, "") or sector_record.get("name", ""), "名称未录入"),
+                "sector": _clean_pool_text(item.get("sector") or sector_record.get("sector_l2") or sector_record.get("sector", ""), "行业未录入"),
+                "theme": _clean_pool_text(item.get("theme") or sector_record.get("theme", ""), "主题未录入"),
+                "risk_group": _clean_pool_text(item.get("risk_group") or sector_record.get("risk_group", ""), "风险分组未录入"),
                 "status": _etf_status_label(item.get("status", "正常" if success else "异常")),
                 "quality_status": _etf_quality_status(item),
                 "eligible": included,
@@ -1734,7 +1761,7 @@ def render_universe_module(data: DashboardData) -> None:
             ("全市场 ETF 数", len(pool_view) or counts["raw_total"] or "N/A"),
             ("当前策略观察池数量", included_count or "N/A"),
             ("暂不参与本策略的 ETF 数", not_in_strategy_count),
-            ("今日 V2 候选池数量", candidate_count),
+            ("今日候选池数量", candidate_count),
             ("下载成功", success_count or "N/A"),
             ("缓存可用", cached_count),
             ("跳过", skipped_count),
@@ -1752,17 +1779,21 @@ def render_universe_module(data: DashboardData) -> None:
             """
 - 全市场 ETF 池：系统已识别并维护行情缓存的 ETF 总范围。
 - 策略观察池：当前策略允许纳入日常观察和排序的 ETF，通常已满足基础数据、流动性、分类等要求。
-- 今日 V2 候选池：通过 V2 选前模型的候选 ETF，只表示进入候选观察，不等于买入。
+- 今日候选池：通过日频选前模型的候选 ETF，只表示进入候选观察，不等于买入。
 - 买入计划：entry 模型给出实际买入动作且存在建议仓位的交易计划。
 - 1160 只 ETF 中只有部分进入策略观察池，是因为本策略只覆盖当前定义的 A 股权益 ETF 范围，并要求数据完整度、流动性和分类可用。
             """.strip()
         )
 
     if not pool_view.empty:
-        display_cols = [col for col in ["symbol", "name", "latest_date", "status", "quality_status", "reason"] if col in pool_view.columns]
+        display_cols = [
+            col
+            for col in ["symbol", "name", "sector", "theme", "risk_group", "latest_date", "status", "quality_status", "reason"]
+            if col in pool_view.columns
+        ]
         strategy_pool = pool_view[pool_view["eligible"]].copy() if "eligible" in pool_view.columns else pool_view.copy()
         st.markdown("**当前策略观察池**")
-        st.caption("这里只展示当前策略允许观察的 ETF；是否进入今日候选池由 V2 选前模型另行判断。")
+        st.caption("这里只展示当前策略允许观察的 ETF；是否进入今日候选池由日频选前模型另行判断。")
         show_dataframe_or_empty(
             strategy_pool[display_cols],
             empty_text="当前没有 ETF 进入策略观察池。",
@@ -1770,13 +1801,17 @@ def render_universe_module(data: DashboardData) -> None:
             height=500,
         )
 
-        candidate_cols = [col for col in ["symbol", "name", "latest_date", "status", "quality_status", "reason"] if col in pool_view.columns]
+        candidate_cols = [
+            col
+            for col in ["symbol", "name", "sector", "theme", "risk_group", "latest_date", "status", "quality_status", "reason"]
+            if col in pool_view.columns
+        ]
         candidate_pool = pool_view[pool_view["selected"]].copy() if "selected" in pool_view.columns else pd.DataFrame()
-        st.markdown("**今日 V2 候选池（候选观察，不等于买入）**")
-        st.caption("今日 V2 候选池只表示通过选前模型，实际买入还要看 entry_action 和建议仓位。")
+        st.markdown("**今日候选池（候选观察，不等于买入）**")
+        st.caption("今日候选池只表示通过选前模型，实际买入还要看买入动作和建议仓位。")
         show_dataframe_or_empty(
             candidate_pool[candidate_cols] if not candidate_pool.empty else candidate_pool,
-            empty_text="今日暂无 V2 候选 ETF；这不等于买入计划为空的唯一原因，仍需查看 entry_action。",
+            empty_text="今日暂无候选 ETF；这不等于买入计划为空的唯一原因，仍需查看买入动作。",
             key="today_v2_candidate_pool",
             height=320,
         )
@@ -2598,7 +2633,7 @@ def render_page() -> None:
     if command_ran:
         data = _load_dashboard_data_cached(str(PROJECT_ROOT), _dashboard_output_signature(PROJECT_ROOT))
 
-    st.title("V2 模块化 ETF 信号总控")
+    st.title("日频右侧确认型 ETF 动量轮动总控")
     st.caption(
         "当前策略属于右侧确认型趋势跟随策略，不预测启动点，也不做左侧埋伏。系统通过日 K 动量、趋势形态、"
         "成交活跃度和相对强弱确认 ETF 已经走强后，再给出交易建议。策略通过日频更新进行纠错和风控，"
@@ -2613,7 +2648,7 @@ def render_page() -> None:
     if date_errors:
         st.warning("当前输出未通过日期一致性校验，请重新生成信号或查看运行日志。")
 
-    tabs = st.tabs(["V2 模块化信号", "持仓管理", "V2 校准研究", "数据质量", "V1 传统信号", "运行日志"])
+    tabs = st.tabs(["当前信号", "当前持仓", "校准研究", "数据质量", "历史对照 / 旧版参考", "运行日志"])
     with tabs[0]:
         render_v2_native_tab(data, selected_date, observation_cash)
 
