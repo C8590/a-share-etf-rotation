@@ -3,11 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import matplotlib
-
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from analysis.performance import drawdown
@@ -52,40 +47,6 @@ def build_yearly_returns(
     result = pd.DataFrame(rows)
     result.to_csv(Path(output_dir) / "yearly_returns.csv", index=False, encoding="utf-8-sig")
     return result
-
-
-def build_monthly_returns(
-    equity_curve: pd.DataFrame,
-    output_dir: str | Path = "output",
-) -> pd.DataFrame:
-    output_path = Path(output_dir)
-    equity = equity_curve["equity"].astype(float)
-    monthly_equity = equity.resample("ME").last()
-    monthly_ret = monthly_equity.pct_change().dropna()
-    table = monthly_ret.to_frame("月度收益率")
-    table["年份"] = table.index.year
-    table["月份"] = table.index.month
-    table = table[["年份", "月份", "月度收益率"]]
-    table.to_csv(output_path / "monthly_returns.csv", index=False, encoding="utf-8-sig")
-
-    heat = table.pivot(index="年份", columns="月份", values="月度收益率").sort_index()
-    plt.figure(figsize=(12, max(4, len(heat) * 0.45)))
-    im = plt.imshow(heat.fillna(0), aspect="auto", cmap="RdYlGn", vmin=-0.12, vmax=0.12)
-    plt.colorbar(im, label="Monthly Return")
-    plt.xticks(range(12), [str(i) for i in range(1, 13)])
-    plt.yticks(range(len(heat.index)), heat.index.astype(str))
-    plt.xlabel("Month")
-    plt.ylabel("Year")
-    plt.title("Monthly Returns Heatmap")
-    for y_idx, year in enumerate(heat.index):
-        for x_idx, month in enumerate(heat.columns):
-            value = heat.loc[year, month]
-            if pd.notna(value):
-                plt.text(x_idx, y_idx, f"{value * 100:.1f}%", ha="center", va="center", fontsize=7)
-    plt.tight_layout()
-    plt.savefig(output_path / "monthly_returns_heatmap.png", dpi=150)
-    plt.close()
-    return table
 
 
 def _reason_column(trades: pd.DataFrame) -> str | None:

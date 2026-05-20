@@ -14,33 +14,6 @@ def buy_and_hold_equity(close: pd.DataFrame, symbol: str, initial_cash: float) -
     return (initial_cash / price.iloc[0]) * price
 
 
-def equal_weight_monthly_equity(close: pd.DataFrame, initial_cash: float) -> pd.Series:
-    prices = close.ffill().dropna(how="all")
-    if prices.empty:
-        return pd.Series(dtype=float)
-
-    cash = 0.0
-    shares = pd.Series(0.0, index=prices.columns)
-    equity_rows: list[tuple[pd.Timestamp, float]] = []
-    rebalance_dates = set(pd.Series(prices.index, index=prices.index).resample("ME").last().dropna())
-
-    first_prices = prices.iloc[0].dropna()
-    weight_cash = initial_cash / len(first_prices)
-    shares.loc[first_prices.index] = weight_cash / first_prices
-
-    for date, row in prices.iterrows():
-        valid = row.dropna()
-        equity = cash + float((shares.loc[valid.index] * valid).sum())
-        equity_rows.append((date, equity))
-        if date in rebalance_dates and len(valid) > 0:
-            target_value = equity / len(valid)
-            shares.loc[:] = 0.0
-            shares.loc[valid.index] = target_value / valid
-            cash = 0.0
-
-    return pd.Series(dict(equity_rows)).sort_index()
-
-
 def build_benchmark_report(
     close: pd.DataFrame,
     strategy_equity: pd.Series,
@@ -54,7 +27,6 @@ def build_benchmark_report(
     benchmarks: dict[str, pd.Series] = {
         "buy_hold_510300": buy_and_hold_equity(close, "510300", initial_cash),
         "cash_etf_511880": buy_and_hold_equity(close, "511880", initial_cash),
-        "all_etf_equal_weight_monthly": equal_weight_monthly_equity(close, initial_cash),
         "current_strategy": strategy_equity.dropna(),
     }
     if extra_benchmarks:

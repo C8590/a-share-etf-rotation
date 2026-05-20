@@ -1,9 +1,21 @@
-strategy_name: original
+strategy_name: 日频右侧确认型 ETF 动量轮动策略
 
 backtest:
   start_date: "20190101"
   end_date: null
   initial_cash: 10000
+
+data_update:
+  daily_incremental:
+    max_workers: 8
+    timeout_per_symbol: 20
+    max_lookback_days: 5
+    retries: 1
+    source_circuit_breaker_threshold: 20
+  full_refresh:
+    max_workers: 3
+    retries: 3
+    chunk_by_year: true
 
 fee_config:
   commission_rate: 0.00005
@@ -12,16 +24,15 @@ fee_config:
   slippage_rate: 0.00005
 
 strategy:
-  strategy_type: rotation
-  frequency: weekly
-  rebalance_frequency: weekly
+  frequency: daily
+  rebalance_frequency: daily
   signal_weekday: 4
-  momentum_period: 20
-  momentum_window: 20
+  momentum_period: 60
+  momentum_window: 60
   ma_period: 60
   ma_window: 60
-  max_positions: 2
-  sell_rank_threshold: 4
+  max_positions: 3
+  sell_rank_threshold: 5
   execution_price: open
   lot_size: 100
   enable_lot_rounding: true
@@ -34,7 +45,13 @@ strategy:
   enable_trend_filter: true
   market_filter_symbol: "510300"
   market_filter_ma_window: 200
-  enable_min_momentum_filter: false
-  min_momentum_threshold: null
+  enable_min_momentum_filter: true
+  min_momentum_threshold: 0.0
   max_industry_etf_weight: null
   max_drawdown_stop: null
+  min_trading_days: 120
+  avg_amount_window: 20
+  min_avg_amount: 20000000
+  min_data_completeness: 0.95
+  max_stale_days: 7
+  max_zero_amount_days: 0

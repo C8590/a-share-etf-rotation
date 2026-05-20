@@ -20,9 +20,7 @@ from backtest.portfolio import (
     calculate_trade_cost,
 )
 from data.storage import build_price_matrix
-from strategy.equal_weight import EqualWeightMonthlyStrategy
-from strategy.etf_rotation import ETFRotationStrategy, StrategyConfig, get_rebalance_dates
-from strategy.reduced_equal_weight import ReducedEqualWeightMonthlyStrategy
+from strategy.etf_rotation import DailyMomentumRotationStrategy, StrategyConfig, get_rebalance_dates
 
 
 class BacktestEngine:
@@ -55,13 +53,9 @@ class BacktestEngine:
 
         self.close = build_price_matrix(market_data, "close")
         self.open = build_price_matrix(market_data, "open")
+        self.amount = build_price_matrix(market_data, "amount")
         self.valuation_close = self.close.ffill()
-        if strategy_config.strategy_type == "equal_weight_monthly":
-            self.strategy = EqualWeightMonthlyStrategy(self.close, self.etf_info, selected_symbols=strategy_config.selected_symbols)
-        elif strategy_config.strategy_type == "reduced_equal_weight_monthly":
-            self.strategy = ReducedEqualWeightMonthlyStrategy(self.close, self.etf_info, selected_symbols=strategy_config.selected_symbols)
-        else:
-            self.strategy = ETFRotationStrategy(self.close, self.etf_info, strategy_config)
+        self.strategy = DailyMomentumRotationStrategy(self.close, self.etf_info, strategy_config, amount=self.amount)
 
     def run(self, output_dir: str | Path = "output", save_outputs: bool = True) -> dict[str, Any]:
         output_path = Path(output_dir)
@@ -106,10 +100,7 @@ class BacktestEngine:
                 signal = self.strategy.generate_target(date, current_holdings)
                 signal = self._apply_portfolio_drawdown_stop(signal, equity_rows)
                 target = signal["target"]
-                should_rebalance = set(target) != set(current_holdings) or self.strategy_config.strategy_type in {
-                    "equal_weight_monthly",
-                    "reduced_equal_weight_monthly",
-                }
+                should_rebalance = set(target) != set(current_holdings)
                 if should_rebalance:
                     pending_signal = {
                         "signal": signal,
@@ -188,7 +179,7 @@ class BacktestEngine:
                         shares_to_sell,
                         prices,
                         portfolio,
-                        "目标仓位变化，按等权原则减仓",
+                        "目标仓位变化，按当前目标组合减仓",
                         before_positions,
                     )
                 )

@@ -11,7 +11,7 @@ class BaseStrategy:
     def generate_rebalance_dates(
         self,
         dates: pd.DatetimeIndex,
-        frequency: str = "weekly",
+        frequency: str = "daily",
         signal_weekday: int = 4,
     ) -> list[pd.Timestamp]:
         from strategy.etf_rotation import get_rebalance_dates
