@@ -1,5 +1,6 @@
 ﻿__pycache__/
 *.py[cod]
+.tmp/
 
 .venv/
 venv/
@@ -26,6 +27,9 @@ output/*
 !output/.gitkeep
 
 logs/
+
+runtime/qmt_execution/*
+!runtime/qmt_execution/.gitkeep
 
 backup/
 
