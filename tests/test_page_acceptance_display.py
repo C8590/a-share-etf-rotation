@@ -28,12 +28,12 @@ class PageAcceptanceDisplayTest(unittest.TestCase):
     def test_output_file_status_degrades_when_outputs_are_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             output_dir = Path(tmp)
-            (output_dir / "entry_signal.csv").write_text("trade_date,symbol\n", encoding="utf-8")
+            (output_dir / "daily_decision_snapshot.json").write_text("{}\n", encoding="utf-8")
             status = build_output_file_status(output_dir)
 
         self.assertEqual(set(status["输出文件"]), set(REQUIRED_ACCEPTANCE_OUTPUT_FILES))
-        missing = status[status["输出文件"] == "signal_cases.csv"].iloc[0]
-        present = status[status["输出文件"] == "entry_signal.csv"].iloc[0]
+        missing = status[status["输出文件"] == "order_intent.json"].iloc[0]
+        present = status[status["输出文件"] == "daily_decision_snapshot.json"].iloc[0]
         self.assertIn("缺失", missing["读取状态"])
         self.assertEqual(present["读取状态"], "已生成")
 
@@ -180,9 +180,10 @@ class PageAcceptanceDisplayTest(unittest.TestCase):
 
         self.assertNotIn("run_project_command", loader_source)
         self.assertNotIn("generate-signal", loader_source)
-        self.assertIn("当前信号", page_source)
-        self.assertIn("历史对照 / 旧版参考", page_source)
-        self.assertNotIn("V1 传统信号", page_source)
+        self.assertIn("今日总览", page_source)
+        self.assertIn("V1 对照", page_source)
+        self.assertIn("V1 传统信号，仅用于对照", page_source)
+        self.assertNotIn("render_sidebar", page_source)
 
     def test_sidebar_has_visible_expand_and_collapse_labels(self) -> None:
         import inspect

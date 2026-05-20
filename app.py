@@ -10,7 +10,7 @@ import traceback
 from datetime import date, datetime, timedelta
 from html import escape
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping, Sequence
 from urllib.parse import urlencode
 
 import pandas as pd
@@ -81,19 +81,33 @@ README = PROJECT_ROOT / "README.md"
 
 CommandArgs = str | list[str]
 
-REQUIRED_ACCEPTANCE_OUTPUT_FILES = (
-    "pre_selection_result.csv",
-    "entry_signal.csv",
-    "exit_signal.csv",
-    "learning_report.csv",
-    "signal_cases.csv",
-    "signal_case_review.csv",
-    "v1_v2_comparison.csv",
-    "daily_signal_modular.json",
-    "risk_gate.json",
-    "risk_warning_next_day.csv",
-    "risk_learning_context.csv",
+V21_FRONTEND_JSON_FILES = (
+    "daily_decision_snapshot.json",
+    "risk_gate_snapshot.json",
+    "portfolio_snapshot.json",
+    "order_intent.json",
+    "learning_summary.json",
+    "historical_ml_summary.json",
+    "v21_backend_status.json",
 )
+
+V21_FRONTEND_OUTPUT_FILES = (
+    "daily_decision_snapshot.csv",
+    "daily_decision_snapshot.json",
+    "risk_gate_snapshot.csv",
+    "risk_gate_snapshot.json",
+    "portfolio_snapshot.csv",
+    "portfolio_snapshot.json",
+    "order_intent.csv",
+    "order_intent.json",
+    "learning_summary.csv",
+    "learning_summary.json",
+    "historical_ml_summary.csv",
+    "historical_ml_summary.json",
+    "v21_backend_status.json",
+)
+
+REQUIRED_ACCEPTANCE_OUTPUT_FILES = V21_FRONTEND_OUTPUT_FILES
 
 TECHNICAL_ERROR_HINTS = (
     "NotFoundError",
@@ -2618,6 +2632,414 @@ def _load_dashboard_data_cached(project_root_text: str, signature: tuple[tuple[s
     return load_dashboard_data(Path(project_root_text))
 
 
+def _v21_output_signature(project_root: Path) -> tuple[tuple[str, float, int], ...]:
+    output = project_root / "output"
+    signature: list[tuple[str, float, int]] = []
+    for filename in V21_FRONTEND_JSON_FILES:
+        path = output / filename
+        if path.exists():
+            stat = path.stat()
+            signature.append((filename, stat.st_mtime, stat.st_size))
+        else:
+            signature.append((filename, 0.0, 0))
+    return tuple(signature)
+
+
+def _read_v21_json_file(output_dir: Path, filename: str) -> Any:
+    path = output_dir / filename
+    if not path.exists():
+        return [] if filename in {"portfolio_snapshot.json", "order_intent.json", "learning_summary.json", "historical_ml_summary.json"} else {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"error": f"{filename} 读取失败，页面已降级显示。"}
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _load_v21_snapshots_cached(project_root_text: str, signature: tuple[tuple[str, float, int], ...]) -> dict[str, Any]:
+    output_dir = Path(project_root_text) / "output"
+    payload = load_v21_frontend_snapshots(output_dir)
+    payload["missing_files"] = [filename for filename, mtime, _ in signature if mtime <= 0]
+    return payload
+
+
+def load_v21_frontend_snapshots(output_dir: Path = OUTPUT_DIR) -> dict[str, Any]:
+    """Load V2.1 frontend snapshots only; never generate or refresh signals."""
+
+    return {
+        "daily_decision": _read_v21_json_file(output_dir, "daily_decision_snapshot.json"),
+        "risk_gate": _read_v21_json_file(output_dir, "risk_gate_snapshot.json"),
+        "portfolio": _read_v21_json_file(output_dir, "portfolio_snapshot.json"),
+        "order_intent": _read_v21_json_file(output_dir, "order_intent.json"),
+        "learning": _read_v21_json_file(output_dir, "learning_summary.json"),
+        "historical_ml": _read_v21_json_file(output_dir, "historical_ml_summary.json"),
+        "status": _read_v21_json_file(output_dir, "v21_backend_status.json"),
+        "missing_files": [filename for filename in V21_FRONTEND_JSON_FILES if not (output_dir / filename).exists()],
+    }
+
+
+def _v21_records(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return [dict(item) for item in value if isinstance(item, Mapping)]
+    if isinstance(value, Mapping):
+        return [dict(value)] if value else []
+    return []
+
+
+def _v21_display_value(value: Any, default: str = "暂无") -> str:
+    if isinstance(value, bool):
+        return "是" if value else "否"
+    if value in ("", None):
+        return default
+    try:
+        if pd.isna(value):
+            return default
+    except (TypeError, ValueError):
+        pass
+    text = str(value).strip()
+    replacements = {
+        "selected": "进入候选池（不是买入计划）",
+        "filtered_out": "未进入候选池",
+        "up_to_date": "数据已是最新",
+        "nan": default,
+        "None": default,
+        "N/A": f"{default}（暂无可展示值）",
+        "true": "是",
+        "false": "否",
+        "True": "是",
+        "False": "否",
+    }
+    return replacements.get(text, text)
+
+
+def _v21_join(value: Any, default: str = "暂无") -> str:
+    if isinstance(value, list):
+        cleaned = [_v21_display_value(item, default="") for item in value]
+        cleaned = [item for item in cleaned if item]
+        return "、".join(cleaned) if cleaned else default
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=False)
+    return _v21_display_value(value, default=default)
+
+
+def _v21_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "是"}
+
+
+def _v21_frame(records: Sequence[Mapping[str, Any]], columns: dict[str, str]) -> pd.DataFrame:
+    rows = [{label: _v21_join(record.get(key)) for key, label in columns.items()} for record in records]
+    return pd.DataFrame(rows, columns=list(columns.values()))
+
+
+def _v21_count_actual_exit(decision: Mapping[str, Any]) -> int:
+    return sum(1 for item in decision.get("exit_actions", []) or [] if isinstance(item, Mapping) and _v21_bool(item.get("actual_exit")))
+
+
+def _v21_has_exit_priority(decision: Mapping[str, Any]) -> bool:
+    text = " ".join(
+        str(part or "")
+        for part in (
+            decision.get("fallback_reason"),
+            decision.get("explain"),
+            json.dumps(decision.get("exit_actions", []), ensure_ascii=False),
+        )
+    )
+    return any(token in text for token in ("退出风险优先", "exit 出现清仓", "清仓", "风险退出"))
+
+
+def build_v21_frontend_status(snapshots: Mapping[str, Any]) -> dict[str, Any]:
+    decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
+    risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
+    status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
+    return {
+        "signal_version": _v21_display_value(decision.get("signal_version") or status.get("signal_version")),
+        "trade_date": _v21_display_value(decision.get("trade_date") or risk.get("trade_date") or status.get("trade_date")),
+        "market_state": _v21_display_value(decision.get("market_state")),
+        "risk_level": _v21_display_value(decision.get("risk_level") or risk.get("risk_level")),
+        "risk_score": _v21_display_value(decision.get("risk_score") or risk.get("risk_score")),
+        "allow_entry": _v21_display_value(decision.get("allow_entry")),
+        "freeze_entry": _v21_display_value(decision.get("freeze_entry") or risk.get("freeze_entry")),
+        "manual_takeover_required": _v21_display_value(decision.get("manual_takeover_required") or risk.get("manual_takeover_required")),
+        "candidate_count": len(decision.get("candidate_etfs", []) or []),
+        "actual_buy_count": len(decision.get("actual_buy_etfs", []) or []),
+        "exit_count": _v21_count_actual_exit(decision),
+        "generated_at": _v21_display_value(status.get("generated_at") or decision.get("generated_at")),
+        "fallback_reason": _v21_display_value(decision.get("fallback_reason") or status.get("fallback_reason")),
+    }
+
+
+def _v21_order_frame(records: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
+    return _v21_frame(
+        records,
+        {
+            "etf_code": "ETF代码",
+            "etf_name": "ETF名称",
+            "action": "动作",
+            "side": "方向",
+            "target_weight": "目标权重",
+            "current_weight": "当前权重",
+            "delta_weight": "变化权重",
+            "estimated_price": "估算价格",
+            "estimated_amount": "估算金额",
+            "execution_mode": "执行模式",
+            "requires_manual_confirm": "需要人工确认",
+            "risk_check_passed": "风险检查通过",
+            "risk_block_reason": "风险阻断原因",
+            "source_signal": "来源信号",
+            "explain": "中文解释",
+        },
+    )
+
+
+def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
+    decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
+    risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
+    status = build_v21_frontend_status(snapshots)
+    level = str(risk.get("risk_level") or decision.get("risk_level") or "R0").upper()
+    manual_takeover = _v21_bool(decision.get("manual_takeover_required") or risk.get("manual_takeover_required"))
+    freeze_entry = _v21_bool(decision.get("freeze_entry") or risk.get("freeze_entry"))
+    if level in {"R3", "R4", "P0"} or manual_takeover:
+        st.error("R3/R4/P0 风险或人工接管已触发：今天优先风险处理，entry 买入信号不得绕过风险门控。")
+    elif freeze_entry:
+        st.warning("风险门控已冻结买入，候选 ETF 仅作为观察对象。")
+    else:
+        st.success("RiskGate 未冻结买入；是否实际买入仍以总控 DailyDecision 和 OrderIntent 为准。")
+    render_compact_metric_grid(
+        [
+            ("信号版本", status["signal_version"]),
+            ("交易日期", status["trade_date"]),
+            ("市场状态", status["market_state"]),
+            ("风险等级", status["risk_level"]),
+            ("风险分数", status["risk_score"]),
+            ("允许买入", status["allow_entry"]),
+            ("冻结买入", status["freeze_entry"]),
+            ("人工接管", status["manual_takeover_required"]),
+            ("候选 ETF 数", status["candidate_count"]),
+            ("实际买入 ETF 数", status["actual_buy_count"]),
+            ("退出/清仓建议数", status["exit_count"]),
+            ("总控生成时间", status["generated_at"]),
+        ],
+        class_name="compact-metric-grid summary-metric-grid",
+    )
+    if int(status["actual_buy_count"] or 0) <= 0:
+        st.info("当前无实际买入计划，候选 ETF 仅为观察对象。")
+    if _v21_has_exit_priority(decision):
+        st.warning("当前有退出风险优先处理，新买入被降级或冻结。")
+    st.markdown("**总控解释**")
+    st.write(_v21_display_value(decision.get("explain"), "总控解释缺失。"))
+    for item in decision.get("warnings") or []:
+        st.warning(_v21_display_value(item))
+    st.markdown("**降级说明**")
+    st.info(status["fallback_reason"])
+
+
+def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
+    decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
+    orders = _v21_records(snapshots.get("order_intent"))
+    st.info("候选 ETF 表示进入观察池，不是买入计划。买入计划只看 actual_buy_etfs 和 OrderIntent；OrderIntent 是订单意图/草稿，不是自动下单。")
+    render_compact_metric_grid(
+        [
+            ("允许买入", _v21_display_value(decision.get("allow_entry"))),
+            ("冻结买入", _v21_display_value(decision.get("freeze_entry"))),
+            ("入选板块", _v21_join(decision.get("selected_sectors"))),
+            ("订单草稿数", len(orders)),
+        ],
+        class_name="compact-metric-grid strategy-metric-grid",
+    )
+    st.markdown("**候选 ETF**")
+    show_dataframe_or_empty(
+        _v21_frame(
+            _v21_records(decision.get("candidate_etfs")),
+            {"etf_code": "ETF代码", "etf_name": "ETF名称", "sector": "所属板块", "rank": "排名", "score": "得分", "explain": "中文解释"},
+        ),
+        empty_text="暂无候选 ETF。",
+        key="v21_candidates",
+        height=300,
+    )
+    st.markdown("**买入动作裁决**")
+    show_dataframe_or_empty(
+        _v21_frame(
+            _v21_records(decision.get("entry_actions")),
+            {
+                "etf_code": "ETF代码",
+                "etf_name": "ETF名称",
+                "entry_action": "买入动作",
+                "actual_buy": "是否实际买入",
+                "target_weight": "建议仓位",
+                "confidence": "置信度",
+                "block_reason": "风险阻断原因",
+                "explain": "中文解释",
+            },
+        ),
+        empty_text="暂无 entry 动作。",
+        key="v21_entry_actions",
+        height=360,
+    )
+    with st.expander("查看完整买入说明", expanded=False):
+        for item in _v21_records(decision.get("entry_actions")):
+            st.write(f"**{_v21_display_value(item.get('etf_code'))} {_v21_display_value(item.get('etf_name'), '')}**")
+            st.write(_v21_display_value(item.get("explain"), "暂无说明。"))
+    st.markdown("**OrderIntent 买入草稿**")
+    show_dataframe_or_empty(
+        _v21_order_frame([item for item in orders if str(item.get("side") or "").upper() == "BUY"]),
+        empty_text="当前无买入订单草稿。",
+        key="v21_buy_orders",
+        height=260,
+    )
+
+
+def render_v21_portfolio(snapshots: Mapping[str, Any]) -> None:
+    decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
+    if _v21_has_exit_priority(decision):
+        st.warning("当前有退出风险优先处理，新买入被降级或冻结。")
+    st.info("持仓页只展示 V2.1 PortfolioSnapshot；数据校验通过表示数据可信，不等于买入信号。")
+    show_dataframe_or_empty(
+        _v21_frame(
+            _v21_records(snapshots.get("portfolio")),
+            {
+                "etf_code": "ETF代码",
+                "etf_name": "ETF名称",
+                "cost_price": "成本价",
+                "current_price": "当前价",
+                "pnl": "浮盈亏",
+                "pnl_pct": "浮盈亏比例",
+                "holding_days": "持仓天数",
+                "current_weight": "当前权重",
+                "target_weight": "目标权重",
+                "exit_action": "退出动作",
+                "risk_status": "风险状态",
+                "explain": "中文解释",
+            },
+        ),
+        empty_text="当前 PortfolioSnapshot 为空。",
+        key="v21_portfolio",
+        height=360,
+    )
+    with st.expander("持仓输入维护（点击保存后才写入）", expanded=False):
+        if st.button("加载持仓编辑器", key="v21_load_position_editor"):
+            st.session_state["v21_position_editor_loaded"] = True
+        if st.session_state.get("v21_position_editor_loaded"):
+            render_current_position_module(load_etf_names(PROJECT_ROOT))
+        else:
+            st.caption("默认不加载持仓编辑器，避免打开页面时读取或写入持仓配置。需要维护时请点击加载。")
+
+
+def render_v21_risk(snapshots: Mapping[str, Any]) -> None:
+    risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
+    level = str(risk.get("risk_level") or "R0").upper()
+    if level in {"R3", "R4", "P0"}:
+        st.error("高风险状态：风险门控高于 entry 买入信号。")
+    else:
+        st.info("风险门控高于 entry 买入信号；entry、pre_selection、historical_ml、QMT 都不能绕过它。")
+    render_compact_metric_grid(
+        [
+            ("风险等级", _v21_display_value(risk.get("risk_level"))),
+            ("风险分数", _v21_display_value(risk.get("risk_score"))),
+            ("冻结买入", _v21_display_value(risk.get("freeze_entry"))),
+            ("权益仓位上限", _v21_display_value(risk.get("equity_cap_override"))),
+            ("人工接管", _v21_display_value(risk.get("manual_takeover_required"))),
+            ("来源", _v21_display_value(risk.get("source"))),
+        ],
+        class_name="compact-metric-grid strategy-metric-grid",
+    )
+    st.write(f"**影响板块：** {_v21_join(risk.get('affected_sectors'))}")
+    st.write(f"**影响 ETF：** {_v21_join(risk.get('affected_etfs'))}")
+    st.markdown("**风险事件**")
+    risk_events = _v21_records(risk.get("risk_events"))
+    show_dataframe_or_empty(pd.DataFrame(risk_events).map(_v21_display_value) if risk_events else pd.DataFrame(), empty_text="暂无生效风险事件。", key="v21_risk_events", height=240)
+    st.markdown("**解释**")
+    st.write(_v21_display_value(risk.get("explain"), "暂无风险解释。"))
+
+
+def render_v21_learning(snapshots: Mapping[str, Any]) -> None:
+    learning = _v21_records(snapshots.get("learning"))
+    historical = _v21_records(snapshots.get("historical_ml"))
+    st.info("学习/历史机器学习只提供校准建议，不自动修改当日交易参数。")
+    st.caption("机构研报默认 C 级线索，研究纪律见 docs/research_source_policy.md。")
+    render_compact_metric_grid(
+        [
+            ("learning 样本数", len(learning)),
+            ("historical_ml 样本数", len(historical)),
+            ("2024-09-24 后样本", sum(1 for item in learning + historical if _v21_bool(item.get("post_924_regime")))),
+            ("校准建议状态", "仅建议，不改参数"),
+        ],
+        class_name="compact-metric-grid strategy-metric-grid",
+    )
+    columns = {
+        "trade_date": "交易日期",
+        "etf_code": "ETF代码",
+        "etf_name": "ETF名称",
+        "signal_type": "样本类型",
+        "market_state": "市场状态",
+        "entry_action": "entry 动作",
+        "exit_action": "exit 动作",
+        "post_924_regime": "2024-09-24 后样本",
+        "hindsight_label": "后验样本状态",
+        "failure_type": "失败归因",
+        "calibration_suggestion": "校准建议",
+        "explain": "中文解释",
+    }
+    st.markdown("**Learning Summary**")
+    show_dataframe_or_empty(_v21_frame(learning, columns), empty_text="暂无 learning_summary。", key="v21_learning", height=320)
+    st.markdown("**Historical ML Summary**")
+    show_dataframe_or_empty(_v21_frame(historical, columns), empty_text="暂无 historical_ml_summary。", key="v21_historical", height=320)
+
+
+def render_v21_qmt(snapshots: Mapping[str, Any]) -> None:
+    orders = _v21_records(snapshots.get("order_intent"))
+    status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
+    st.warning("QMT 当前为人工确认/模拟执行边界，不自动实盘下单。")
+    render_compact_metric_grid(
+        [
+            ("订单草稿数", len(orders)),
+            ("实盘自动下单", "没有"),
+            ("QMT 可用状态", _v21_display_value(status.get("qmt_execution_available"))),
+            ("执行边界", "草稿 / 人工确认 / 只读"),
+        ],
+        class_name="compact-metric-grid strategy-metric-grid",
+    )
+    show_dataframe_or_empty(_v21_order_frame(orders), empty_text="当前无订单意图。", key="v21_qmt_orders", height=420)
+
+
+def render_v21_data_quality(snapshots: Mapping[str, Any]) -> None:
+    status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
+    missing = snapshots.get("missing_files") or []
+    st.info("数据校验通过不等于买入信号；这里只展示总控状态和降级说明，不深入各模块临时文件。")
+    render_compact_metric_grid(
+        [
+            ("总控状态", _v21_display_value(status.get("status"))),
+            ("总控生成时间", _v21_display_value(status.get("generated_at"))),
+            ("缺失快照数", len(missing)),
+            ("最近一次生成信号时间", _v21_display_value(status.get("generated_at"))),
+        ],
+        class_name="compact-metric-grid strategy-metric-grid",
+    )
+    if missing:
+        st.warning("缺失总控快照：" + "、".join(missing))
+    st.markdown("**fallback_reason**")
+    st.write(_v21_display_value(status.get("fallback_reason"), "暂无降级说明。"))
+    st.markdown("**运行警告**")
+    for item in status.get("warnings") or []:
+        st.warning(_v21_display_value(item))
+
+
+def render_v21_v1_reference() -> None:
+    st.info("V1 传统信号，仅用于对照。V2.1 主页面不依赖 V1 输出。")
+    path = OUTPUT_DIR / "compare_signal.csv"
+    if not path.exists():
+        st.caption("暂无 compare_signal.csv。")
+        return
+    try:
+        frame = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"compare_signal.csv 读取失败：{exc}")
+        return
+    cols = [col for col in ["trade_date", "strategy_name", "signal_version", "target_symbols", "suggested_buy", "suggested_sell", "operation_reason"] if col in frame.columns]
+    show_dataframe_or_empty(_clean_display_frame(frame[cols] if cols else frame.head(1)), empty_text="暂无 V1 对照数据。", key="v21_v1_reference", height=260)
+
+
 def render_page() -> None:
     data = _load_dashboard_data_cached(str(PROJECT_ROOT), _dashboard_output_signature(PROJECT_ROOT))
     observation_cash = default_observation_cash()
@@ -2671,6 +3093,38 @@ def render_page() -> None:
 
     st.divider()
     st.caption("安全边界：不自动下单，不连接券商，不构成投资建议；所有结果仅用于人工观察和研究。")
+
+
+def render_page() -> None:
+    snapshots = _load_v21_snapshots_cached(str(PROJECT_ROOT), _v21_output_signature(PROJECT_ROOT))
+
+    st.title("V2.1 ETF 总控决策台")
+    st.caption("前端只读取 V2.1 总控快照；打开页面不会自动重新生成信号，也不会直接追 7 个项目部内部临时文件。")
+    if st.button("重新读取总控快照", key="v21_reload_snapshots"):
+        _load_v21_snapshots_cached.clear()
+        st.rerun()
+
+    tabs = st.tabs(["今日总览", "候选与买入", "持仓与卖出", "风险预警", "历史学习", "QMT 执行", "数据质量与运行日志", "V1 对照"])
+    with tabs[0]:
+        render_v21_overview(snapshots)
+    with tabs[1]:
+        render_v21_candidates(snapshots)
+    with tabs[2]:
+        render_v21_portfolio(snapshots)
+    with tabs[3]:
+        render_v21_risk(snapshots)
+    with tabs[4]:
+        render_v21_learning(snapshots)
+    with tabs[5]:
+        render_v21_qmt(snapshots)
+    with tabs[6]:
+        render_v21_data_quality(snapshots)
+    with tabs[7]:
+        with st.expander("V1 传统信号，仅用于对照", expanded=False):
+            render_v21_v1_reference()
+
+    st.divider()
+    st.caption("安全边界：候选 ETF 不是买入计划；OrderIntent 是订单意图/草稿，不自动下单；学习建议不自动改参数。")
 
 
 def main() -> None:
