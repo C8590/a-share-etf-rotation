@@ -10,6 +10,7 @@ from .io_utils import read_price_data, read_table, write_table
 from .labeler import FutureLabeler
 from .ml_baseline import run_baseline_from_file, run_baseline
 from .ml_stability import run_ml_stability_from_file
+from .recommendations import make_recommendations_from_artifacts
 from .replay_engine import HistoricalReplayEngine
 from .reports import generate_entry_threshold_report
 from .review_queue import build_manual_review_queue
@@ -59,6 +60,10 @@ def build_parser() -> argparse.ArgumentParser:
     stability = sub.add_parser("ml-stability", help="run offline ML stability diagnostics")
     stability.add_argument("--samples", required=True, help="entry_candidate_samples_labeled CSV/parquet")
     stability.add_argument("--out", required=True)
+
+    recommendations = sub.add_parser("make-recommendations", help="build offline entry manual review recommendations")
+    recommendations.add_argument("--artifacts", required=True, help="historical_ml artifacts directory")
+    recommendations.add_argument("--out", required=True)
     return p
 
 
@@ -138,6 +143,10 @@ def main(argv=None) -> int:
 
     if args.command == "ml-stability":
         run_ml_stability_from_file(args.samples, out_dir)
+        return 0
+
+    if args.command == "make-recommendations":
+        make_recommendations_from_artifacts(args.artifacts, out_dir)
         return 0
 
     parser.error("unknown command")
