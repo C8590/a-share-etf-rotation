@@ -136,6 +136,11 @@ class RealEntryAdapter:
 
 `HeuristicEntryAdapter` 只是为了空仓库启动样本流程，不是交易规则。
 
+## Phase 4 baseline ML
+
+Phase 4 baseline ML is diagnostic-only. It must not be used as a live
+trading signal or written back into entry parameters automatically.
+
 ## 测试
 
 ```bash

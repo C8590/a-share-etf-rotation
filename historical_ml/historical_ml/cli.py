@@ -8,6 +8,7 @@ from .calibration import generate_entry_calibration_outputs
 from .config import HistoricalMLConfig
 from .io_utils import read_price_data, read_table, write_table
 from .labeler import FutureLabeler
+from .ml_baseline import run_baseline_from_file, run_baseline
 from .replay_engine import HistoricalReplayEngine
 from .reports import generate_entry_threshold_report
 from .review_queue import build_manual_review_queue
@@ -46,6 +47,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     run_all = sub.add_parser("run-all", help="replay + label + review queue + threshold report")
     add_common(run_all)
+    run_all.add_argument("--with-ml", action="store_true", help="also run offline baseline ML diagnostics after labeling")
+
+    train = sub.add_parser("train-baseline", help="train offline baseline ML diagnostic models")
+    train.add_argument("--samples", required=True, help="entry_candidate_samples_labeled CSV/parquet")
+    train.add_argument("--out", required=True)
+    train.add_argument("--target", choices=["both", "good_entry", "bad_entry"], default="both")
+    train.add_argument("--format", choices=["csv", "parquet"], default="csv")
     return p
 
 
@@ -115,6 +123,12 @@ def main(argv=None) -> int:
         generate_replay_audit_report(audit_outputs, labeled, out_dir / "replay_audit_report.md", config=config)
         generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
         generate_entry_calibration_outputs(labeled, out_dir, config=config)
+        if args.with_ml:
+            run_baseline(labeled, out_dir, target="both", output_format=config.output_format)
+        return 0
+
+    if args.command == "train-baseline":
+        run_baseline_from_file(args.samples, out_dir, target=args.target, output_format=args.format)
         return 0
 
     parser.error("unknown command")
