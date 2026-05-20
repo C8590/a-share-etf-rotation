@@ -1,209 +1,89 @@
-# a-share-etf-rotation
+# 日频右侧确认型 ETF 动量轮动策略
 
-当前版本：`v0.1-core`
+本项目当前只保留一个主策略：日频右侧确认型 ETF 动量轮动策略。
 
-这是一个面向中国 A 股 ETF 的低频量化研究与信号系统。`v0.1-core` 是数据层和策略层的一期稳定版，目标是把数据下载、数据质量、策略接口、回测真实性、样本外验证和 QA 闸门整理成可维护、可验证、可复盘的核心内核。
+系统定位是人工观察和复盘工具，不是自动交易系统。它不预测涨跌，不推荐新闻，不保证收益，不自动下单，也不直接连接券商。策略只在 ETF 已经表现出相对强势、趋势形态和成交活跃度后，生成买入、持有、减仓、卖出或观察建议。
 
-本项目目前不做网页界面、不做 Streamlit、不做 Excel 总报表、不做自动交易、不接券商 API，也不开发盘中执行助手。
+## 当前主链路
 
-## v0.1-core 状态
+1. 数据更新与质量检查。
+2. ETF 行业、主题和风险分组映射。
+3. 日频动量排名和右侧确认。
+4. `risk_warning` P0 上层风险刹车。
+5. `trade_policy` 交易安全和持仓控制。
+6. 前端展示当前信号、持仓、数据质量和历史对照。
+7. learning 记录风险、买点、退出和复盘上下文。
 
-数据层已完成一期整理：
+优先级明确为：
 
-- 支持从 `config/etf_pool.yaml` 读取 ETF 池。
-- 支持逐只 ETF 下载日线行情，并保留本地缓存。
-- 支持主数据源失败后的备用数据源兜底。
-- 支持 `update-data` 默认复用缓存，`update-data --refresh` 强制刷新，`retry-failed-data` 只重试失败 ETF。
-- 本地 CSV 已统一为标准字段：`date`, `open`, `high`, `low`, `close`, `volume`, `amount`, `symbol`, `name`, `source`。
-- 已生成并维护 `output/data_coverage_report.csv`。
-- 已新增数据质量检查和数据闸门，输出 `output/data_quality_report.csv`。
-- 有效 ETF 少于 5 只、数据明显落后或严重质量失败时，不允许输出正式策略结论，只允许 `test_only` 流程测试。
-
-策略层已完成一期整理：
-
-- 已统一策略目标仓位接口，包括目标持仓、目标权重、买入列表、卖出列表、持有列表和决策原因。
-- 已整理策略配置文件，策略参数集中在 `config/strategy_*.yaml`。
-- 已支持 `original`, `conservative`, `balanced`, `equal_weight_monthly`, `reduced_equal_weight_monthly`。
-- 已检查并强化 `signal_date` 和 `execute_date` 分离，避免当天收盘信号当天收盘成交。
-- 回测已计入手续费、滑点、最低手续费、100 份整数交易单位和剩余现金。
-- 已修复等权月度策略只在目标名单变化时成交的问题，现在会按月执行真实再平衡。
-- 已统一输出绩效指标、基准对比、样本外测试、walk-forward 和参数实验。
-- 已新增 `strategy/review.py` 生成策略状态，不把状态硬写在 README 里。
-
-## 当前推荐观察策略
-
-当前 `qa-check` 结果允许进入 `1000-3000` 元小额人工观察阶段。推荐观察策略为：
-
-- `equal_weight_monthly`
-- `reduced_equal_weight_monthly`
-
-策略状态由 `strategy/review.py` 生成，当前默认标记为：
-
-- `equal_weight_monthly`: `recommended_for_observation`
-- `reduced_equal_weight_monthly`: `recommended_for_observation`
-- `balanced`: `research_only`
-- `conservative`: `defensive_only`
-- `original`: `rejected`
-
-`balanced` 全样本表现较好，但样本外稳定性不足，不建议继续追 `balanced`，也不建议把它标为主推荐策略。它只能保留为研究对照。
-
-## 明确不建议
-
-- 不建议自动交易。
-- 不建议接券商 API。
-- 不建议开发盘中执行层。
-- 不建议为了提高回测收益继续追参数。
-- 不建议继续追 `balanced` 作为主策略。
-- 不建议跳过 `qa-check` 直接看回测收益。
-
-## Windows 推荐使用虚拟环境运行
-
-Windows 下建议在项目目录创建并使用 `.venv`，不要直接使用全局 `pip`。如果全局 `pip` 损坏，项目 `.venv` 内部环境仍可独立安装和运行依赖。
-
-创建虚拟环境：
-
-```powershell
-py -3.12 -m venv .venv
-# 或
-py -3.11 -m venv .venv
+```text
+risk_warning > market_state > sector_rank > etf_rank > entry_signal
 ```
 
-安装依赖：
+## 核心边界
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-运行项目：
-
-```powershell
-.\.venv\Scripts\python.exe main.py qa-check
-.\.venv\Scripts\python.exe main.py update-data
-.\.venv\Scripts\python.exe main.py compare-signal
-```
-
-## 傻瓜式启动器使用方法
-
-Windows 本地使用时，可以直接双击 `start_quant.bat` 打开图形启动器。启动器只调用项目 `.venv` 内的 Python，不会使用全局 `python` 或全局 `pip`。
-
-推荐流程：
-
-1. 双击 `start_quant.bat`。
-2. 点击“一键生成信号”。
-3. 查看 `output/qa_report.txt` 是否通过；不建议跳过 `qa-check`。
-4. 查看 `output/compare_signal.txt` 中的信号与建议。
-5. 如需操作，只能手动打开券商 App 下单。
-6. 下单后点击“编辑当前持仓”，更新 `config/current_position.yaml`。
-7. 不建议自动交易。
-
-安全边界：
-
-- 本工具不自动下单。
-- 本工具不连接券商。
-- 本工具不替代人工判断。
-- 小资金观察建议仍为 `1000-3000` 元。
-- 当前主观察策略为 `reduced_equal_weight_monthly`。
-- `balanced` 只作为研究观察，不建议作为主跟随策略。
-
-## 本地网页可视化面板
-
-本项目提供 Streamlit 本地网页面板，用于查看总览、主观察策略和四策略对照信号。面板只在本机运行，不自动下单，不连接券商。
-
-安装依赖：
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-启动界面：
-
-```powershell
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
-
-也可以直接双击 `start_web_ui.bat`。
-
-使用流程：
-
-1. 点击“一键运行全部”。
-2. 查看顶部总览。
-3. 优先查看 `reduced_equal_weight_monthly`。
-4. 确认 `qa-check` 通过。
-5. 手动打开券商 App 下单。
-6. 下单后更新 `config/current_position.yaml`。
-
-安全边界：
-
-- 不自动下单。
-- 不连接券商。
-- 不构成投资建议。
-- `balanced` 只作研究。
-- `conservative` 只作防守参考。
-- 不建议直接 1 万元满仓。
-
-## 云服务器部署
-
-本项目支持部署到 Linux 云服务器，让 Streamlit 网页面板长期运行，方便手机和电脑查看信号。
-
-云部署只用于查看信号、复盘和人工观察，不自动交易，不连接券商 API。建议先在本地确认 `qa-check` 通过后再部署；正式使用时建议通过 Nginx、Basic Auth、VPN 或其他方式增加访问密码和访问控制。
-
-详见 [docs/cloud_deployment.md](docs/cloud_deployment.md)。
+- `risk_warning` 是 entry 前最高优先级风险门控，只负责降速、冻结或进入人工复核。
+- `risk_warning` 不选 ETF，不预测涨跌，不把新闻变成买入信号。
+- R3/R4 只冻结新开仓和加仓，不阻断卖出、减仓、止损和退出。
+- `trade_policy` 只生成交易安全建议，不操作 QMT，不调用真实券商接口。
+- 前端当前主入口只有日频动量策略；旧版结果仅作为历史对照 / 旧版参考。
 
 ## 常用命令
 
-数据层：
+更新 ETF 日线数据：
 
 ```powershell
-python main.py update-data
-python main.py update-data --refresh
-python main.py retry-failed-data
-python main.py data-report
-python main.py qa-data
+.\.venv\Scripts\python.exe main.py update-data
 ```
 
-策略与验证：
+生成当前信号：
 
 ```powershell
-python main.py backtest --config config/strategy_equal_weight_monthly.yaml
-python main.py backtest --config config/strategy_reduced_equal_weight_monthly.yaml
-python main.py benchmark
-python main.py oos-test
-python main.py walk-forward
-python main.py experiment
-python main.py compare-signal
-python main.py qa-check
+.\.venv\Scripts\python.exe main.py generate-signal --use-cache
 ```
 
-## 关键输出
+生成指定信号日的复盘信号：
 
-- `output/data_coverage_report.csv`
-- `output/data_quality_report.csv`
-- `output/performance.json`
-- `output/benchmark_report.csv`
-- `output/benchmark_report.json`
-- `output/oos_results.csv`
-- `output/walk_forward_results.csv`
-- `output/experiment_results.csv`
+```powershell
+.\.venv\Scripts\python.exe main.py generate-signal --signal-date 2026-05-13 --use-cache
+```
+
+录入或查看风险事件：
+
+```powershell
+.\.venv\Scripts\python.exe main.py risk add
+.\.venv\Scripts\python.exe main.py risk list
+.\.venv\Scripts\python.exe main.py risk score
+```
+
+启动前端页面：
+
+```powershell
+.\.venv\Scripts\streamlit.exe run app.py
+```
+
+## 主要输出
+
+- `output/compare_signal.csv`
 - `output/compare_signal.txt`
-- `output/qa_report.txt`
-- `output/qa_report.json`
-- `output/strategy_review.csv`
+- `output/risk_gate.json`
+- `output/risk_warning_next_day.csv`
+- `output/risk_learning_context.csv`
 
-## 当前 QA 结论
+这些都是运行期输出，不应提交到 Git。
 
-最近一次 `python main.py qa-check` 结果：
+## 配置和本地状态
 
-- 数据层：通过
-- 策略层：通过
-- 输出层：通过
-- 是否允许进入 `1000-3000` 元小额观察：是
-- 推荐观察策略：`equal_weight_monthly`, `reduced_equal_weight_monthly`
-- 不建议使用策略：`original`, `balanced`
-- 防守策略：`conservative`
+- `config/strategy.yaml`：唯一主策略配置。
+- `config/risk_warning.yaml`：风险预警评分配置。
+- `config/risk_events.example.yaml`：风险事件录入示例。
+- `config/etf_universe.yaml`：ETF 池配置。
+- `config/etf_sector_map.yaml`：ETF 名称、行业、主题、风险分组映射。
+- `config/current_position.yaml`：本地模拟持仓状态，需人工同步。
+- `config/live_observation.yaml`：本地观察资金和使用模式。
 
-详见 [docs/core_status.md](docs/core_status.md)。
+`data/risk_warning/`、`data/quote_cache/`、`data/universe/`、`output/`、`runtime/` 等目录属于运行期数据或缓存，不应提交到 Git。
 
-## 风险提示
+## 安全说明
 
-本项目只用于量化研究、人工观察和复盘，不构成投资建议。回测结果不代表未来收益。数据源可能发生字段变化、限流、网络失败或停更。任何真实交易都应人工确认价格、份额、手续费、现金余额和交易单位。
+本项目仅用于人工观察、复盘和研究验证，不构成投资建议。任何真实交易都必须由人工确认数据、价格、份额、现金余额、交易单位、风险事件和执行窗口。

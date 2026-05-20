@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -39,7 +40,7 @@ README = PROJECT_ROOT / "README.md"
 QA_REPORT = OUTPUT_DIR / "qa_report.txt"
 COMPARE_SIGNAL_TXT = OUTPUT_DIR / "compare_signal.txt"
 COMPARE_SIGNAL_CSV = OUTPUT_DIR / "compare_signal.csv"
-RECOMMENDED_STRATEGY = "reduced_equal_weight_monthly"
+RECOMMENDED_STRATEGY = "日频右侧确认型 ETF 动量轮动策略"
 
 
 def relative_command(command: str) -> str:
@@ -69,7 +70,7 @@ def open_path(path: Path) -> None:
 def run_main_command(command: str) -> subprocess.CompletedProcess[str]:
     ensure_venv()
     return subprocess.run(
-        [str(VENV_PYTHON), "main.py", command],
+        [str(VENV_PYTHON), "main.py", *shlex.split(command, posix=False)],
         cwd=PROJECT_ROOT,
         text=True,
         capture_output=True,
@@ -97,7 +98,7 @@ def backup_output_directory() -> Path:
 class QuantLauncher(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("A股ETF低频量化系统 v0.1-core")
+        self.title("日频右侧确认型 ETF 动量轮动策略")
         self.geometry("980x720")
         self.minsize(860, 620)
 
@@ -128,9 +129,8 @@ class QuantLauncher(tk.Tk):
         ttk.Label(info, text="1000-3000 元").grid(row=3, column=1, sticky="w")
 
         risk = (
-            "风险提示：本工具只生成量化信号，不自动下单，不连接券商，"
-            "不替代人工判断，不构成投资建议。balanced 只作为研究观察，"
-            "不建议作为主跟随策略。"
+            "风险提示：本工具只生成日频动量轮动观察信号，不自动下单，不连接券商，"
+            "不替代人工判断，不构成投资建议。"
         )
         ttk.Label(info, text=risk, foreground="#9a3412", wraplength=900).grid(
             row=4, column=0, columnspan=2, sticky="w", pady=(8, 0)
@@ -141,10 +141,10 @@ class QuantLauncher(tk.Tk):
         for idx in range(5):
             actions.columnconfigure(idx, weight=1)
 
-        self._add_button(actions, "一键生成信号", lambda: self.run_workflow(["update-data", "qa-check", "compare-signal"], open_reports=True), 0, 0)
+        self._add_button(actions, "一键生成信号", lambda: self.run_workflow(["update-data", "qa-check", "generate-signal --use-cache"], open_reports=True), 0, 0)
         self._add_button(actions, "只更新数据", lambda: self.run_workflow(["update-data"]), 0, 1)
         self._add_button(actions, "只做质量检查", lambda: self.run_workflow(["qa-check"]), 0, 2)
-        self._add_button(actions, "只生成信号", lambda: self.run_workflow(["compare-signal"]), 0, 3)
+        self._add_button(actions, "只生成信号", lambda: self.run_workflow(["generate-signal --use-cache"]), 0, 3)
         self._add_button(actions, "备份当前 output", self.backup_output, 0, 4)
 
         self._add_button(actions, "打开质量报告", lambda: self.open_file(QA_REPORT), 1, 0)
@@ -301,7 +301,7 @@ def run_backup_test() -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="A-share ETF local launcher")
     parser.add_argument("--self-test", action="store_true", help=argparse.SUPPRESS)
-    parser.add_argument("--run-command", choices=["update-data", "qa-check", "compare-signal"], help=argparse.SUPPRESS)
+    parser.add_argument("--run-command", choices=["update-data", "qa-check", "generate-signal --use-cache"], help=argparse.SUPPRESS)
     parser.add_argument("--test-open-targets", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--backup-output", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)

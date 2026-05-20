@@ -1,4 +1,9 @@
+# 本文件是人工观察模式样例，不代表系统已经进入自动交易。
+# 使用时复制为 config/live_observation.yaml，并由人工维护观察资金和模式。
+
 start_date:
 capital_observed: 1000
-strategy_to_follow: balanced
-notes: ""
+strategy_to_follow: 日频右侧确认型 ETF 动量轮动策略
+normal_observation_enabled: false
+formal_trading_enabled: false
+notes: "仅用于模拟观察和复盘，不作为券商账户状态。"

@@ -1,2 +1,14 @@
+# 本文件是本地模拟持仓样例，不是券商实盘持仓。
+# 使用时复制为 config/current_position.yaml，并按人工确认后的模拟盘状态维护。
+
 cash: 10000
-positions: {}
+current_empty: false
+
+holdings:
+  - symbol: "510300"
+    name: "沪深300ETF"
+    shares: 100
+    average_buy_price: 4.200
+    cost_price: 4.200
+    last_buy_date: "2026-05-13"
+    note: "示例持仓，请按实际模拟盘或人工观察账户修改"
