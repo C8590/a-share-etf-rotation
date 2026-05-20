@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Iterable
 
 import pandas as pd
@@ -10,6 +11,20 @@ DATA_DIR = Path("data") / "cache"
 PRICE_COLUMNS = ["date", "open", "high", "low", "close", "volume", "amount"]
 METADATA_COLUMNS = ["symbol", "name", "source"]
 REQUIRED_COLUMNS = PRICE_COLUMNS + METADATA_COLUMNS
+
+def normalize_symbol(symbol: object) -> str:
+    text = str(symbol or "").strip().upper()
+    if not text:
+        return ""
+    if text.startswith(("SH", "SZ")):
+        text = text[2:]
+    if "." in text:
+        text = text.split(".", 1)[0]
+    match = re.search(r"\d{6}", text)
+    if match:
+        return match.group(0)
+    digits = re.sub(r"\D", "", text)
+    return digits.zfill(6)[-6:] if digits else ""
 
 
 def ensure_data_dir(data_dir: Path = DATA_DIR) -> Path:
