@@ -14,6 +14,7 @@ SIGNAL_CASES_FILE = "signal_cases.csv"
 V1_V2_COMPARISON_FILE = "v1_v2_comparison.csv"
 SIGNAL_CASE_REVIEW_FILE = "signal_case_review.csv"
 REGIME_CUTOFF = pd.Timestamp("2024-09-24")
+SIGNAL_CASE_KEY_FIELDS = ("trade_date", "etf_code", "signal_version")
 
 SIGNAL_CASE_FIELDS = (
     "trade_date",
@@ -170,7 +171,7 @@ def write_signal_cases(
     market_data: Mapping[str, pd.DataFrame] | None = None,
     hindsight_config: HindsightConfig = DEFAULT_HINDSIGHT_CONFIG,
 ) -> list[dict[str, Any]]:
-    rows = build_signal_case_rows(
+    new_rows = build_signal_case_rows(
         pre_selection_rows,
         entry_rows,
         signal_version=signal_version,
@@ -178,9 +179,46 @@ def write_signal_cases(
         hindsight_config=hindsight_config,
     )
     output_path = Path(output_dir)
+    existing_rows = _read_signal_case_rows(output_path / SIGNAL_CASES_FILE)
+    rows = merge_signal_case_rows(
+        existing_rows,
+        new_rows,
+        market_data=market_data,
+        hindsight_config=hindsight_config,
+    )
     _write_csv(output_path / SIGNAL_CASES_FILE, SIGNAL_CASE_FIELDS, rows)
     write_signal_case_review(rows, output_path)
     return rows
+
+
+def merge_signal_case_rows(
+    existing_rows: Sequence[Mapping[str, Any]],
+    new_rows: Sequence[Mapping[str, Any]],
+    *,
+    market_data: Mapping[str, pd.DataFrame] | None = None,
+    hindsight_config: HindsightConfig = DEFAULT_HINDSIGHT_CONFIG,
+) -> list[dict[str, Any]]:
+    """Merge new daily cases into the historical case library.
+
+    The identity of a case is trade_date + etf_code + signal_version. New rows
+    replace the same identity from older files, while older identities are kept
+    and get a fresh hindsight recalculation when market data is available.
+    """
+
+    merged: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for row in existing_rows:
+        normalized = _normalize_case_row(row)
+        key = _case_key(normalized)
+        if key:
+            merged[key] = normalized
+    for row in new_rows:
+        normalized = _normalize_case_row(row)
+        key = _case_key(normalized)
+        if key:
+            merged[key] = normalized
+
+    refreshed = [_refresh_hindsight(row, market_data or {}, hindsight_config) for row in merged.values()]
+    return sorted(refreshed, key=lambda row: (_text(row.get("trade_date")), _text(row.get("etf_code")), _text(row.get("signal_version"))))
 
 
 def build_v1_v2_comparison_row(
@@ -506,6 +544,59 @@ def _write_csv(path: Path, fields: Sequence[str], rows: Sequence[Mapping[str, An
         writer.writeheader()
         for row in rows:
             writer.writerow({field: row.get(field, "") for field in fields})
+
+
+def _read_signal_case_rows(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    try:
+        frame = pd.read_csv(path, dtype=str, encoding="utf-8-sig").fillna("")
+    except Exception:
+        return []
+    return [_normalize_case_row(row) for row in frame.to_dict("records")]
+
+
+def _normalize_case_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = {field: _text(row.get(field)) for field in SIGNAL_CASE_FIELDS}
+    normalized["etf_code"] = _symbol(normalized.get("etf_code"))
+    if not normalized["signal_version"]:
+        normalized["signal_version"] = "V2_MODULAR"
+    if normalized["trade_date"]:
+        try:
+            normalized["trade_date"] = pd.Timestamp(normalized["trade_date"]).date().isoformat()
+        except Exception:
+            pass
+    if normalized["trade_date"] and not normalized["post_924_regime"]:
+        normalized["post_924_regime"] = post_924_regime(normalized["trade_date"])
+    return normalized
+
+
+def _case_key(row: Mapping[str, Any]) -> tuple[str, str, str] | None:
+    trade_date = _text(row.get("trade_date"))
+    symbol = _symbol(row.get("etf_code"))
+    version = _text(row.get("signal_version")) or "V2_MODULAR"
+    if not trade_date or not symbol:
+        return None
+    return trade_date, symbol, version
+
+
+def _refresh_hindsight(
+    row: Mapping[str, Any],
+    market_data: Mapping[str, pd.DataFrame],
+    hindsight_config: HindsightConfig,
+) -> dict[str, Any]:
+    refreshed = dict(row)
+    hindsight = build_hindsight_fields(
+        symbol=_symbol(row.get("etf_code")),
+        trade_date=row.get("trade_date"),
+        entry_action=_text(row.get("entry_action")),
+        market_data=market_data,
+        config=hindsight_config,
+    )
+    if _text(hindsight.get("hindsight_label")) == "样本不足" and _text(row.get("hindsight_label")) not in {"", "样本不足"}:
+        return refreshed
+    refreshed.update(hindsight)
+    return refreshed
 
 
 def _csv_symbols(value: Any) -> list[str]:

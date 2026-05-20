@@ -187,6 +187,146 @@ class ControlDataFoundationTest(unittest.TestCase):
         self.assertEqual(saved.iloc[0]["hindsight_label"], "样本不足")
         self.assertEqual(saved.iloc[0]["ret_5d"], "")
 
+    def test_signal_cases_second_run_preserves_historical_samples(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            write_signal_cases(
+                [
+                    {
+                        "trade_date": "2026-05-18",
+                        "symbol": "159915",
+                        "name": "创业板ETF",
+                        "sector": "成长",
+                        "market_state": "进攻",
+                        "rank": 1,
+                        "score": 80,
+                        "selected": True,
+                        "reason": "入选",
+                    }
+                ],
+                [{"trade_date": "2026-05-18", "symbol": "159915", "buy_action": "观察", "position_size": 0}],
+                output_dir=tmp,
+                market_data={"159915": self._market_frame([1.00, 1.01], start="2026-05-18")},
+            )
+            rows = write_signal_cases(
+                [
+                    {
+                        "trade_date": "2026-05-19",
+                        "symbol": "510300",
+                        "name": "沪深300ETF",
+                        "sector": "宽基",
+                        "market_state": "均衡",
+                        "rank": 1,
+                        "score": 70,
+                        "selected": True,
+                        "reason": "入选",
+                    }
+                ],
+                [{"trade_date": "2026-05-19", "symbol": "510300", "buy_action": "观察", "position_size": 0}],
+                output_dir=tmp,
+                market_data={"159915": self._market_frame([1.00, 1.01], start="2026-05-18"), "510300": self._market_frame([1.00, 1.01], start="2026-05-19")},
+            )
+            saved = pd.read_csv(Path(tmp) / "signal_cases.csv", dtype=str).fillna("")
+
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(set(saved["trade_date"]), {"2026-05-18", "2026-05-19"})
+
+    def test_signal_cases_same_day_same_etf_does_not_duplicate(self) -> None:
+        pre_rows = [
+            {
+                "trade_date": "2026-05-18",
+                "symbol": "159915",
+                "name": "创业板ETF",
+                "sector": "成长",
+                "market_state": "进攻",
+                "rank": 1,
+                "score": 80,
+                "selected": True,
+                "reason": "入选",
+            }
+        ]
+        entry_rows = [{"trade_date": "2026-05-18", "symbol": "159915", "buy_action": "观察", "position_size": 0}]
+        with tempfile.TemporaryDirectory() as tmp:
+            write_signal_cases(pre_rows, entry_rows, output_dir=tmp)
+            write_signal_cases(pre_rows, entry_rows, output_dir=tmp)
+            saved = pd.read_csv(Path(tmp) / "signal_cases.csv", dtype=str).fillna("")
+
+        self.assertEqual(len(saved), 1)
+
+    def test_signal_cases_backfills_hindsight_when_future_market_data_arrives(self) -> None:
+        pre_rows = [
+            {
+                "trade_date": "2026-05-18",
+                "symbol": "159915",
+                "name": "创业板ETF",
+                "sector": "成长",
+                "market_state": "进攻",
+                "rank": 1,
+                "score": 80,
+                "selected": True,
+                "reason": "入选",
+            }
+        ]
+        entry_rows = [{"trade_date": "2026-05-18", "symbol": "159915", "buy_action": "观察", "position_size": 0}]
+        with tempfile.TemporaryDirectory() as tmp:
+            write_signal_cases(
+                pre_rows,
+                entry_rows,
+                output_dir=tmp,
+                market_data={"159915": self._market_frame([1.00, 1.01], start="2026-05-18")},
+            )
+            write_signal_cases(
+                [],
+                [],
+                output_dir=tmp,
+                market_data={"159915": self._market_frame([1.00, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06], start="2026-05-18")},
+            )
+            saved = pd.read_csv(Path(tmp) / "signal_cases.csv", dtype=str).fillna("")
+
+        self.assertEqual(saved.iloc[0]["ret_1d"], "0.010000")
+        self.assertEqual(saved.iloc[0]["ret_3d"], "0.030000")
+        self.assertEqual(saved.iloc[0]["ret_5d"], "0.050000")
+        self.assertEqual(saved.iloc[0]["hindsight_label"], "可能错过机会")
+
+    def test_signal_case_review_uses_historical_case_library(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            write_signal_cases(
+                [
+                    {
+                        "trade_date": "2026-05-18",
+                        "symbol": "159915",
+                        "name": "创业板ETF",
+                        "sector": "成长",
+                        "market_state": "进攻",
+                        "rank": 1,
+                        "score": 80,
+                        "selected": True,
+                        "reason": "入选",
+                    }
+                ],
+                [{"trade_date": "2026-05-18", "symbol": "159915", "buy_action": "观察", "position_size": 0}],
+                output_dir=tmp,
+            )
+            write_signal_cases(
+                [
+                    {
+                        "trade_date": "2026-05-19",
+                        "symbol": "510300",
+                        "name": "沪深300ETF",
+                        "sector": "宽基",
+                        "market_state": "均衡",
+                        "rank": 1,
+                        "score": 70,
+                        "selected": True,
+                        "reason": "入选",
+                    }
+                ],
+                [{"trade_date": "2026-05-19", "symbol": "510300", "buy_action": "观察", "position_size": 0}],
+                output_dir=tmp,
+            )
+            review = pd.read_csv(Path(tmp) / "signal_case_review.csv", dtype=str).fillna("")
+
+        self.assertEqual(set(review["trade_date"]), {"2026-05-18", "2026-05-19"})
+
     def test_v1_v2_comparison_outputs_all_watch_no_buy_reason(self) -> None:
         modular_pipeline = {
             "pre_selection": [
