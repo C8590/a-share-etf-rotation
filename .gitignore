@@ -11,8 +11,16 @@ env/
 *.pem
 
 data/cache/
+data/etf_daily.csv
+data/portfolio.csv
+data/portfolio_trades.csv
+data/quote_cache/
 data/risk_warning/risk_events.yaml
 data/risk_warning/risk_events.csv
+data/universe/
+
+artifacts/
+*.zip
 
 output/*
 !output/.gitkeep
@@ -32,3 +40,5 @@ config/live_observation.yaml
 Thumbs.db
 
 share/
+
+etc/
