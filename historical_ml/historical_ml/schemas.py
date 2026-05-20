@@ -158,4 +158,23 @@ OUTPUT_TABLES = [
     "entry_candidate_samples",
     "entry_candidate_samples_labeled",
     "manual_review_queue",
+    "entry_calibration_suggestions",
+]
+
+CALIBRATION_SUGGESTION_COLUMNS = [
+    "suggestion_id",
+    "parameter_area",
+    "current_pattern",
+    "evidence_metric",
+    "evidence_value",
+    "suggested_action",
+    "confidence",
+    "affected_market_state",
+    "affected_sector_state",
+    "sample_count",
+    "good_rate",
+    "bad_rate",
+    "avg_future_return_10d",
+    "max_drawdown_warning",
+    "notes",
 ]

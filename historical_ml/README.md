@@ -47,6 +47,8 @@ python -m historical_ml.cli run-all \
 - `manual_review_queue`
 - `entry_threshold_report.md`
 - `replay_audit_report.md`
+- `entry_calibration_suggestions.csv`
+- `entry_calibration_report.md`
 
 若开启 daily partitions，每天还会写入：
 
@@ -58,6 +60,13 @@ artifacts/historical_ml/entry_candidate_samples/trade_date=YYYY-MM-DD/part.csv
 ```
 
 ## entry_candidate_samples 字段
+
+`entry_candidate_samples` is the daily entry-evaluable sample table. In a
+small core ETF pool, every row can be within the entry evaluation scope, so
+`was_candidate` may be true for all rows. When the universe expands,
+`daily_etf_samples` remains the broad pool while `was_candidate`,
+`was_selected`, and `was_bought` distinguish candidate scope, entry selection,
+and final buy execution.
 
 必须字段：
 
