@@ -84,8 +84,6 @@ def main(argv=None) -> int:
         labeled = read_table(args.labeled_samples)
         review = build_manual_review_queue(labeled, config=config)
         write_table(review, out_dir, "manual_review_queue", args.format)
-        generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
-        generate_entry_calibration_outputs(labeled, out_dir, config=config)
         audit_inputs = {
             "daily_etf_samples": read_table(args.daily_etf_samples) if args.daily_etf_samples else None,
             "daily_sector_samples": read_table(args.daily_sector_samples) if args.daily_sector_samples else None,
@@ -95,6 +93,8 @@ def main(argv=None) -> int:
         audit_inputs = {k: v for k, v in audit_inputs.items() if v is not None}
         if audit_inputs:
             generate_replay_audit_report(audit_inputs, labeled, out_dir / "replay_audit_report.md", config=config)
+        generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
+        generate_entry_calibration_outputs(labeled, out_dir, config=config)
         return 0
 
     if args.command == "run-all":
@@ -106,8 +106,6 @@ def main(argv=None) -> int:
         write_table(labeled, out_dir, "entry_candidate_samples_labeled", config.output_format)
         review = build_manual_review_queue(labeled, config=config)
         write_table(review, out_dir, "manual_review_queue", config.output_format)
-        generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
-        generate_entry_calibration_outputs(labeled, out_dir, config=config)
         audit_outputs = {
             "daily_etf_samples": outputs["daily_etf_samples"],
             "daily_sector_samples": outputs["daily_sector_samples"],
@@ -115,6 +113,8 @@ def main(argv=None) -> int:
             "entry_candidate_samples_unlabeled": outputs["entry_candidate_samples"],
         }
         generate_replay_audit_report(audit_outputs, labeled, out_dir / "replay_audit_report.md", config=config)
+        generate_entry_threshold_report(labeled, out_dir / "entry_threshold_report.md", config=config)
+        generate_entry_calibration_outputs(labeled, out_dir, config=config)
         return 0
 
     parser.error("unknown command")

@@ -68,6 +68,12 @@ small core ETF pool, every row can be within the entry evaluation scope, so
 `was_selected`, and `was_bought` distinguish candidate scope, entry selection,
 and final buy execution.
 
+When the replay input uses a small core pool whose `sector` values are as
+granular as ETF names, sector benchmarks may have only one ETF per sector-date.
+In that case `outperform_sector_10d` has limited calibration value; prefer
+`outperform_market_10d` or a broader sector mapping until sector keys are
+normalized.
+
 必须字段：
 
 ```text

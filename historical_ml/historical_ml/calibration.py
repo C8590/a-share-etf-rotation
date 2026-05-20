@@ -84,6 +84,8 @@ def _prepare_labeled(df: pd.DataFrame) -> pd.DataFrame:
         out["sector_state"] = "unknown"
     if "exclude_reason" not in out.columns:
         out["exclude_reason"] = ""
+    for col in ["outperform_market_10d", "outperform_sector_10d"]:
+        out[col] = _bool_series(out[col]) if col in out.columns else False
     out["trend_stage"] = out["trend_maturity"].map(_trend_stage)
     out["sector_rank_group"] = out["sector_rank"].map(_rank_group)
     out["etf_rank_group"] = out["etf_rank"].map(_rank_group)
@@ -170,12 +172,46 @@ def _min_support(config: HistoricalMLConfig) -> int:
     return max(1, min(config.min_group_size_for_report, 10))
 
 
-def _confidence(sample_count: int, delta: float, config: HistoricalMLConfig) -> str:
-    if sample_count >= config.min_group_size_for_report and delta >= 0.15:
+def _confidence(sample_count: int, delta: float, config: HistoricalMLConfig, evidence: pd.DataFrame | None = None) -> str:
+    if sample_count >= 30 and delta >= 0.15 and not _is_concentrated(evidence):
         return "high"
     if sample_count >= _min_support(config) and delta >= 0.08:
         return "medium"
     return "low"
+
+
+def _is_concentrated(df: pd.DataFrame | None, threshold: float = 0.50) -> bool:
+    if df is None or df.empty:
+        return True
+    for col in ["code", "sector"]:
+        if col not in df.columns:
+            continue
+        counts = df[col].fillna("<missing>").astype(str).value_counts(normalize=True)
+        if len(counts) <= 1 or float(counts.iloc[0]) > threshold:
+            return True
+    return False
+
+
+def _concentration_warning(df: pd.DataFrame, threshold: float = 0.50) -> str:
+    if df.empty:
+        return ""
+    warnings: list[str] = []
+    for col in ["code", "sector"]:
+        if col not in df.columns:
+            continue
+        counts = df[col].fillna("<missing>").astype(str).value_counts()
+        if counts.empty:
+            continue
+        top_value = counts.index[0]
+        top_count = int(counts.iloc[0])
+        share = top_count / len(df)
+        if len(counts) <= 1 or share > threshold:
+            warnings.append(f"concentration warning: top_{col}={top_value} share={share:.1%}")
+    return " | ".join(warnings)
+
+
+def _append_notes(*parts: str) -> str:
+    return " | ".join(part for part in parts if part)
 
 
 def _momentum_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> list[dict[str, Any]]:
@@ -196,8 +232,11 @@ def _momentum_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> list[
                 round(delta, 4),
                 "raise minimum momentum threshold or down-rank low momentum entries",
                 m,
-                _confidence(m["sample_count"], delta, config),
-                notes="Evidence answers whether momentum_score threshold is too low.",
+                _confidence(m["sample_count"], delta, config, low),
+                notes=_append_notes(
+                    "Evidence answers whether momentum_score threshold is too low.",
+                    _concentration_warning(low),
+                ),
             )
         )
     return out
@@ -224,8 +263,11 @@ def _acceleration_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> l
                 round(bad_share, 4),
                 "lower acceleration weight or require stronger momentum confirmation",
                 m,
-                _confidence(m["sample_count"], bad_share - 0.30, config),
-                notes="High acceleration with poor forward return or deep drawdown suggests chase failure.",
+                _confidence(m["sample_count"], bad_share - 0.30, config, bad_pullback),
+                notes=_append_notes(
+                    "High acceleration with poor forward return or deep drawdown suggests chase failure.",
+                    _concentration_warning(bad_pullback),
+                ),
             )
         ]
     return []
@@ -249,8 +291,11 @@ def _trend_maturity_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) ->
                 round(delta, 4),
                 "increase overheat penalty, reduce weight, or require pullback confirmation",
                 overheat.to_dict(),
-                _confidence(int(overheat["sample_count"]), delta, config),
-                notes="Trend maturity should filter chase-high risk.",
+                _confidence(int(overheat["sample_count"]), delta, config, df.loc[df["trend_stage"] == "overheat"]),
+                notes=_append_notes(
+                    "Trend maturity should filter chase-high risk.",
+                    _concentration_warning(df.loc[df["trend_stage"] == "overheat"]),
+                ),
             )
         )
     return out
@@ -278,7 +323,8 @@ def _rank_suggestions(df: pd.DataFrame, rank_col: str, area: str, config: Histor
                 round(delta, 4),
                 action,
                 weak_row.to_dict(),
-                _confidence(int(weak_row["sample_count"]), delta, config),
+                _confidence(int(weak_row["sample_count"]), delta, config, df.loc[df[group_col] == ">3"]),
+                notes=_concentration_warning(df.loc[df[group_col] == ">3"]),
             )
         ]
     return []
@@ -304,8 +350,9 @@ def _market_state_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> l
                 round(delta, 4),
                 action,
                 row.to_dict(),
-                _confidence(int(row["sample_count"]), delta, config),
+                _confidence(int(row["sample_count"]), delta, config, df.loc[df["market_state"].astype(str) == state]),
                 affected_market_state=state,
+                notes=_concentration_warning(df.loc[df["market_state"].astype(str) == state]),
             )
         )
     return out
@@ -326,8 +373,8 @@ def _selected_bad_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> l
             round(share, 4),
             "review selected bad common factors before changing entry rules",
             m,
-            _confidence(len(selected), share, config),
-            notes=_commonality_notes(selected_bad),
+            _confidence(len(selected_bad), share, config, selected_bad),
+            notes=_append_notes(_commonality_notes(selected_bad), _concentration_warning(selected_bad)),
         )
     ]
 
@@ -347,29 +394,43 @@ def _bought_bad_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> lis
             round(share, 4),
             "tighten buy confirmation for the common failure pattern",
             m,
-            _confidence(len(bought), share, config),
-            notes=_commonality_notes(bought_bad),
+            _confidence(len(bought_bad), share, config, bought_bad),
+            notes=_append_notes(_commonality_notes(bought_bad), _concentration_warning(bought_bad)),
         )
     ]
 
 
 def _missed_winner_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> list[dict[str, Any]]:
-    missed = df.loc[(~df["was_bought"]) & (df["future_return_10d"] >= config.missed_big_winner_return_10d)]
-    if len(missed) < _min_support(config):
+    missed = _missed_winner_frames(df, config)
+    true_missed = missed["true_missed_winner"]
+    if len(true_missed) < _min_support(config):
         return []
-    m = _metrics(missed)
+    m = _metrics(true_missed)
     return [
         _suggestion(
             "missed_winner",
-            "unbought samples later rose strongly",
-            "missed_winner_count",
-            len(missed),
-            "inspect exclude_reason filters before loosening them",
+            "unbought samples later rose strongly and outperformed market or sector",
+            "true_missed_winner_count",
+            len(true_missed),
+            "inspect exclude_reason filters before loosening them; ignore raw missed winners that only reflect broad market strength",
             m,
-            _confidence(len(missed), m["good_rate"], config),
-            notes=_exclude_reason_notes(missed),
+            _confidence(len(true_missed), m["good_rate"], config, true_missed),
+            notes=_append_notes(_exclude_reason_notes(true_missed), _concentration_warning(true_missed)),
         )
     ]
+
+
+def _missed_winner_frames(df: pd.DataFrame, config: HistoricalMLConfig) -> dict[str, pd.DataFrame]:
+    raw = df.loc[(~df["was_bought"]) & (df["future_return_10d"] >= config.missed_big_winner_return_10d)].copy()
+    market = raw.loc[raw["outperform_market_10d"]].copy()
+    sector = raw.loc[raw["outperform_sector_10d"]].copy()
+    true_missed = raw.loc[raw["outperform_market_10d"] | raw["outperform_sector_10d"]].copy()
+    return {
+        "raw_missed_winner": raw,
+        "market_outperform_missed_winner": market,
+        "sector_outperform_missed_winner": sector,
+        "true_missed_winner": true_missed,
+    }
 
 
 def _score_stability_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -> list[dict[str, Any]]:
@@ -441,10 +502,10 @@ def _score_stability_suggestions(df: pd.DataFrame, config: HistoricalMLConfig) -
                 "high entry_score but poor future return",
                 "high_score_bad_count",
                 len(stable_fail),
-                "audit score formula components before raising exposure",
-                m,
-                _confidence(len(stable_fail), m["bad_rate"], config),
-                notes=_commonality_notes(stable_fail),
+            "audit score formula components before raising exposure",
+            m,
+            _confidence(len(stable_fail), m["bad_rate"], config, stable_fail),
+            notes=_append_notes(_commonality_notes(stable_fail), _concentration_warning(stable_fail)),
             )
         )
     return out
@@ -504,6 +565,9 @@ def _build_report(complete: pd.DataFrame, suggestions: pd.DataFrame, config: His
     lines.append(suggestions[display_cols].to_markdown(index=False) if not suggestions.empty else "No suggestions met support thresholds.")
     lines.append("")
 
+    lines.extend(_phase35_diagnostics(complete, config))
+    lines.append("")
+
     sections = [
         ("Momentum Score", _bucket_table(complete, "momentum_score", config)),
         ("Acceleration Score", _bucket_table(complete, "acceleration_score", config)),
@@ -543,6 +607,184 @@ def _build_report(complete: pd.DataFrame, suggestions: pd.DataFrame, config: His
     lines.append("")
     lines.append(_score_stability_markdown(complete))
     return "\n".join(lines)
+
+
+def _phase35_diagnostics(complete: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:
+    lines: list[str] = []
+    lines.append("## Phase 3.5 Defensive Diagnostics")
+    lines.append("")
+    lines.append("This block reduces false calibration conclusions from broad rallies, small samples, and code or sector concentration.")
+    lines.append("")
+    lines.append("### Benchmark Quality")
+    lines.append("")
+    lines.append(_benchmark_quality_markdown(complete))
+    lines.append("")
+
+    missed = _missed_winner_frames(complete, config)
+    lines.append("### Missed Winner Classification")
+    lines.append("")
+    missed_counts = pd.DataFrame(
+        [
+            {
+                "category": name,
+                "count": len(frame),
+                "avg_future_return_10d": float(frame["future_return_10d"].mean()) if not frame.empty else np.nan,
+                "top_exclude_reason": _top_value(frame, "exclude_reason"),
+            }
+            for name, frame in missed.items()
+        ]
+    )
+    lines.append(missed_counts.to_markdown(index=False))
+    lines.append("")
+
+    for name, frame in missed.items():
+        lines.append(f"#### {name} Top 20")
+        lines.append(_top20(frame, pd.Series(True, index=frame.index), ascending=False))
+        lines.append("")
+        lines.append(f"#### {name} exclude_reason")
+        lines.append(_value_counts_table(frame, "exclude_reason"))
+        lines.append("")
+
+    selected_bad = complete.loc[complete["was_selected"] & (complete["auto_label"] == "bad_entry")].copy()
+    bought_bad = complete.loc[complete["was_bought"] & (complete["auto_label"] == "bad_entry")].copy()
+    lines.extend(_bad_entry_attribution("selected_bad_entry", selected_bad, config))
+    lines.extend(_bad_entry_attribution("bought_bad_entry", bought_bad, config))
+
+    raw_missed = missed["raw_missed_winner"]
+    bad = complete.loc[complete["auto_label"] == "bad_entry"].copy()
+    concentration_tables = [
+        ("bad_entry_top_codes", bad, "code"),
+        ("bad_entry_top_sectors", bad, "sector"),
+        ("missed_winner_top_codes", raw_missed, "code"),
+        ("missed_winner_top_sectors", raw_missed, "sector"),
+    ]
+    for title, frame, col in concentration_tables:
+        lines.append(f"### {title}")
+        lines.append("")
+        lines.append(_value_counts_table(frame, col))
+        warning = _concentration_warning(frame)
+        if warning:
+            lines.append("")
+            lines.append(warning)
+        lines.append("")
+    return lines
+
+
+def _benchmark_quality_markdown(df: pd.DataFrame) -> str:
+    if df.empty:
+        return "No rows."
+    rows: list[dict[str, Any]] = []
+    if "outperform_market_10d" in df.columns:
+        rows.append(
+            {
+                "benchmark": "market",
+                "true_count": int(df["outperform_market_10d"].astype(bool).sum()),
+                "true_rate": float(df["outperform_market_10d"].astype(bool).mean()),
+                "warning": "",
+            }
+        )
+    if "outperform_sector_10d" in df.columns:
+        sector_true = int(df["outperform_sector_10d"].astype(bool).sum())
+        one_member_rate = _single_member_sector_rate(df)
+        warning = ""
+        if sector_true == 0:
+            warning = (
+                "sector_outperform has no true rows; current sector benchmark may be limited "
+                "when sector keys are too granular or one ETF represents a sector"
+            )
+        if one_member_rate >= 0.8:
+            warning = _append_notes(
+                warning,
+                f"{one_member_rate:.1%} of sector-date groups have a single ETF",
+            )
+        rows.append(
+            {
+                "benchmark": "sector",
+                "true_count": sector_true,
+                "true_rate": float(df["outperform_sector_10d"].astype(bool).mean()),
+                "warning": warning,
+            }
+        )
+    return pd.DataFrame(rows).to_markdown(index=False) if rows else "No benchmark columns found."
+
+
+def _single_member_sector_rate(df: pd.DataFrame) -> float:
+    if not {"trade_date", "sector", "code"}.issubset(df.columns):
+        return 0.0
+    groups = df.groupby(["trade_date", "sector"])["code"].nunique()
+    if groups.empty:
+        return 0.0
+    return float((groups <= 1).mean())
+
+
+def _bad_entry_attribution(title: str, bad_df: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:
+    lines = [f"### {title} Attribution", ""]
+    if bad_df.empty:
+        lines.append("No rows.")
+        lines.append("")
+        return lines
+
+    dims = ["market_state", "sector_state", "trend_stage", "sector_rank_group", "etf_rank_group", "exclude_reason"]
+    for dim in dims:
+        lines.append(f"#### {dim}")
+        lines.append(_attribution_table(bad_df, dim))
+        lines.append("")
+
+    for col in ["momentum_score", "acceleration_score"]:
+        lines.append(f"#### {col}_bucket")
+        lines.append(_bucket_attribution_table(bad_df, col, config))
+        lines.append("")
+
+    warning = _concentration_warning(bad_df)
+    if warning:
+        lines.append(warning)
+        lines.append("")
+    return lines
+
+
+def _attribution_table(df: pd.DataFrame, col: str) -> str:
+    if df.empty or col not in df.columns:
+        return "No rows."
+    counts = df[col].fillna("<missing>").astype(str).value_counts().head(20)
+    table = counts.rename_axis(col).reset_index(name="bad_count")
+    table["share"] = table["bad_count"] / len(df)
+    return table.to_markdown(index=False)
+
+
+def _bucket_attribution_table(df: pd.DataFrame, col: str, config: HistoricalMLConfig) -> str:
+    if df.empty or col not in df.columns or df[col].dropna().empty:
+        return "No rows."
+    tmp = df[[col]].copy()
+    tmp[col] = pd.to_numeric(tmp[col], errors="coerce")
+    tmp = tmp.dropna(subset=[col])
+    if tmp.empty:
+        return "No rows."
+    if tmp[col].nunique() >= 2:
+        try:
+            tmp["bucket"] = pd.qcut(tmp[col], q=min(config.report_feature_bins, tmp[col].nunique()), duplicates="drop")
+        except ValueError:
+            tmp["bucket"] = tmp[col].astype(str)
+    else:
+        tmp["bucket"] = tmp[col].astype(str)
+    counts = tmp["bucket"].astype(str).value_counts().rename_axis("bucket").reset_index(name="bad_count")
+    counts["share"] = counts["bad_count"] / len(tmp)
+    return counts.to_markdown(index=False)
+
+
+def _value_counts_table(df: pd.DataFrame, col: str) -> str:
+    if df.empty or col not in df.columns:
+        return "No rows."
+    counts = df[col].fillna("<missing>").astype(str).value_counts().head(20)
+    table = counts.rename_axis(col).reset_index(name="count")
+    table["share"] = table["count"] / len(df)
+    return table.to_markdown(index=False)
+
+
+def _top_value(df: pd.DataFrame, col: str) -> str:
+    if df.empty or col not in df.columns:
+        return ""
+    counts = df[col].fillna("<missing>").astype(str).value_counts()
+    return "" if counts.empty else str(counts.index[0])
 
 
 def _bucket_table(df: pd.DataFrame, col: str, config: HistoricalMLConfig) -> pd.DataFrame:
