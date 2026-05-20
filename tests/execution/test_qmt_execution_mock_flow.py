@@ -164,7 +164,7 @@ def test_qmt_adapter_live_and_unconfirmed_paths_reject_before_qmt_submit() -> No
     intent = make_intent()
     live = QmtAdapter("unused", "acct", 1, trading_env="LIVE", qmt_submit_enabled=True)
     disabled = QmtAdapter("unused", "acct", 1)
-    unconfirmed = QmtAdapter("unused", "acct", 1, trading_env="SIM", qmt_submit_enabled=True)
+    unconfirmed = QmtAdapter("unused", "acct", 1, trading_env="SIM", qmt_submit_enabled=True, read_only=False, allow_place_order=True)
 
     with pytest.raises(QmtSafetyError, match="LIVE"):
         live.place_order(intent)

@@ -4,6 +4,7 @@ from typing import Callable, List, Optional
 
 from .broker_adapter import BrokerAdapter
 from .contracts import AccountSnapshot, Action, BrokerOrder, BrokerTrade, OrderIntent, PositionSnapshot, PriceType
+from .qmt_mapping import map_qmt_order_update, map_qmt_position, map_qmt_trade_update
 
 
 class QmtSafetyError(RuntimeError):
@@ -28,12 +29,18 @@ class QmtAdapter(BrokerAdapter):
         session_id: int,
         trading_env: str = "SIM",  # SIM / LIVE
         qmt_submit_enabled: bool = False,
+        read_only: bool = True,
+        allow_place_order: bool = False,
+        allow_cancel_order: bool = False,
     ):
         self.userdata_mini_path = userdata_mini_path
         self.account_id = account_id
         self.session_id = session_id
         self.trading_env = trading_env.upper()
         self.qmt_submit_enabled = qmt_submit_enabled
+        self.read_only = read_only
+        self.allow_place_order = allow_place_order
+        self.allow_cancel_order = allow_cancel_order
         self.xt_trader = None
         self.acc = None
         self.callbacks: List[Callable[[str, object], None]] = []
@@ -101,43 +108,28 @@ class QmtAdapter(BrokerAdapter):
     def get_positions(self) -> List[PositionSnapshot]:
         self._ensure_connected()
         raw_positions = self.xt_trader.query_stock_positions(self.acc) or []
-        out: List[PositionSnapshot] = []
-        for p in raw_positions:
-            qty = int(getattr(p, "volume", getattr(p, "totalAmt", 0)))
-            available = int(getattr(p, "can_use_volume", getattr(p, "enableAmount", 0)))
-            cost = float(getattr(p, "open_price", getattr(p, "cost_price", 0.0)))
-            last = float(getattr(p, "last_price", 0.0) or 0.0)
-            mv = float(getattr(p, "market_value", qty * last))
-            pnl = float(getattr(p, "profit", mv - qty * cost))
-            out.append(PositionSnapshot(
-                code=str(getattr(p, "stock_code", "")),
-                name=str(getattr(p, "stock_name", "")),
-                quantity=qty,
-                available_quantity=available,
-                cost_price=cost,
-                last_price=last,
-                market_value=mv,
-                pnl=pnl,
-                pnl_ratio=(pnl / (qty * cost)) if qty and cost else 0.0,
-                update_time="",
-            ))
-        return out
+        return [map_qmt_position(p) for p in raw_positions]
 
     def get_orders(self) -> List[BrokerOrder]:
         self._ensure_connected()
         raw_orders = self.xt_trader.query_stock_orders(self.acc, False) or []
-        return [self._map_order(o) for o in raw_orders]
+        return [self._order_update_to_broker_order(map_qmt_order_update(o)) for o in raw_orders]
 
     def get_trades(self) -> List[BrokerTrade]:
         self._ensure_connected()
-        # 真实映射字段在不同版本可能略有差异；接入实测后固化。
-        return []
+        query = getattr(self.xt_trader, "query_stock_trades", None)
+        raw_trades = query(self.acc) if query is not None else []
+        return [self._trade_update_to_broker_trade(map_qmt_trade_update(t)) for t in (raw_trades or [])]
 
     def place_order(self, intent: OrderIntent) -> BrokerOrder:
         if self.trading_env == "LIVE":
             raise QmtSafetyError("第一阶段禁止实盘自动下单：LIVE 环境 place_order 被强制拦截")
         if not self.qmt_submit_enabled:
             raise QmtSafetyError("qmt_submit_enabled=False：第一阶段默认只允许订单草稿/半自动，不直连提交")
+        if self.read_only:
+            raise QmtSafetyError("read_only=True：只读阶段禁止提交 QMT 下单")
+        if not self.allow_place_order:
+            raise QmtSafetyError("allow_place_order=False：当前配置禁止提交 QMT 下单")
         if not intent.manual_confirmed:
             raise QmtSafetyError("缺少人工确认，禁止提交 QMT")
         self._ensure_connected()
@@ -162,9 +154,13 @@ class QmtAdapter(BrokerAdapter):
         return BrokerOrder(str(order_id), intent.code, intent.action, intent.quantity, intent.limit_price, "SUBMITTED")
 
     def cancel_order(self, broker_order_id: str) -> BrokerOrder:
-        self._ensure_connected()
         if self.trading_env == "LIVE":
             raise QmtSafetyError("第一阶段禁止实盘自动撤单：LIVE 环境 cancel_order 被强制拦截")
+        if self.read_only:
+            raise QmtSafetyError("read_only=True：只读阶段禁止提交 QMT 撤单")
+        if not self.allow_cancel_order:
+            raise QmtSafetyError("allow_cancel_order=False：当前配置禁止提交 QMT 撤单")
+        self._ensure_connected()
         result = self.xt_trader.cancel_order_stock(self.acc, int(broker_order_id))
         status = "CANCEL_SUBMITTED" if result == 0 else "FAILED"
         return BrokerOrder(broker_order_id, "", Action.BUY, 0, None, status, error_message=None if result == 0 else "QMT cancel failed")
@@ -174,15 +170,27 @@ class QmtAdapter(BrokerAdapter):
             raise RuntimeError("QmtAdapter is not connected")
 
     @staticmethod
-    def _map_order(o) -> BrokerOrder:
-        # 注意：不同 xtquant 版本字段可能有差异，真实接入时必须用券商环境实测字段。
+    def _order_update_to_broker_order(update) -> BrokerOrder:
         return BrokerOrder(
-            broker_order_id=str(getattr(o, "order_id", getattr(o, "order_sysid", ""))),
-            code=str(getattr(o, "stock_code", "")),
-            action=Action.BUY if int(getattr(o, "order_type", 23)) == 23 else Action.SELL,
-            quantity=int(getattr(o, "order_volume", 0)),
-            limit_price=float(getattr(o, "price", 0.0)),
-            status=str(getattr(o, "order_status", "UNKNOWN")),
-            filled_quantity=int(getattr(o, "traded_volume", 0)),
-            avg_price=float(getattr(o, "traded_price", 0.0)) if getattr(o, "traded_price", None) is not None else None,
+            broker_order_id=update.broker_order_id,
+            code=update.code,
+            action=update.action,
+            quantity=update.quantity,
+            limit_price=update.limit_price,
+            status=update.status,
+            filled_quantity=update.filled_quantity,
+            avg_price=update.avg_price,
+            error_message=update.error_message,
+        )
+
+    @staticmethod
+    def _trade_update_to_broker_trade(update) -> BrokerTrade:
+        return BrokerTrade(
+            broker_trade_id=update.broker_trade_id,
+            broker_order_id=update.broker_order_id,
+            code=update.code,
+            action=update.action,
+            quantity=update.quantity,
+            price=update.price,
+            trade_time=update.trade_time,
         )

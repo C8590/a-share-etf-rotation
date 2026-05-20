@@ -1,0 +1,12 @@
+enabled: false
+trading_env: SIM
+qmt_submit_enabled: false
+miniqmt_user_data_path: ""
+account_id: ""
+account_type: STOCK
+broker_name: ""
+session_id: 1001
+read_only: true
+allow_place_order: false
+allow_cancel_order: false
+snapshot_path: runtime/qmt_execution/qmt_readonly_snapshot.json
