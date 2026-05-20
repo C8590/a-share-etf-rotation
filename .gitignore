@@ -37,6 +37,7 @@ backup/
 
 config/current_position.yaml
 config/live_observation.yaml
+config/qmt_execution.local.yaml
 
 .vscode/
 .idea/

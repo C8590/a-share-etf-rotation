@@ -5,10 +5,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from qmt_execution.contracts import Action
+import qmt_execution.qmt_readonly_smoke as smoke
+from qmt_execution.contracts import AccountSnapshot, Action
 from qmt_execution.qmt_adapter import QmtAdapter, QmtSafetyError
 from qmt_execution.qmt_mapping import map_qmt_order_update, map_qmt_position, map_qmt_trade_update
-from qmt_execution.qmt_readonly_smoke import load_config, run_smoke
+from qmt_execution.qmt_readonly_smoke import load_config, resolve_config_path, run_smoke
 
 
 def test_example_config_defaults_to_readonly_and_submit_disabled() -> None:
@@ -25,6 +26,16 @@ def test_example_config_defaults_to_readonly_and_submit_disabled() -> None:
 def test_readonly_smoke_refuses_disabled_example_config() -> None:
     with pytest.raises(RuntimeError, match="disabled"):
         run_smoke(Path("config/qmt_execution.example.yaml"))
+
+
+def test_missing_local_config_uses_disabled_example_without_connect(monkeypatch, tmp_path) -> None:
+    missing_local = tmp_path / "missing.local.yaml"
+    monkeypatch.setattr(smoke, "LOCAL_CONFIG", missing_local)
+    monkeypatch.setattr(smoke, "DEFAULT_CONFIG", Path("config/qmt_execution.example.yaml"))
+
+    assert resolve_config_path() == Path("config/qmt_execution.example.yaml")
+    with pytest.raises(RuntimeError, match="disabled"):
+        run_smoke(adapter_factory=lambda config: _fail_if_connected())
 
 
 def test_readonly_true_rejects_place_order_before_qmt_submit() -> None:
@@ -123,21 +134,58 @@ def test_qmt_raw_trade_maps_to_trade_update() -> None:
 
 def test_readonly_smoke_rejects_enabled_submit_config(tmp_path) -> None:
     config_path = tmp_path / "qmt.yaml"
-    config_path.write_text(
-        yaml.safe_dump(
-            {
-                "enabled": True,
-                "read_only": True,
-                "qmt_submit_enabled": True,
-                "allow_place_order": False,
-                "allow_cancel_order": False,
-            }
-        ),
-        encoding="utf-8",
-    )
+    _write_config(config_path, qmt_submit_enabled=True)
 
     with pytest.raises(RuntimeError, match="qmt_submit_enabled=false"):
         run_smoke(config_path)
+
+
+@pytest.mark.parametrize(
+    ("override", "message"),
+    [
+        ({"read_only": False}, "read_only=true"),
+        ({"allow_place_order": True}, "allow_place_order=false"),
+        ({"allow_cancel_order": True}, "allow_cancel_order=false"),
+    ],
+)
+def test_readonly_smoke_rejects_unsafe_local_config(tmp_path, override: dict[str, object], message: str) -> None:
+    config_path = tmp_path / "qmt.yaml"
+    _write_config(config_path, **override)
+
+    with pytest.raises(RuntimeError, match=message):
+        run_smoke(config_path)
+
+
+def test_readonly_smoke_snapshot_must_be_under_runtime(tmp_path) -> None:
+    config_path = tmp_path / "qmt.yaml"
+    _write_config(config_path, snapshot_path=str(tmp_path / "snapshot.json"))
+
+    with pytest.raises(RuntimeError, match="runtime"):
+        run_smoke(config_path)
+
+
+def test_readonly_smoke_collects_snapshot_without_order_or_cancel(tmp_path) -> None:
+    config_path = tmp_path / "qmt.yaml"
+    snapshot_path = Path("runtime/qmt_execution/test_qmt_readonly_snapshot.json")
+    _write_config(config_path, snapshot_path=str(snapshot_path))
+    adapter = _FakeReadonlyAdapter()
+
+    try:
+        output_path = run_smoke(config_path, adapter_factory=lambda config: adapter)
+        assert output_path == snapshot_path
+        data = yaml.safe_load(snapshot_path.read_text(encoding="utf-8"))
+        assert data["account_type"] == "STOCK"
+        assert data["account_summary_sample"]["account_id"] == "SIM-ACCOUNT"
+        assert data["positions_sample"][0]["code"] == "510300.SH"
+        assert data["mapping_result"] == {"positions_mapped": 1, "orders_mapped": 1, "trades_mapped": 1}
+        assert data["errors"] == []
+        assert adapter.place_order_calls == 0
+        assert adapter.cancel_order_calls == 0
+        assert adapter.subscribed is True
+        assert adapter.disconnected is True
+    finally:
+        if snapshot_path.exists():
+            snapshot_path.unlink()
 
 
 def _intent_stub():
@@ -158,3 +206,71 @@ def _intent_stub():
         risk_level="R1",
         manual_confirmed=True,
     )
+
+
+def _write_config(path: Path, **overrides) -> None:
+    data = {
+        "enabled": True,
+        "trading_env": "SIM",
+        "qmt_submit_enabled": False,
+        "read_only": True,
+        "allow_place_order": False,
+        "allow_cancel_order": False,
+        "snapshot_path": "runtime/qmt_execution/qmt_readonly_snapshot.json",
+    }
+    data.update(overrides)
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+
+def _fail_if_connected():
+    raise AssertionError("adapter should not be created when example config is disabled")
+
+
+class _FakeReadonlyAdapter:
+    def __init__(self) -> None:
+        self.place_order_calls = 0
+        self.cancel_order_calls = 0
+        self.subscribed = False
+        self.disconnected = False
+
+    def connect(self) -> None:
+        return None
+
+    def subscribe_updates(self, callback) -> None:
+        self.subscribed = True
+
+    def get_account(self) -> AccountSnapshot:
+        return AccountSnapshot(
+            account_id="SIM-ACCOUNT",
+            cash=1000.0,
+            total_asset=1200.0,
+            market_value=200.0,
+            update_time="2026-05-20T09:30:00",
+        )
+
+    def get_positions(self):
+        return [
+            {
+                "stock_code": "510300.SH",
+                "stock_name": "CSI 300 ETF",
+                "volume": 100,
+                "can_use_volume": 100,
+                "open_price": 2.0,
+                "last_price": 2.0,
+            }
+        ]
+
+    def get_orders(self):
+        return [{"order_id": "O-1", "stock_code": "510300.SH", "order_type": 23, "order_volume": 100}]
+
+    def get_trades(self):
+        return [{"trade_id": "T-1", "order_id": "O-1", "stock_code": "510300.SH", "order_type": 23, "traded_volume": 100}]
+
+    def place_order(self, intent) -> None:
+        self.place_order_calls += 1
+
+    def cancel_order(self, broker_order_id) -> None:
+        self.cancel_order_calls += 1
+
+    def disconnect(self) -> None:
+        self.disconnected = True

@@ -1,3 +1,5 @@
+# Copy this file to config/qmt_execution.local.yaml for real readonly smoke.
+# Keep local config private; never commit account ids or MiniQMT paths.
 enabled: false
 trading_env: SIM
 qmt_submit_enabled: false

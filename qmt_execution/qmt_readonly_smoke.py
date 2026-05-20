@@ -3,21 +3,32 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import yaml
 
 from .qmt_adapter import QmtAdapter
+from .qmt_mapping import map_qmt_order_update, map_qmt_position, map_qmt_trade_update
 
 
 DEFAULT_CONFIG = Path("config/qmt_execution.example.yaml")
+LOCAL_CONFIG = Path("config/qmt_execution.local.yaml")
+DEFAULT_SNAPSHOT = Path("runtime/qmt_execution/qmt_readonly_snapshot.json")
+SNAPSHOT_ROOT = Path("runtime/qmt_execution")
 
 
 def load_config(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
     return data
+
+
+def resolve_config_path(path: Path | None = None) -> Path:
+    if path is not None:
+        return path
+    return LOCAL_CONFIG if LOCAL_CONFIG.exists() else DEFAULT_CONFIG
 
 
 def build_adapter(config: dict[str, Any]) -> QmtAdapter:
@@ -33,39 +44,84 @@ def build_adapter(config: dict[str, Any]) -> QmtAdapter:
     )
 
 
-def run_smoke(config_path: Path, snapshot_path: Path | None = None) -> Path:
-    config = load_config(config_path)
+def run_smoke(
+    config_path: Path | None = None,
+    snapshot_path: Path | None = None,
+    adapter_factory: Callable[[dict[str, Any]], Any] = build_adapter,
+) -> Path:
+    resolved_config_path = resolve_config_path(config_path)
+    config = load_config(resolved_config_path)
     if not bool(config.get("enabled", False)):
-        raise RuntimeError(f"QMT readonly smoke is disabled by config: {config_path}")
+        raise RuntimeError(f"QMT readonly smoke is disabled by config: {resolved_config_path}")
     if not bool(config.get("read_only", True)):
         raise RuntimeError("readonly smoke requires read_only=true")
     if bool(config.get("qmt_submit_enabled", False)):
         raise RuntimeError("readonly smoke requires qmt_submit_enabled=false")
-    if bool(config.get("allow_place_order", False)) or bool(config.get("allow_cancel_order", False)):
-        raise RuntimeError("readonly smoke requires place/cancel permissions to remain disabled")
+    if bool(config.get("allow_place_order", False)):
+        raise RuntimeError("readonly smoke requires allow_place_order=false")
+    if bool(config.get("allow_cancel_order", False)):
+        raise RuntimeError("readonly smoke requires allow_cancel_order=false")
 
-    out_path = snapshot_path or Path(str(config.get("snapshot_path", "runtime/qmt_execution/qmt_readonly_snapshot.json")))
-    adapter = build_adapter(config)
+    out_path = _resolve_snapshot_path(snapshot_path or Path(str(config.get("snapshot_path", DEFAULT_SNAPSHOT))))
+    adapter = adapter_factory(config)
 
     snapshot: dict[str, Any] = {
+        "collect_time": datetime.now().isoformat(timespec="seconds"),
         "broker_name": config.get("broker_name", ""),
         "trading_env": config.get("trading_env", "SIM"),
+        "account_type": config.get("account_type", "STOCK"),
         "read_only": True,
         "qmt_submit_enabled": False,
+        "account_summary_sample": None,
+        "positions_sample": [],
+        "orders_sample": [],
+        "trades_sample": [],
+        "mapping_result": {
+            "positions_mapped": 0,
+            "orders_mapped": 0,
+            "trades_mapped": 0,
+        },
+        "errors": [],
     }
 
     try:
         adapter.connect()
-        snapshot["account"] = _serialize(adapter.get_account())
-        snapshot["positions"] = [_serialize(item) for item in adapter.get_positions()]
-        snapshot["orders"] = [_serialize(item) for item in adapter.get_orders()]
-        snapshot["trades"] = [_serialize(item) for item in adapter.get_trades()]
+        subscribe = getattr(adapter, "subscribe_updates", None)
+        if callable(subscribe):
+            subscribe(lambda event_type, payload: None)
+        account = adapter.get_account()
+        positions = adapter.get_positions()
+        orders = adapter.get_orders()
+        trades = adapter.get_trades()
+        mapped_positions = [map_qmt_position(item) for item in positions]
+        mapped_orders = [map_qmt_order_update(item) for item in orders]
+        mapped_trades = [map_qmt_trade_update(item) for item in trades]
+        snapshot["account_summary_sample"] = _serialize(account)
+        snapshot["positions_sample"] = [_serialize(item) for item in mapped_positions]
+        snapshot["orders_sample"] = [_serialize(item) for item in mapped_orders]
+        snapshot["trades_sample"] = [_serialize(item) for item in mapped_trades]
+        snapshot["mapping_result"] = {
+            "positions_mapped": len(mapped_positions),
+            "orders_mapped": len(mapped_orders),
+            "trades_mapped": len(mapped_trades),
+        }
+    except Exception as exc:  # noqa: BLE001
+        snapshot["errors"].append(str(exc))
+        raise
     finally:
         adapter.disconnect()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding="utf-8")
     return out_path
+
+
+def _resolve_snapshot_path(path: Path) -> Path:
+    root = SNAPSHOT_ROOT.resolve()
+    candidate = path.resolve()
+    if root != candidate and root not in candidate.parents:
+        raise RuntimeError(f"readonly snapshot must be written under {SNAPSHOT_ROOT}")
+    return path
 
 
 def _serialize(value: Any) -> Any:
@@ -80,7 +136,7 @@ def _serialize(value: Any) -> Any:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run readonly QMT account/position/order/trade smoke checks.")
-    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--snapshot", type=Path, default=None)
     args = parser.parse_args()
 
