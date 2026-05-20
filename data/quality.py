@@ -9,6 +9,12 @@ import pandas as pd
 from data.storage import get_csv_path, load_etf_data
 
 
+OHLC_COLUMNS = ["open", "high", "low", "close"]
+VOLUME_COLUMNS = ["volume", "amount"]
+SAME_PRICE_WARNING_RATIO = 0.95
+RETURN_WARNING_THRESHOLD = 0.20
+
+
 @dataclass
 class QualityResult:
     symbol: str
@@ -64,7 +70,8 @@ def analyze_single_etf(
 
     frame["date"] = pd.to_datetime(frame["date"], errors="coerce")
     duplicate_count = int(frame["date"].duplicated().sum())
-    missing_count = int(frame[["date", "close"]].isna().any(axis=1).sum()) if "close" in frame.columns else len(frame)
+    missing_check_cols = [col for col in ["date", *OHLC_COLUMNS, *VOLUME_COLUMNS] if col in frame.columns]
+    missing_count = int(frame[missing_check_cols].isna().any(axis=1).sum()) if missing_check_cols else len(frame)
     rows = int(len(frame))
 
     if rows < min_rows:
@@ -75,23 +82,56 @@ def analyze_single_etf(
         errors.append("date contains null or invalid values")
     if not frame["date"].dropna().is_monotonic_increasing:
         errors.append("date is not ascending")
-    if "close" not in frame.columns or frame["close"].isna().any():
-        errors.append("close contains null values")
+    today = pd.Timestamp.today().normalize()
+    if frame["date"].dropna().gt(today).any():
+        errors.append("date is later than system date")
 
-    price_cols = ["open", "high", "low", "close"]
-    for col in price_cols:
+    for col in OHLC_COLUMNS:
         if col not in frame.columns:
             errors.append(f"missing {col} column")
         else:
             values = pd.to_numeric(frame[col], errors="coerce")
+            if values.isna().any():
+                errors.append(f"{col} contains null or invalid values")
             if (values <= 0).any():
                 errors.append(f"{col} contains non-positive values")
 
-    if {"high", "low"}.issubset(frame.columns):
+    for col in VOLUME_COLUMNS:
+        if col not in frame.columns:
+            warnings.append(f"missing {col} column")
+        else:
+            values = pd.to_numeric(frame[col], errors="coerce")
+            if values.isna().any():
+                warnings.append(f"{col} contains null or invalid values")
+
+    if set(OHLC_COLUMNS).issubset(frame.columns):
+        open_ = pd.to_numeric(frame["open"], errors="coerce")
         high = pd.to_numeric(frame["high"], errors="coerce")
         low = pd.to_numeric(frame["low"], errors="coerce")
+        close = pd.to_numeric(frame["close"], errors="coerce")
         if (high < low).any():
             errors.append("high is lower than low")
+        if (high < open_).any():
+            errors.append("high is lower than open")
+        if (high < close).any():
+            errors.append("high is lower than close")
+        if (low > open_).any():
+            errors.append("low is higher than open")
+        if (low > close).any():
+            errors.append("low is higher than close")
+
+        valid_close = close.dropna()
+        if len(valid_close) > 0:
+            if (close == high).mean() >= SAME_PRICE_WARNING_RATIO:
+                warnings.append("close equals high at an unusually high ratio")
+            if (close == low).mean() >= SAME_PRICE_WARNING_RATIO:
+                warnings.append("close equals low at an unusually high ratio")
+            if (close == open_).mean() >= SAME_PRICE_WARNING_RATIO:
+                warnings.append("close equals open at an unusually high ratio")
+            daily_return = frame.assign(_close=close).sort_values("date")["_close"].pct_change()
+            abnormal_count = int((daily_return.abs() > RETURN_WARNING_THRESHOLD).sum())
+            if abnormal_count:
+                warnings.append(f"daily close return exceeds {RETURN_WARNING_THRESHOLD:.0%} on {abnormal_count} day(s)")
 
     valid_dates = frame["date"].dropna()
     start_date = str(valid_dates.min().date()) if not valid_dates.empty else ""
