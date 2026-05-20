@@ -1,0 +1,13 @@
+risk_warning:
+  enabled: true
+
+overnight_risk:
+  enabled: true
+  score: 0
+  explain: "未发现明显隔夜冲击"
+
+# Optional manual override for the first version.
+# If omitted, risk_warning tries to read market_state from existing local outputs.
+# market_fragility:
+#   score: 30
+#   explain: "未读取到完整市场脆弱度数据，按中性偏低风险处理。"

@@ -877,6 +877,7 @@ def run_modular_signal_pipeline(
     closed_trades: list[dict[str, Any]] | None = None,
     output_dir: str | Path = "output",
     signal_date: str | pd.Timestamp | None = None,
+    risk_date: str | pd.Timestamp | None = None,
     current_position_path: str | Path = "config/current_position.yaml",
     write_daily_csv: bool = True,
 ) -> dict[str, Any]:
@@ -903,6 +904,9 @@ def run_modular_signal_pipeline(
     from signal.exit import ExitEngine
     from signal.learning import LearningEngine
     from signal.pre_selection import PreSelectionEngine
+    from risk_warning.gate import apply_risk_gate
+    from risk_warning.learning_adapter import get_learning_risk_context
+    from risk_warning.scorer import calculate_next_day_risk, write_risk_outputs
 
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -934,6 +938,13 @@ def run_modular_signal_pipeline(
         warnings.append(f"买入模型降级：{exc}")
         entry_rows = []
         _write_contract("entry_signal.csv", ENTRY_SIGNAL_FIELDS, entry_rows)
+
+    risk_date_text = str(pd.Timestamp(risk_date).date()) if risk_date is not None else trade_date
+    risk_gate = calculate_next_day_risk(risk_date_text, output_dir=output_path, current_position_path=current_position_path)
+    write_risk_outputs(risk_gate, output_dir=output_path)
+    get_learning_risk_context(risk_gate.risk_date, gate=risk_gate, output_path=output_path / "risk_learning_context.csv")
+    entry_rows = apply_risk_gate(entry_rows, risk_gate)
+    _write_contract("entry_signal.csv", ENTRY_SIGNAL_FIELDS, entry_rows)
 
     try:
         write_signal_cases(
@@ -1025,6 +1036,18 @@ def run_modular_signal_pipeline(
         learning_rows=learning_rows,
         warnings=warnings,
         generated_at=generated_at,
+    )
+    summary_fields.update(
+        {
+            "risk_warning_level": risk_gate.risk_level,
+            "risk_warning_score": risk_gate.risk_score,
+            "risk_freeze_entry": "是" if risk_gate.freeze_entry else "否",
+            "risk_equity_cap_override": risk_gate.equity_cap_override,
+            "risk_require_manual_review": "是" if risk_gate.require_manual_review else "否",
+            "risk_manual_takeover_required": "是" if risk_gate.manual_takeover_required else "否",
+            "risk_affected_sectors": "、".join(risk_gate.affected_sectors),
+            "risk_warning_explain": risk_gate.explain,
+        }
     )
     decision_chain = _modular_decision_chain(
         market_state=market_state,

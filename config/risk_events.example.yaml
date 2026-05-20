@@ -1,0 +1,14 @@
+events:
+  - event_date: "2026-05-15"
+    event_type: "export_control"
+    title: "出口管制风险升高"
+    description: "外部出口管制相关消息可能影响半导体方向。"
+    source: "manual"
+    risk_level: "R3"
+    affected_assets: []
+    affected_sectors: ["半导体", "芯片", "出口链"]
+    expected_duration: "3d"
+    status: "active"
+    expire_date: "2026-05-20"
+    manual_confirmed: true
+    explain: "半导体和出口链相关 ETF 可能面临外部扰动，普通新开仓需要暂停并等待人工复核。"

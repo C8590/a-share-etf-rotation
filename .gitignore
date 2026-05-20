@@ -11,6 +11,8 @@ env/
 *.pem
 
 data/cache/
+data/risk_warning/risk_events.yaml
+data/risk_warning/risk_events.csv
 
 output/*
 !output/.gitkeep
