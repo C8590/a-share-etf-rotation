@@ -565,6 +565,9 @@ def _build_report(complete: pd.DataFrame, suggestions: pd.DataFrame, config: His
     lines.append(suggestions[display_cols].to_markdown(index=False) if not suggestions.empty else "No suggestions met support thresholds.")
     lines.append("")
 
+    lines.extend(_buy_error_and_missed_sections(complete, suggestions, config))
+    lines.append("")
+
     lines.extend(_phase35_diagnostics(complete, config))
     lines.append("")
 
@@ -607,6 +610,129 @@ def _build_report(complete: pd.DataFrame, suggestions: pd.DataFrame, config: His
     lines.append("")
     lines.append(_score_stability_markdown(complete))
     return "\n".join(lines)
+
+
+def _buy_error_and_missed_sections(complete: pd.DataFrame, suggestions: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:
+    lines: list[str] = []
+    failure_mask = _failure_entry_mask(complete)
+    missed_mask = _missed_opportunity_mask(complete, config)
+    missed_manual = _valid_manual_label_mask(complete) & missed_mask
+    if int(missed_mask.sum()) and int(missed_manual.sum()) == 0:
+        lines.append("> 当前报告主要基于失败类样本，未充分覆盖错过机会样本。")
+        lines.append("")
+
+    lines.append("## A. 错误买入分析")
+    lines.append("")
+    lines.append("基于 large_loss_entry / quick_failure_entry / bought_and_knocked_out，以及已买入或已选择的 bad_entry 样本。")
+    lines.append("")
+    lines.append(_analysis_summary_table(complete.loc[failure_mask], "failure_entry"))
+    lines.append("")
+    lines.append("### 防错建议")
+    lines.append("")
+    lines.append(_suggestion_group_markdown(suggestions, _defense_suggestion_mask(suggestions), fallback=[
+        "提高门槛",
+        "加入过热惩罚",
+        "强化假突破过滤",
+        "加入买后快速失败过滤",
+    ]))
+    lines.append("")
+    lines.append("### 错误买入 Top 20")
+    lines.append("")
+    lines.append(_top20(complete, failure_mask, ascending=True))
+    lines.append("")
+
+    lines.append("## B. 错过机会分析")
+    lines.append("")
+    lines.append("基于 missed_big_winner，以及未买入但 10 日涨幅达到 missed_big_winner 阈值的样本。")
+    lines.append("")
+    lines.append(_analysis_summary_table(complete.loc[missed_mask], "missed_big_winner"))
+    lines.append("")
+    lines.append("### 敢买建议")
+    lines.append("")
+    lines.append(_suggestion_group_markdown(suggestions, _courage_suggestion_mask(suggestions), fallback=[
+        "降低观察转试探门槛",
+        "允许小仓试探",
+        "优化候选池遗漏",
+        "调整 selected_not_bought 逻辑",
+    ]))
+    lines.append("")
+    lines.append("### 错过机会 Top 20")
+    lines.append("")
+    lines.append(_top20(complete, missed_mask, ascending=False))
+    return lines
+
+
+def _failure_entry_mask(df: pd.DataFrame) -> pd.Series:
+    reason = df.get("review_reason", pd.Series("", index=df.index)).fillna("").astype(str)
+    explicit = reason.isin({"large_loss_entry", "quick_failure_entry", "bought_and_knocked_out"})
+    auto_bad = df.get("auto_label", pd.Series("", index=df.index)).fillna("").astype(str).eq("bad_entry")
+    bought_or_selected = df.get("was_bought", pd.Series(False, index=df.index)).astype(bool) | df.get("was_selected", pd.Series(False, index=df.index)).astype(bool)
+    return explicit | (auto_bad & bought_or_selected)
+
+
+def _missed_opportunity_mask(df: pd.DataFrame, config: HistoricalMLConfig) -> pd.Series:
+    reason = df.get("review_reason", pd.Series("", index=df.index)).fillna("").astype(str)
+    explicit = reason.eq("missed_big_winner")
+    ret10 = pd.to_numeric(df.get("future_return_10d", pd.Series(np.nan, index=df.index)), errors="coerce")
+    not_bought = ~df.get("was_bought", pd.Series(False, index=df.index)).astype(bool)
+    return explicit | (not_bought & (ret10 >= config.missed_big_winner_return_10d))
+
+
+def _valid_manual_label_mask(df: pd.DataFrame) -> pd.Series:
+    if "manual_label" not in df.columns:
+        return pd.Series(False, index=df.index)
+    return df["manual_label"].fillna("").astype(str).str.strip().ne("")
+
+
+def _analysis_summary_table(df: pd.DataFrame, label: str) -> str:
+    if df.empty:
+        return "No rows."
+    return pd.DataFrame(
+        [
+            {
+                "sample_group": label,
+                "sample_count": len(df),
+                "good_rate": float((df["auto_label"] == "good_entry").mean()) if "auto_label" in df.columns else np.nan,
+                "bad_rate": float((df["auto_label"] == "bad_entry").mean()) if "auto_label" in df.columns else np.nan,
+                "avg_future_return_10d": float(pd.to_numeric(df.get("future_return_10d"), errors="coerce").mean()),
+                "avg_drawdown_10d": float(pd.to_numeric(df.get("future_max_drawdown_10d"), errors="coerce").mean()),
+                "manual_label_rows": int(_valid_manual_label_mask(df).sum()),
+            }
+        ]
+    ).to_markdown(index=False)
+
+
+def _defense_suggestion_mask(suggestions: pd.DataFrame) -> pd.Series:
+    if suggestions.empty or "parameter_area" not in suggestions.columns:
+        return pd.Series(False, index=suggestions.index)
+    return suggestions["parameter_area"].astype(str).isin(
+        {
+            "momentum_score",
+            "acceleration_score",
+            "trend_maturity",
+            "sector_rank",
+            "etf_rank",
+            "market_state",
+            "selected_bad_entry",
+            "bought_bad_entry",
+        }
+    )
+
+
+def _courage_suggestion_mask(suggestions: pd.DataFrame) -> pd.Series:
+    if suggestions.empty or "parameter_area" not in suggestions.columns:
+        return pd.Series(False, index=suggestions.index)
+    area = suggestions["parameter_area"].astype(str)
+    pattern = suggestions.get("current_pattern", pd.Series("", index=suggestions.index)).fillna("").astype(str)
+    metric = suggestions.get("evidence_metric", pd.Series("", index=suggestions.index)).fillna("").astype(str)
+    return area.eq("missed_winner") | pattern.str.contains("selected-but-not-bought", case=False, regex=False) | metric.str.contains("selected_not_bought", case=False, regex=False)
+
+
+def _suggestion_group_markdown(suggestions: pd.DataFrame, mask: pd.Series, fallback: list[str]) -> str:
+    cols = ["suggestion_id", "parameter_area", "suggested_action", "confidence", "sample_count"]
+    if not suggestions.empty and mask.any():
+        return suggestions.loc[mask, [col for col in cols if col in suggestions.columns]].to_markdown(index=False)
+    return "\n".join(f"- {item}" for item in fallback)
 
 
 def _phase35_diagnostics(complete: pd.DataFrame, config: HistoricalMLConfig) -> list[str]:

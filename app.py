@@ -2909,6 +2909,15 @@ V21_ACTION_LABELS = {
     "generate_failure_samples": "生成失败样本",
     "generate_missed_opportunity_samples": "生成错过样本",
     "generate_manual_review_queue": "生成手工复核队列",
+    "export_manual_review_file": "导出人工复核表",
+    "import_manual_labels": "导入人工复核表",
+    "prefill_manual_review_labels": "自动预填人工复核",
+    "adopt_high_confidence_manual_labels": "一键采纳高置信标注",
+    "adopt_medium_confidence_manual_labels": "一键采纳中置信标注",
+    "export_low_confidence_review_file": "导出低置信复核表",
+    "export_pending_manual_review_file": "导出待人工复核表",
+    "export_missed_winner_review_file": "导出 missed_big_winner 复核表",
+    "import_manual_corrections": "导入人工修正表",
     "generate_entry_calibration_report": "生成 entry 校准报告",
     "generate_parameter_suggestions": "生成参数建议",
     "run_overfit_check": "运行过拟合检查",
@@ -2986,6 +2995,40 @@ def _v21_unimplemented_action(label: str) -> None:
     st.caption(f"{label}：该动作接口未实现，前端不提供假按钮。")
 
 
+def _v21_manual_label_import_state(file_path: str) -> dict[str, Any]:
+    text = str(file_path or "").strip()
+    if not text:
+        return {
+            "disabled": True,
+            "level": "info",
+            "message": "请先导出人工标注表，人工填写后，在路径框中填入文件路径，再导入。",
+        }
+    path = Path(text)
+    if not path.exists():
+        return {"disabled": True, "level": "error", "message": f"人工标注表路径不存在：{text}"}
+    if not path.is_file():
+        return {"disabled": True, "level": "error", "message": f"人工标注表路径不是文件：{text}"}
+    try:
+        with path.open("rb") as handle:
+            handle.read(1)
+    except OSError as exc:
+        return {"disabled": True, "level": "error", "message": f"人工标注表不可读：{exc}"}
+    return {"disabled": False, "level": "success", "message": f"人工标注表可导入：{text}"}
+
+
+def _v21_task_summary_value(item: Mapping[str, Any], key: str, default: Any = "") -> Any:
+    summary = item.get("result_summary") if isinstance(item.get("result_summary"), Mapping) else {}
+    return summary.get(key, default)
+
+
+def _v21_task_result_count(item: Mapping[str, Any]) -> Any:
+    for key in ["output_rows", "review_queue_count", "failed_sample_count", "missed_winner_count"]:
+        value = _v21_task_summary_value(item, key, "")
+        if value not in ("", None):
+            return value
+    return ""
+
+
 def _v21_task_frame(tasks: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     for item in tasks:
@@ -2997,16 +3040,42 @@ def _v21_task_frame(tasks: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
         rows.append(
             {
                 "task_id": _v21_display_value(item.get("task_id"), ""),
+                "task_name": V21_ACTION_LABELS.get(str(item.get("action_name") or ""), _v21_display_value(item.get("action_name"))),
                 "action_name": V21_ACTION_LABELS.get(str(item.get("action_name") or ""), _v21_display_value(item.get("action_name"))),
                 "status": V21_TASK_STATUS_LABELS.get(str(item.get("status") or ""), _v21_display_value(item.get("status"))),
                 "progress": progress_text,
                 "message": _v21_display_value(item.get("message"), ""),
                 "start_time": format_datetime_shanghai(item.get("start_time")),
                 "end_time": format_datetime_shanghai(item.get("end_time")),
+                "elapsed_seconds": _v21_display_value(item.get("elapsed_seconds"), 0),
+                "result_count": _v21_display_value(_v21_task_result_count(item), ""),
+                "output_path": _v21_display_value(_v21_task_summary_value(item, "output_path", item.get("result_file", "")), ""),
+                "used_cache": _v21_display_value(_v21_task_summary_value(item, "used_cache", False)),
+                "status_detail": _v21_display_value(item.get("status_detail") or _v21_task_summary_value(item, "status_detail", "")),
+                "result_summary": _v21_display_value(json.dumps(item.get("result_summary", {}), ensure_ascii=False, default=str), ""),
                 "error": _v21_display_value(item.get("error"), ""),
             }
         )
-    return pd.DataFrame(rows, columns=["task_id", "action_name", "status", "progress", "message", "start_time", "end_time", "error"])
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "task_id",
+            "task_name",
+            "action_name",
+            "status",
+            "progress",
+            "message",
+            "start_time",
+            "end_time",
+            "elapsed_seconds",
+            "result_count",
+            "output_path",
+            "used_cache",
+            "status_detail",
+            "result_summary",
+            "error",
+        ],
+    )
 
 
 def render_v21_task_queue_panel(expanded: bool = True, key_prefix: str = "v21_task_queue") -> None:
@@ -3326,16 +3395,40 @@ def render_v21_learning(snapshots: Mapping[str, Any]) -> None:
         _v21_action_button("导出人工标注表", action_api.export_manual_review_file, "v21_hml_export_review")
     cols3 = st.columns(4)
     manual_label_path = cols3[0].text_input("人工标注表路径", key="v21_manual_label_path")
+    manual_label_state = _v21_manual_label_import_state(manual_label_path)
+    if manual_label_state["level"] == "error":
+        cols3[0].error(manual_label_state["message"])
+    elif manual_label_state["level"] == "success":
+        cols3[0].success(manual_label_state["message"])
+    else:
+        cols3[0].caption(manual_label_state["message"])
+    manual_label_path = manual_label_path if not manual_label_state["disabled"] else ""
     with cols3[1]:
         _v21_action_button("导入人工标注表", action_api.import_manual_labels, "v21_hml_import_labels", args=(manual_label_path,), disabled=not bool(manual_label_path))
     with cols3[2]:
         _v21_action_button("生成 entry 校准报告", action_api.generate_entry_calibration_report, "v21_hml_calibration_report", action_kwargs=action_kwargs)
     with cols3[3]:
         _v21_action_button("生成参数建议", action_api.generate_parameter_suggestions, "v21_hml_parameter_suggestions", action_kwargs=action_kwargs)
-    cols4 = st.columns(2)
+    cols4 = st.columns(4)
     with cols4[0]:
-        _v21_action_button("运行过拟合检查", action_api.run_overfit_check, "v21_hml_overfit_check", action_kwargs=action_kwargs)
+        _v21_action_button("自动预填人工复核", action_api.prefill_manual_review_labels, "v21_hml_prefill_review", action_kwargs=action_kwargs)
     with cols4[1]:
+        _v21_action_button("一键采纳高置信标注", action_api.adopt_high_confidence_manual_labels, "v21_hml_adopt_high_conf", action_kwargs=action_kwargs)
+    with cols4[2]:
+        _v21_action_button("一键采纳中置信标注", action_api.adopt_medium_confidence_manual_labels, "v21_hml_adopt_medium_conf", action_kwargs=action_kwargs)
+    with cols4[3]:
+        _v21_action_button("导出 missed_big_winner 复核表", action_api.export_missed_winner_review_file, "v21_hml_export_missed_winner", action_kwargs=action_kwargs)
+    cols5 = st.columns(4)
+    with cols5[0]:
+        _v21_action_button("导出低置信复核表", action_api.export_low_confidence_review_file, "v21_hml_export_low_conf", action_kwargs=action_kwargs)
+    with cols5[1]:
+        _v21_action_button("导出待人工复核表", action_api.export_pending_manual_review_file, "v21_hml_export_pending", action_kwargs=action_kwargs)
+    with cols5[2]:
+        _v21_action_button("导入人工修正表", action_api.import_manual_corrections, "v21_hml_import_corrections", args=(manual_label_path,), disabled=not bool(manual_label_path))
+    with cols5[3]:
+        _v21_action_button("运行过拟合检查", action_api.run_overfit_check, "v21_hml_overfit_check", action_kwargs=action_kwargs)
+    cols6 = st.columns(1)
+    with cols6[0]:
         _v21_action_button("查看历史回放任务日志", action_api.get_historical_ml_task_logs, "v21_hml_task_logs")
     render_v21_task_queue_panel(expanded=False, key_prefix="v21_hml_task_queue")
     st.info("学习/历史机器学习只提供校准建议，不自动修改当日交易参数。")

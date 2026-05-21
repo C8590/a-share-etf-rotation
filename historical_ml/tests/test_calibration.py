@@ -204,3 +204,26 @@ def test_report_warns_when_sector_benchmark_is_limited():
 
     assert "sector_outperform has no true rows" in report
     assert "single ETF" in report
+
+
+def test_report_splits_buy_error_and_missed_opportunity_sections():
+    rows = [
+        _row(0, review_reason="large_loss_entry", was_bought=True, auto_label="bad_entry", future_return_10d=-0.05),
+        _row(
+            1,
+            review_reason="missed_big_winner",
+            was_bought=False,
+            was_candidate=True,
+            auto_label="good_entry",
+            future_return_10d=0.09,
+            outperform_market_10d=True,
+        ),
+    ]
+
+    _, report = build_entry_calibration(pd.DataFrame(rows), config=_config())
+
+    assert "## A. 错误买入分析" in report
+    assert "## B. 错过机会分析" in report
+    assert "### 防错建议" in report
+    assert "### 敢买建议" in report
+    assert "当前报告主要基于失败类样本，未充分覆盖错过机会样本" in report

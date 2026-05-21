@@ -4,6 +4,7 @@ import json
 import time
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from api import control_actions
@@ -139,6 +140,275 @@ def test_get_tasks_and_get_task_return_queue_records(monkeypatch, tmp_path):
 
     assert any(item["task_id"] == payload["task_id"] for item in tasks_payload["data"]["tasks"])
     assert one_payload["data"]["task"]["task_id"] == task["task_id"]
+
+
+def test_historical_ml_task_result_summary_fields_complete(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame(
+        [
+            {"trade_date": "2026-01-02", "code": "510300", "auto_label": "good_entry", "label_status": "ok", "was_bought": False, "future_return_10d": 0.08, "outperform_market_10d": True, "outperform_sector_10d": False},
+            {"trade_date": "2026-01-03", "code": "159915", "auto_label": "bad_entry", "label_status": "ok", "was_bought": True, "future_return_10d": -0.04, "outperform_market_10d": False, "outperform_sector_10d": False},
+            {"trade_date": "2026-01-04", "code": "512000", "auto_label": "neutral_entry", "label_status": "insufficient_future_data", "was_bought": False, "future_return_10d": 0.01, "outperform_market_10d": False, "outperform_sector_10d": False},
+        ]
+    ).to_csv(artifacts / "entry_candidate_samples_labeled.csv", index=False)
+
+    payload = control_actions.auto_label_samples(artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+    summary = task["result_summary"]
+
+    required = {
+        "output_path",
+        "output_rows",
+        "trade_days",
+        "etf_count",
+        "good_entry_count",
+        "bad_entry_count",
+        "neutral_entry_count",
+        "review_queue_count",
+        "failed_sample_count",
+        "missed_winner_count",
+        "used_cache",
+        "cache_path",
+        "next_step",
+    }
+    assert required.issubset(summary)
+    assert summary["good_entry_count"] == 1
+    assert summary["bad_entry_count"] == 1
+    assert summary["neutral_entry_count"] == 1
+    assert summary["insufficient_future_data"] == 1
+    assert summary["used_cache"] is True
+
+
+def test_historical_ml_cache_message_includes_path_and_rows(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame([{"trade_date": "2026-01-02", "code": "510300"}]).to_csv(artifacts / "daily_etf_samples.csv", index=False)
+
+    payload = control_actions.generate_daily_samples("2026-01-01", "2026-01-31", artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+
+    assert task["status_detail"] == "cache_hit"
+    assert "命中缓存" in task["message"]
+    assert "缓存文件行数：1" in task["message"]
+    assert str(artifacts / "daily_etf_samples.csv") in task["message"]
+
+
+def test_historical_ml_empty_output_is_not_plain_success(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+
+    payload = control_actions.generate_daily_samples("2026-01-01", "2026-01-31", artifacts_dir=str(tmp_path / "missing"))
+    task = _wait_for_terminal(queue, payload["task_id"])
+
+    assert task["status"] == "success"
+    assert task["status_detail"] == "completed_empty"
+    assert "完成但无样本" in task["message"]
+    assert task["result_summary"]["output_rows"] == 0
+
+
+def test_export_manual_review_file_creates_task_record(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame([{"sample_id": 1, "review_reason": "large_loss_entry"}]).to_csv(artifacts / "manual_review_queue.csv", index=False)
+
+    payload = control_actions.export_manual_review_file(output_dir=tmp_path, artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+    summary = task["result_summary"]
+
+    assert task["action_name"] == "export_manual_review_file"
+    assert task["status"] == "success"
+    assert summary["result_count"] == 1
+    assert "manual_label" in summary["exported_columns"]
+    assert Path(summary["output_path"]).exists()
+
+
+def test_import_unfilled_manual_review_queue_warns_zero_valid_labels(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    labels = tmp_path / "manual_review_queue.csv"
+    pd.DataFrame([{"sample_id": 1, "manual_label": "", "manual_review_note": ""}]).to_csv(labels, index=False)
+
+    payload = control_actions.import_manual_labels(str(labels))
+    task = _wait_for_terminal(queue, payload["task_id"])
+    summary = task["result_summary"]
+
+    assert task["action_name"] == "import_manual_labels"
+    assert task["status_detail"] == "imported_no_valid_manual_labels"
+    assert summary["valid_manual_label_rows"] == 0
+    assert summary["used_manual_labels"] is False
+    assert "有效人工标注为 0" in task["message"]
+
+
+def test_import_filled_manual_label_file_counts_valid_rows(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    labels = tmp_path / "manual_review_queue_labeled.csv"
+    pd.DataFrame(
+        [
+            {"sample_id": 1, "manual_label": "bad_entry", "manual_failure_reason": "追高", "manual_review_note": "确认", "manual_action": "observe"},
+            {"sample_id": 2, "manual_label": "", "manual_failure_reason": "", "manual_review_note": "", "manual_action": ""},
+        ]
+    ).to_csv(labels, index=False)
+
+    payload = control_actions.import_manual_labels(str(labels))
+    task = _wait_for_terminal(queue, payload["task_id"])
+    summary = task["result_summary"]
+
+    assert task["status_detail"] == "imported_with_manual_labels"
+    assert summary["valid_manual_label_rows"] == 1
+    assert summary["empty_manual_label_rows"] == 1
+    assert summary["used_manual_labels"] is True
+
+
+def test_calibration_report_summary_shows_manual_label_usage(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    imported = tmp_path / "historical_ml_manual_labels_imported.csv"
+    pd.DataFrame([{"sample_id": 1, "manual_label": "bad_entry"}]).to_csv(imported, index=False)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame([{"trade_date": "2026-01-02", "code": "510300", "auto_label": "bad_entry", "label_status": "ok"}]).to_csv(
+        artifacts / "entry_candidate_samples_labeled.csv",
+        index=False,
+    )
+    (artifacts / "entry_calibration_report.md").write_text("# report\n", encoding="utf-8")
+
+    payload = control_actions.generate_entry_calibration_report(artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+    summary = task["result_summary"]
+
+    assert summary["used_manual_labels"] is True
+    assert summary["valid_manual_label_rows"] == 1
+    assert summary["auto_label_sample_count"] == 1
+    assert summary["manual_label_coverage"] == 1.0
+    assert "是否使用人工标注：是" in task["message"]
+
+
+def test_historical_task_logs_include_export_import_report_suggestions_and_overfit(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    labels = tmp_path / "labels.csv"
+    labels.write_text("sample_id,manual_label\n1,bad_entry\n", encoding="utf-8")
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    (artifacts / "entry_calibration_report.md").write_text("# report\n", encoding="utf-8")
+    pd.DataFrame([{"x": 1}]).to_csv(artifacts / "entry_calibration_suggestions.csv", index=False)
+    (artifacts / "ml_stability_report.md").write_text("# stability\n", encoding="utf-8")
+
+    calls = [
+        control_actions.export_manual_review_file(output_dir=tmp_path, artifacts_dir=str(artifacts)),
+        control_actions.import_manual_labels(str(labels)),
+        control_actions.generate_entry_calibration_report(artifacts_dir=str(artifacts)),
+        control_actions.generate_parameter_suggestions(artifacts_dir=str(artifacts)),
+        control_actions.run_overfit_check(artifacts_dir=str(artifacts)),
+    ]
+    for payload in calls:
+        _wait_for_terminal(queue, payload["task_id"])
+
+    logs = control_actions.get_historical_ml_task_logs(limit=100)["data"]["logs"]
+    names = {item["action_name"] for item in logs}
+    assert {"export_manual_review_file", "import_manual_labels", "generate_entry_calibration_report", "generate_parameter_suggestions", "run_overfit_check"}.issubset(names)
+
+
+def test_prefill_adopt_and_low_confidence_review_actions(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame(
+        [
+            {"review_reason": "large_loss_entry", "auto_label": "bad_entry", "was_bought": True, "exit_within_3d": False, "future_return_10d": -0.05, "future_max_drawdown_10d": -0.08, "data_quality_flag": "ok", "missing_ratio_60d": 0.0},
+            {"review_reason": "unknown_review_reason", "auto_label": "neutral_entry", "was_bought": False, "data_quality_flag": "ok", "missing_ratio_60d": 0.0},
+        ]
+    ).to_csv(artifacts / "manual_review_queue.csv", index=False)
+
+    prefill = control_actions.prefill_manual_review_labels(artifacts_dir=str(artifacts))
+    prefill_task = _wait_for_terminal(queue, prefill["task_id"])
+    assert prefill_task["status_detail"] == "prefilled"
+    assert prefill_task["result_summary"]["auto_prefilled_rows"] == 2
+    assert prefill_task["result_summary"]["high_confidence_rows"] == 1
+    assert (artifacts / "manual_review_queue_prefilled.csv").exists()
+
+    adopt = control_actions.adopt_high_confidence_manual_labels(artifacts_dir=str(artifacts))
+    adopt_task = _wait_for_terminal(queue, adopt["task_id"])
+    assert adopt_task["status_detail"] == "adopted_high_confidence"
+    assert adopt_task["result_summary"]["adopted_rows"] == 1
+    assert adopt_task["result_summary"]["adopted_missed_winner_rows"] == 0
+    assert adopt_task["result_summary"]["pending_missed_winner_rows"] == 0
+    assert (artifacts / "manual_review_queue_labeled.csv").exists()
+
+    low = control_actions.export_low_confidence_review_file(output_dir=tmp_path, artifacts_dir=str(artifacts))
+    low_task = _wait_for_terminal(queue, low["task_id"])
+    assert low_task["status_detail"] == "exported_low_confidence"
+    assert low_task["result_summary"]["low_confidence_rows"] == 1
+    assert Path(low_task["result_summary"]["output_path"]).exists()
+
+
+def test_medium_adopt_can_accept_missed_winner_and_pending_export_includes_missed(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame(
+        [
+            {"review_reason": "large_loss_entry", "auto_label": "bad_entry", "was_bought": True, "future_return_10d": -0.05, "future_max_drawdown_10d": -0.08, "data_quality_flag": "ok", "missing_ratio_60d": 0.0},
+            {"review_reason": "missed_big_winner", "auto_label": "good_entry", "was_candidate": True, "was_bought": False, "future_return_10d": 0.08, "data_quality_flag": "ok", "missing_ratio_60d": 0.0},
+        ]
+    ).to_csv(artifacts / "manual_review_queue.csv", index=False)
+
+    _wait_for_terminal(queue, control_actions.prefill_manual_review_labels(artifacts_dir=str(artifacts))["task_id"])
+    high = control_actions.adopt_high_confidence_manual_labels(artifacts_dir=str(artifacts))
+    high_task = _wait_for_terminal(queue, high["task_id"])
+    assert high_task["result_summary"]["pending_missed_winner_rows"] == 1
+    assert "敢买类样本覆盖不足" in high_task["result_summary"]["manual_label_balance_warning"]
+
+    pending = control_actions.export_pending_manual_review_file(output_dir=tmp_path, artifacts_dir=str(artifacts))
+    pending_task = _wait_for_terminal(queue, pending["task_id"])
+    assert pending_task["result_summary"]["pending_missed_winner_rows"] == 1
+    assert Path(pending_task["result_summary"]["output_path"]).exists()
+
+    medium = control_actions.adopt_medium_confidence_manual_labels(artifacts_dir=str(artifacts))
+    medium_task = _wait_for_terminal(queue, medium["task_id"])
+    assert medium_task["status_detail"] == "adopted_medium_confidence"
+    assert medium_task["result_summary"]["adopted_missed_winner_rows"] == 1
+    assert medium_task["result_summary"]["pending_missed_winner_rows"] == 0
+
+
+def test_parameter_suggestions_message_splits_defense_and_courage_advice(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame([{"x": 1}]).to_csv(artifacts / "entry_calibration_suggestions.csv", index=False)
+
+    payload = control_actions.generate_parameter_suggestions(artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+
+    assert "防错建议" in task["message"]
+    assert "敢买建议" in task["message"]
+
+
+def test_calibration_report_warns_when_missed_winner_labels_are_pending(monkeypatch, tmp_path):
+    queue = _install_tmp_queue(monkeypatch, tmp_path)
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    pd.DataFrame(
+        [
+            {"trade_date": "2026-01-02", "code": "510300", "auto_label": "bad_entry", "label_status": "ok"},
+            {"trade_date": "2026-01-03", "code": "159915", "auto_label": "good_entry", "label_status": "ok"},
+        ]
+    ).to_csv(artifacts / "entry_candidate_samples_labeled.csv", index=False)
+    pd.DataFrame(
+        [
+            {"review_reason": "large_loss_entry", "manual_label": "valid_bad_entry"},
+            {"review_reason": "missed_big_winner", "manual_label": ""},
+        ]
+    ).to_csv(artifacts / "manual_review_queue_labeled.csv", index=False)
+    (artifacts / "entry_calibration_report.md").write_text("# report\n", encoding="utf-8")
+
+    payload = control_actions.generate_entry_calibration_report(artifacts_dir=str(artifacts))
+    task = _wait_for_terminal(queue, payload["task_id"])
+
+    assert task["result_summary"]["adopted_failure_rows"] == 1
+    assert task["result_summary"]["adopted_missed_winner_rows"] == 0
+    assert task["result_summary"]["pending_missed_winner_rows"] == 1
+    assert "当前报告主要基于失败类样本，未充分覆盖错过机会样本" in task["message"]
 
 
 def test_qmt_mock_order_never_submits_live_order(monkeypatch, tmp_path):

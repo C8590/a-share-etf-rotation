@@ -189,6 +189,13 @@ def test_v21_historical_qmt_and_data_quality_actions_are_bound() -> None:
     assert "action_api.run_historical_replay" in learning_source
     assert "action_api.generate_entry_samples" in learning_source
     assert "action_api.auto_label_samples" in learning_source
+    assert "action_api.prefill_manual_review_labels" in learning_source
+    assert "action_api.adopt_high_confidence_manual_labels" in learning_source
+    assert "action_api.adopt_medium_confidence_manual_labels" in learning_source
+    assert "action_api.export_pending_manual_review_file" in learning_source
+    assert "action_api.export_missed_winner_review_file" in learning_source
+    assert "action_api.export_low_confidence_review_file" in learning_source
+    assert "action_api.import_manual_corrections" in learning_source
     assert "action_api.run_overfit_check" in learning_source
     assert "action_api.get_historical_ml_task_logs" in learning_source
     assert "action_api.submit_mock_order" in qmt_source
@@ -211,6 +218,9 @@ def test_v21_task_queue_frame_formats_status_and_time_without_iso_raw() -> None:
                 "message": "处理中",
                 "start_time": "2026-05-20T21:08:42+08:00",
                 "end_time": "",
+                "elapsed_seconds": 1.25,
+                "status_detail": "cache_hit",
+                "result_summary": {"output_rows": 123, "output_path": "artifacts/historical_ml_61/daily_etf_samples.csv", "used_cache": True},
                 "error": "",
             }
         ]
@@ -220,8 +230,37 @@ def test_v21_task_queue_frame_formats_status_and_time_without_iso_raw() -> None:
     assert "正在执行" in text
     assert "重新生成今日信号" in text
     assert "2026-05-20 21:08:42" in text
+    assert {"task_name", "elapsed_seconds", "result_count", "output_path", "used_cache", "status_detail", "result_summary"}.issubset(frame.columns)
+    assert "123" in text
+    assert "artifacts/历史学习模块_61/daily_etf_samples.csv" in text
+    assert "cache_hit" in text
     assert "T21:08:42" not in text
     assert "+08:00" not in text
+
+
+def test_manual_label_import_empty_path_disabled_with_reason() -> None:
+    state = app._v21_manual_label_import_state("")
+
+    assert state["disabled"] is True
+    assert "请先导出人工标注表" in state["message"]
+
+
+def test_manual_label_import_existing_path_enabled(tmp_path: Path) -> None:
+    labels = tmp_path / "labels.csv"
+    labels.write_text("sample_id,review_label\n1,ok\n", encoding="utf-8")
+
+    state = app._v21_manual_label_import_state(str(labels))
+
+    assert state["disabled"] is False
+    assert state["level"] == "success"
+
+
+def test_manual_label_import_missing_path_disabled_with_error(tmp_path: Path) -> None:
+    state = app._v21_manual_label_import_state(str(tmp_path / "missing.csv"))
+
+    assert state["disabled"] is True
+    assert state["level"] == "error"
+    assert "不存在" in state["message"]
 
 
 def test_v21_status_formats_dates_for_beijing_display() -> None:

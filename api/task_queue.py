@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import threading
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 from uuid import uuid4
 
-from .action_schema import now_iso
+from .action_schema import SHANGHAI_TZ, now_iso
 
 
 TASK_STATUSES = {"pending", "running", "success", "failed", "cancelled"}
@@ -40,8 +41,11 @@ class TaskQueue:
             "message": message,
             "start_time": now_iso(),
             "end_time": "",
+            "elapsed_seconds": 0.0,
             "error": "",
             "result_file": "",
+            "result_summary": {},
+            "status_detail": "",
             "created_by": created_by,
             "parameters": parameters or {},
         }
@@ -82,6 +86,8 @@ class TaskQueue:
         message: str | None = None,
         error: str | None = None,
         result_file: str | None = None,
+        result_summary: dict[str, Any] | None = None,
+        status_detail: str | None = None,
     ) -> dict[str, Any]:
         with self._lock:
             record = self.get_task(task_id)
@@ -93,6 +99,7 @@ class TaskQueue:
                 record["status"] = status
                 if status in {"success", "failed", "cancelled"}:
                     record["end_time"] = now_iso()
+                    record["elapsed_seconds"] = _elapsed_seconds(record.get("start_time"), record.get("end_time"))
             if progress is not None:
                 record["progress"] = max(0, min(100, int(progress)))
             if message is not None:
@@ -101,6 +108,15 @@ class TaskQueue:
                 record["error"] = str(error)
             if result_file is not None:
                 record["result_file"] = str(result_file)
+            if result_summary is not None:
+                record["result_summary"] = dict(result_summary)
+                if "elapsed_seconds" in record["result_summary"]:
+                    try:
+                        record["elapsed_seconds"] = float(record["result_summary"]["elapsed_seconds"])
+                    except (TypeError, ValueError):
+                        pass
+            if status_detail is not None:
+                record["status_detail"] = str(status_detail)
             self._write_task(record)
             index = self._read_index()
             index = [self._index_item(record) if item.get("task_id") == task_id else item for item in index]
@@ -108,11 +124,26 @@ class TaskQueue:
             self.append_log(record["action_name"], record["status"], record["message"], task_id=task_id, error=record.get("error", ""))
             return record
 
-    def complete_task(self, task_id: str, message: str = "任务已完成。", result_file: str = "") -> dict[str, Any]:
-        return self.update_task(task_id, status="success", progress=100, message=message, result_file=result_file)
+    def complete_task(
+        self,
+        task_id: str,
+        message: str = "任务已完成。",
+        result_file: str = "",
+        result_summary: dict[str, Any] | None = None,
+        status_detail: str | None = None,
+    ) -> dict[str, Any]:
+        return self.update_task(
+            task_id,
+            status="success",
+            progress=100,
+            message=message,
+            result_file=result_file,
+            result_summary=result_summary,
+            status_detail=status_detail,
+        )
 
     def fail_task(self, task_id: str, error: str, message: str = "任务执行失败。") -> dict[str, Any]:
-        return self.update_task(task_id, status="failed", message=message, error=error)
+        return self.update_task(task_id, status="failed", message=message, error=error, status_detail="failed")
 
     def list_tasks(self, limit: int | None = None) -> list[dict[str, Any]]:
         with self._lock:
@@ -168,7 +199,13 @@ class TaskQueue:
             result = runner(record, self) if runner else None
             result_file = str((result or {}).get("result_file") or "")
             message = str((result or {}).get("message") or "任务已完成。")
-            self.complete_task(task_id, message=message, result_file=result_file)
+            self.complete_task(
+                task_id,
+                message=message,
+                result_file=result_file,
+                result_summary=(result or {}).get("result_summary") or {},
+                status_detail=str((result or {}).get("status_detail") or ""),
+            )
         except Exception as exc:  # noqa: BLE001
             self.fail_task(task_id, error=f"任务失败：{exc}", message="任务执行失败，请查看失败日志。")
 
@@ -205,11 +242,35 @@ class TaskQueue:
             "message": record.get("message", ""),
             "start_time": record.get("start_time", ""),
             "end_time": record.get("end_time", ""),
+            "elapsed_seconds": record.get("elapsed_seconds", 0.0),
             "error": record.get("error", ""),
             "result_file": record.get("result_file", ""),
+            "result_summary": record.get("result_summary", {}),
+            "status_detail": record.get("status_detail", ""),
             "created_by": record.get("created_by", ""),
             "parameters": record.get("parameters", {}),
         }
+
+
+def _elapsed_seconds(start_time: Any, end_time: Any) -> float:
+    start = _parse_iso(start_time)
+    end = _parse_iso(end_time)
+    if start is None or end is None:
+        return 0.0
+    return round(max(0.0, (end - start).total_seconds()), 3)
+
+
+def _parse_iso(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=SHANGHAI_TZ)
+    return parsed
 
 
 DEFAULT_QUEUE = TaskQueue()

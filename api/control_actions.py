@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import json
 import shutil
+import time
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
+
+import pandas as pd
 
 from .action_schema import action_response, format_datetime_shanghai, format_trade_date
 from .task_queue import TaskQueue, get_default_queue
@@ -15,6 +18,26 @@ from .task_queue import TaskQueue, get_default_queue
 OUTPUT_DIR = Path("output")
 SAFE_QMT_MODES = {"DRAFT", "SIMULATION", "MANUAL_CONFIRM"}
 RISK_BLOCK_LEVELS = {"R3", "R4", "P0"}
+DEFAULT_HISTORICAL_ML_ARTIFACTS = Path("artifacts") / "historical_ml_61"
+HISTORICAL_CACHE_FILES = {
+    "run_historical_replay": "daily_decision_snapshot.csv",
+    "generate_daily_samples": "daily_etf_samples.csv",
+    "generate_entry_samples": "entry_candidate_samples_unlabeled.csv",
+    "auto_label_samples": "entry_candidate_samples_labeled.csv",
+    "generate_failure_samples": "manual_review_queue.csv",
+    "generate_missed_opportunity_samples": "entry_candidate_samples_labeled.csv",
+    "generate_manual_review_queue": "manual_review_queue.csv",
+    "generate_entry_calibration_report": "entry_calibration_report.md",
+    "generate_parameter_suggestions": "entry_calibration_suggestions.csv",
+    "run_overfit_check": "ml_stability_report.md",
+    "prefill_manual_review_labels": "manual_review_queue_prefilled.csv",
+    "adopt_high_confidence_manual_labels": "manual_review_queue_labeled.csv",
+    "adopt_medium_confidence_manual_labels": "manual_review_queue_labeled.csv",
+    "export_low_confidence_review_file": "manual_review_queue_low_confidence.csv",
+    "export_pending_manual_review_file": "manual_review_queue_pending.csv",
+    "export_missed_winner_review_file": "manual_review_queue_missed_winner.csv",
+}
+HISTORICAL_TASK_ACTIONS = set(HISTORICAL_CACHE_FILES) | {"export_manual_review_file", "import_manual_labels", "import_manual_corrections"}
 
 
 def get_control_snapshot(output_dir: str | Path = OUTPUT_DIR) -> dict[str, Any]:
@@ -151,8 +174,90 @@ def run_overfit_check(**parameters: Any) -> dict[str, Any]:
     return _enqueue_long_action("run_overfit_check", "过拟合检查任务已提交。", parameters, runner=_record_only_runner)
 
 
+def run_historical_replay(start_date: str, end_date: str, **parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("run_historical_replay", "historical_ml 历史回放任务已提交。", {"start_date": start_date, "end_date": end_date, **parameters}, runner=_historical_ml_runner)
+
+
+def generate_daily_samples(start_date: str, end_date: str, **parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_daily_samples", "生成每日样本任务已提交。", {"start_date": start_date, "end_date": end_date, **parameters}, runner=_historical_ml_runner)
+
+
+def generate_entry_samples(start_date: str, end_date: str, **parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_entry_samples", "生成 entry 候选样本任务已提交。", {"start_date": start_date, "end_date": end_date, **parameters}, runner=_historical_ml_runner)
+
+
+def auto_label_samples(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("auto_label_samples", "自动打标签任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def generate_failure_samples(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_failure_samples", "生成失败样本任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def generate_missed_opportunity_samples(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_missed_opportunity_samples", "生成错过样本任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def generate_manual_review_queue(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_manual_review_queue", "生成手工复核队列任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def generate_entry_calibration_report(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_entry_calibration_report", "生成 entry 校准报告任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def generate_parameter_suggestions(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("generate_parameter_suggestions", "生成参数建议任务已提交；不会自动修改交易参数。", parameters, runner=_historical_ml_runner)
+
+
+def run_overfit_check(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("run_overfit_check", "过拟合/稳定性检查任务已提交。", parameters, runner=_historical_ml_runner)
+
+
+def export_manual_review_file(output_dir: str | Path = OUTPUT_DIR, **parameters: Any) -> dict[str, Any]:
+    payload = {"output_dir": str(output_dir), **parameters}
+    return _enqueue_long_action("export_manual_review_file", "导出人工标注表任务已提交。", payload, runner=_manual_review_export_runner)
+
+
+def import_manual_labels(file_path: str, **parameters: Any) -> dict[str, Any]:
+    payload = {"file_path": str(file_path), **parameters}
+    return _enqueue_long_action("import_manual_labels", "导入人工标注表任务已提交。", payload, runner=_manual_review_import_runner)
+
+
+def prefill_manual_review_labels(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("prefill_manual_review_labels", "自动预填人工复核建议任务已提交。", parameters, runner=_manual_review_prefill_runner)
+
+
+def adopt_high_confidence_manual_labels(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("adopt_high_confidence_manual_labels", "一键采纳高置信复核建议任务已提交。", parameters, runner=_manual_review_adopt_runner)
+
+
+def adopt_medium_confidence_manual_labels(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("adopt_medium_confidence_manual_labels", "一键采纳中置信复核建议任务已提交。", parameters, runner=_manual_review_adopt_runner)
+
+
+def export_low_confidence_review_file(output_dir: str | Path = OUTPUT_DIR, **parameters: Any) -> dict[str, Any]:
+    payload = {"output_dir": str(output_dir), **parameters}
+    return _enqueue_long_action("export_low_confidence_review_file", "导出低置信复核表任务已提交。", payload, runner=_manual_review_low_confidence_runner)
+
+
+def export_pending_manual_review_file(output_dir: str | Path = OUTPUT_DIR, **parameters: Any) -> dict[str, Any]:
+    payload = {"output_dir": str(output_dir), **parameters}
+    return _enqueue_long_action("export_pending_manual_review_file", "导出待人工复核表任务已提交。", payload, runner=_manual_review_pending_runner)
+
+
+def export_missed_winner_review_file(output_dir: str | Path = OUTPUT_DIR, **parameters: Any) -> dict[str, Any]:
+    payload = {"output_dir": str(output_dir), **parameters}
+    return _enqueue_long_action("export_missed_winner_review_file", "导出 missed_big_winner 复核表任务已提交。", payload, runner=_manual_review_missed_winner_runner)
+
+
+def import_manual_corrections(file_path: str, **parameters: Any) -> dict[str, Any]:
+    payload = {"file_path": str(file_path), **parameters}
+    return _enqueue_long_action("import_manual_corrections", "导入人工修正表任务已提交。", payload, runner=_manual_review_import_runner)
+
+
 def get_historical_ml_task_logs(limit: int = 50) -> dict[str, Any]:
-    logs = [item for item in get_default_queue().recent_logs(limit=limit) if str(item.get("action_name", "")).startswith(("run_historical", "generate_", "auto_label"))]
+    logs = [item for item in get_default_queue().recent_logs(limit=limit) if str(item.get("action_name", "")) in HISTORICAL_TASK_ACTIONS]
     return action_response(success=True, message="已读取 historical_ml 任务日志。", data={"logs": logs})
 
 
@@ -346,6 +451,640 @@ def _instant_action(action_name: str, message: str, parameters: dict[str, Any] |
     if data:
         payload.update(data)
     return action_response(success=True, message=message, data=payload)
+
+
+def _manual_review_export_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    source = artifacts_dir / "manual_review_queue.csv"
+    out_path = output_dir / "historical_ml_manual_review.csv"
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出人工标注表：{out_path}")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if source.exists():
+        df = _read_csv_if_exists(source)
+    else:
+        df = pd.DataFrame(columns=["sample_id", "review_label", "review_note"])
+    for col in ["manual_label", "manual_failure_reason", "manual_review_note", "manual_action"]:
+        if col not in df.columns:
+            df[col] = ""
+    df.to_csv(out_path, index=False, encoding="utf-8-sig")
+    summary = {
+        "output_path": str(out_path),
+        "result_count": int(len(df)),
+        "output_rows": int(len(df)),
+        "exported_columns": list(df.columns),
+        "suggested_next_step": "人工填写 manual_label/manual_failure_reason/manual_review_note/manual_action 后，在路径框中填入文件路径，再导入。",
+        "used_cache": bool(source.exists()),
+        "cache_path": str(source) if source.exists() else "",
+        "elapsed_seconds": round(time.perf_counter() - started, 3),
+    }
+    result_file = _write_task_result(record, summary)
+    message = f"人工标注表已导出：{out_path}；导出行数：{len(df)}。下一步：{summary['suggested_next_step']}"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="exported")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "exported"}
+
+
+def _manual_review_import_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    input_path = Path(str(parameters.get("file_path") or ""))
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导入人工标注表：{input_path}")
+    if not input_path.exists() or not input_path.is_file():
+        raise FileNotFoundError(f"找不到人工标注表：{input_path}")
+    df = pd.read_csv(input_path)
+    stats = _manual_label_stats_from_frame(df)
+    target = OUTPUT_DIR / "historical_ml_manual_labels_imported.csv"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(input_path, target)
+    summary = {
+        "input_path": str(input_path),
+        "total_rows": int(len(df)),
+        **stats,
+        "merged_output_path": str(target),
+        "output_path": str(target),
+        "result_count": int(stats["valid_manual_label_rows"]),
+        "output_rows": int(len(df)),
+        "used_manual_labels": bool(stats["valid_manual_label_rows"] > 0),
+        "used_cache": False,
+        "cache_path": "",
+        "suggested_next_step": "下一步：生成 entry 校准报告。",
+        "elapsed_seconds": round(time.perf_counter() - started, 3),
+    }
+    result_file = _write_task_result(record, summary)
+    if summary["valid_manual_label_rows"] == 0:
+        message = "导入成功，但有效人工标注为 0，本次不会改变校准报告。下一步：先填写人工标注，或生成 entry 校准报告查看自动标签结果。"
+        status_detail = "imported_no_valid_manual_labels"
+    else:
+        message = f"人工标注表已导入：有效人工标注 {summary['valid_manual_label_rows']} / {summary['total_rows']}。下一步：生成 entry 校准报告。"
+        status_detail = "imported_with_manual_labels"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail=status_detail)
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": status_detail}
+
+
+def _manual_review_prefill_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    from historical_ml.manual_label_suggester import generate_manual_label_suggestions_from_file
+
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    source = artifacts_dir / "manual_review_queue.csv"
+    if not source.exists():
+        raise FileNotFoundError(f"找不到 manual_review_queue：{source}")
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在自动预填人工复核建议：{source}")
+    _, summary = generate_manual_label_suggestions_from_file(source, artifacts_dir)
+    summary.update(
+        {
+            "input_path": str(source),
+            "result_count": int(summary.get("auto_prefilled_rows", 0)),
+            "used_cache": False,
+            "cache_path": "",
+            "suggested_next_step": "下一步：一键采纳高置信标注，或导出低置信复核表。",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    message = (
+        f"自动预填完成：总行数 {summary['total_rows']}，自动预标 {summary['auto_prefilled_rows']}，"
+        f"高置信 {summary['high_confidence_rows']}，中置信 {summary.get('medium_confidence_rows', 0)}，"
+        f"低置信 {summary['low_confidence_rows']}，需人工复核 {summary['need_human_review_rows']}，"
+        f"已采纳 {summary.get('accepted_rows', 0)}，待处理 {summary.get('pending_rows', 0)}；"
+        f"missed_big_winner 总数 {summary.get('missed_big_winner_total', 0)}，"
+        f"高/中/低={summary.get('missed_big_winner_high_confidence', 0)}/"
+        f"{summary.get('missed_big_winner_medium_confidence', 0)}/"
+        f"{summary.get('missed_big_winner_low_confidence', 0)}，"
+        f"待复核 {summary.get('missed_big_winner_pending', 0)}。下一步：{summary['suggested_next_step']}"
+    )
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="prefilled")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "prefilled"}
+
+
+def _manual_review_adopt_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    from historical_ml.io_utils import write_table
+    from historical_ml.manual_label_suggester import adopt_high_confidence_suggestions
+
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    min_confidence = "medium" if str(record.get("action_name")) == "adopt_medium_confidence_manual_labels" else "high"
+    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    if not prefilled_path.exists():
+        raise FileNotFoundError(f"请先运行自动预填人工标注：{prefilled_path}")
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在采纳高置信预标：{prefilled_path}")
+    prefilled = pd.read_csv(prefilled_path)
+    adopted, summary = adopt_high_confidence_suggestions(prefilled, min_confidence=min_confidence)
+    output_path = write_table(adopted, artifacts_dir, "manual_review_queue_labeled", "csv")
+    summary.update(
+        {
+            "input_path": str(prefilled_path),
+            "output_path": str(output_path),
+            "result_count": int(summary.get("adopted_rows", 0)),
+            "used_cache": False,
+            "cache_path": "",
+            "suggested_next_step": "下一步：导出低置信复核表，人工修正后导入；或生成使用人工标注的校准报告。",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    label = "中置信及以上" if min_confidence == "medium" else "高置信"
+    message = (
+        f"{label}预标已采纳：采纳 {summary['adopted_rows']} 行，"
+        f"adopted_failure_rows={summary.get('adopted_failure_rows', 0)}，"
+        f"adopted_missed_winner_rows={summary.get('adopted_missed_winner_rows', 0)}，"
+        f"pending_missed_winner_rows={summary.get('pending_missed_winner_rows', 0)}。"
+        f"{summary.get('manual_label_balance_warning', '')} 下一步：{summary['suggested_next_step']}"
+    )
+    status_detail = "adopted_medium_confidence" if min_confidence == "medium" else "adopted_high_confidence"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail=status_detail)
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": status_detail}
+
+
+def _manual_review_low_confidence_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    from historical_ml.io_utils import write_table
+    from historical_ml.manual_label_suggester import low_confidence_review_rows
+
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    if not prefilled_path.exists():
+        raise FileNotFoundError(f"请先运行自动预填人工标注：{prefilled_path}")
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出低置信复核表：{prefilled_path}")
+    prefilled = pd.read_csv(prefilled_path)
+    low, summary = low_confidence_review_rows(prefilled)
+    output_path = write_table(low, output_dir, "manual_review_queue_low_confidence", "csv")
+    summary.update(
+        {
+            "input_path": str(prefilled_path),
+            "output_path": str(output_path),
+            "result_count": int(summary.get("low_confidence_review_rows", len(low))),
+            "used_cache": False,
+            "cache_path": "",
+            "suggested_next_step": "下一步：人工复核低置信样本，另存后导入人工修正表。",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    message = (
+        f"低置信复核表已导出：{output_path}；低置信/需复核 {summary.get('low_confidence_review_rows', len(low))} 行；"
+        f"missed_big_winner pending={summary.get('pending_missed_winner_rows', 0)}。下一步：{summary['suggested_next_step']}"
+    )
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="exported_low_confidence")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "exported_low_confidence"}
+
+
+def _manual_review_pending_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    from historical_ml.io_utils import write_table
+    from historical_ml.manual_label_suggester import pending_review_rows
+
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    source_path = _preferred_manual_review_source(artifacts_dir)
+    if not source_path.exists():
+        raise FileNotFoundError(f"请先运行自动预填或采纳标注：{source_path}")
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出待人工复核表：{source_path}")
+    source = pd.read_csv(source_path)
+    pending, summary = pending_review_rows(source)
+    output_path = write_table(pending, output_dir, "manual_review_queue_pending", "csv")
+    summary.update(
+        {
+            "input_path": str(source_path),
+            "output_path": str(output_path),
+            "result_count": int(summary.get("pending_rows", 0)),
+            "used_cache": False,
+            "cache_path": "",
+            "suggested_next_step": "下一步：人工复核 pending 样本，尤其是 pending_missed_winner_rows。",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    message = (
+        f"待人工复核表已导出：{output_path}；pending_rows={summary['pending_rows']}；"
+        f"pending_missed_winner_rows={summary['pending_missed_winner_rows']}。下一步：{summary['suggested_next_step']}"
+    )
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="exported_pending_review")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "exported_pending_review"}
+
+
+def _manual_review_missed_winner_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    from historical_ml.io_utils import write_table
+    from historical_ml.manual_label_suggester import pending_review_rows
+
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    source_path = _preferred_manual_review_source(artifacts_dir)
+    if not source_path.exists():
+        raise FileNotFoundError(f"请先运行自动预填或采纳标注：{source_path}")
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出 missed_big_winner 复核表：{source_path}")
+    source = pd.read_csv(source_path)
+    missed = source.loc[source.get("review_reason", pd.Series("", index=source.index)).fillna("").astype(str).eq("missed_big_winner")].copy()
+    output_path = write_table(missed, output_dir, "manual_review_queue_missed_winner", "csv")
+    _, summary = pending_review_rows(source)
+    summary.update(
+        {
+            "result_count": int(len(missed)),
+            "input_path": str(source_path),
+            "output_path": str(output_path),
+            "used_cache": False,
+            "cache_path": "",
+            "suggested_next_step": "下一步：抽查 missed_big_winner，确认哪些属于敢买建议。",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    message = f"missed_big_winner 复核表已导出：{output_path}；总数 {len(missed)}，pending {summary['missed_big_winner_pending']}。"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="exported_missed_winner_review")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "exported_missed_winner_review"}
+
+
+def _historical_ml_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    action_name = str(record.get("action_name") or "")
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    cache_path = artifacts_dir / HISTORICAL_CACHE_FILES.get(action_name, "entry_candidate_samples_labeled.csv")
+    queue.update_task(record["task_id"], status="running", progress=30, message=f"正在读取 historical_ml 产物：{cache_path}")
+
+    summary = _historical_result_summary(action_name, artifacts_dir, cache_path, parameters)
+    elapsed = round(time.perf_counter() - started, 3)
+    summary["elapsed_seconds"] = elapsed
+
+    result_dir = OUTPUT_DIR / "tasks" / "results"
+    result_dir.mkdir(parents=True, exist_ok=True)
+    result_file = result_dir / f"{record['task_id']}.json"
+    result_file.write_text(json.dumps({"task_id": record["task_id"], "action_name": action_name, "result_summary": summary}, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    if summary["used_cache"]:
+        message = (
+            f"命中缓存：{summary['cache_path']}；缓存更新时间：{summary.get('cache_updated_at', '')}；"
+            f"缓存文件行数：{summary['output_rows']}；elapsed_seconds={elapsed:.3f}。下一步：{summary['next_step']}"
+        )
+        status_detail = "cache_hit"
+    elif summary["output_rows"] <= 0:
+        message = f"完成但无样本：{summary.get('empty_reason', '未找到可用输出')}；建议下一步检查项：{summary['next_step']}；elapsed_seconds={elapsed:.3f}。"
+        status_detail = "completed_empty"
+    else:
+        message = (
+            f"实际执行：elapsed_seconds={elapsed:.3f}；输出文件：{summary['output_path']}；"
+            f"输出行数：{summary['output_rows']}。下一步：{summary['next_step']}"
+        )
+        status_detail = "executed"
+    if action_name == "generate_entry_calibration_report":
+        message += (
+            f" 是否使用人工标注：{'是' if summary.get('used_manual_labels') else '否'}；"
+            f"人工标注样本数量：{summary.get('valid_manual_label_rows', 0)}；"
+            f"自动标签样本数量：{summary.get('auto_label_sample_count', 0)}；"
+            f"人工标注覆盖率：{summary.get('manual_label_coverage', 0):.2%}；"
+            f"报告输出路径：{summary.get('output_path', '')}。"
+        )
+        if summary.get("manual_label_balance_warning"):
+            message += f" {summary['manual_label_balance_warning']} 当前报告主要基于失败类样本，未充分覆盖错过机会样本。"
+    if action_name == "generate_parameter_suggestions":
+        message += (
+            " 参数建议分组：防错建议=提高门槛/过热惩罚/假突破过滤/买后快速失败过滤；"
+            "敢买建议=降低观察转试探门槛/允许小仓试探/优化候选池遗漏/调整 selected_not_bought 逻辑。"
+        )
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail=status_detail)
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": status_detail}
+
+
+def _historical_result_summary(action_name: str, artifacts_dir: Path, cache_path: Path, parameters: dict[str, Any]) -> dict[str, Any]:
+    summary = _blank_result_summary(action_name, cache_path, parameters)
+    if not cache_path.exists():
+        summary["empty_reason"] = f"缓存文件不存在：{cache_path}"
+        return summary
+
+    summary.update(_cache_meta(cache_path))
+    daily = _read_csv_if_exists(artifacts_dir / "daily_etf_samples.csv")
+    candidates = _read_csv_if_exists(artifacts_dir / "entry_candidate_samples_unlabeled.csv")
+    labeled = _read_csv_if_exists(artifacts_dir / "entry_candidate_samples_labeled.csv")
+    review = _read_csv_if_exists(artifacts_dir / "manual_review_queue.csv")
+    target = _read_csv_if_exists(cache_path) if cache_path.suffix.lower() == ".csv" else pd.DataFrame()
+
+    summary["output_rows"] = _file_rows(cache_path, target)
+    summary["trade_days"] = _nunique_date(_first_non_empty(target, labeled, candidates, daily), ["trade_date", "date"])
+    summary["etf_count"] = _nunique(_first_non_empty(target, labeled, candidates, daily), "code")
+    summary["daily_etf_samples_rows"] = len(daily)
+    summary["entry_candidate_samples_rows"] = len(candidates)
+    summary["actual_trading_days"] = _nunique_date(daily, ["trade_date", "date"])
+
+    if not labeled.empty:
+        labels = labeled.get("auto_label", pd.Series(dtype=str)).fillna("").astype(str)
+        status = labeled.get("label_status", pd.Series(dtype=str)).fillna("").astype(str)
+        summary["labeled_rows"] = len(labeled)
+        summary["good_entry_count"] = int(labels.eq("good_entry").sum())
+        summary["bad_entry_count"] = int(labels.eq("bad_entry").sum())
+        summary["neutral_entry_count"] = int(labels.eq("neutral_entry").sum())
+        summary["insufficient_future_data"] = int(status.eq("insufficient_future_data").sum())
+        summary.update(_missed_winner_counts(labeled))
+
+    if not review.empty:
+        reasons = review.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str)
+        reason_counts = reasons.value_counts().to_dict()
+        summary["review_queue_count"] = len(review)
+        summary["review_queue_path"] = str(artifacts_dir / "manual_review_queue.csv")
+        summary["reason_distribution"] = {str(k): int(v) for k, v in reason_counts.items()}
+        summary["large_loss_count"] = int(reason_counts.get("large_loss_entry", 0))
+        summary["quick_failure_count"] = int(reason_counts.get("quick_failure_entry", 0))
+        summary["bought_and_knocked_out_count"] = int(reason_counts.get("bought_and_knocked_out", 0))
+        summary["failed_sample_count"] = summary["large_loss_count"] + summary["quick_failure_count"] + summary["bought_and_knocked_out_count"]
+
+    summary.update(_manual_prefill_stats(artifacts_dir))
+    summary.update(_manual_label_stats(OUTPUT_DIR / "historical_ml_manual_labels_imported.csv", summary.get("labeled_rows", 0), artifacts_dir=artifacts_dir))
+    if summary["output_rows"] <= 0:
+        summary["empty_reason"] = "输出文件存在但没有可用数据行"
+    return summary
+
+
+def _blank_result_summary(action_name: str, cache_path: Path, parameters: dict[str, Any]) -> dict[str, Any]:
+    next_steps = {
+        "run_historical_replay": "下一步生成每日样本",
+        "generate_daily_samples": "下一步生成 entry 候选样本",
+        "generate_entry_samples": "下一步自动打标签",
+        "auto_label_samples": "下一步生成失败样本/错过样本/复核队列",
+        "generate_failure_samples": "下一步检查失败样本归因",
+        "generate_missed_opportunity_samples": "下一步检查错过样本过滤原因",
+        "generate_manual_review_queue": "下一步导出人工标注表或生成校准报告",
+        "generate_entry_calibration_report": "下一步生成参数建议或人工吸收清单",
+        "generate_parameter_suggestions": "下一步仅做人工 review，不自动写回 entry",
+        "run_overfit_check": "下一步检查稳定性失败分组，不直接上线模型",
+    }
+    return {
+        "output_path": str(cache_path),
+        "output_rows": 0,
+        "trade_days": 0,
+        "etf_count": 0,
+        "good_entry_count": 0,
+        "bad_entry_count": 0,
+        "neutral_entry_count": 0,
+        "review_queue_count": 0,
+        "failed_sample_count": 0,
+        "missed_winner_count": 0,
+        "true_missed_winner_count": 0,
+        "market_outperform_missed_winner_count": 0,
+        "sector_outperform_missed_winner_count": 0,
+        "used_cache": cache_path.exists(),
+        "cache_path": str(cache_path) if cache_path.exists() else "",
+        "next_step": next_steps.get(action_name, "下一步查看任务结果摘要"),
+        "replay_start": parameters.get("start_date", ""),
+        "replay_end": parameters.get("end_date", ""),
+        "actual_trading_days": 0,
+        "daily_etf_samples_rows": 0,
+        "entry_candidate_samples_rows": 0,
+        "labeled_rows": 0,
+        "insufficient_future_data": 0,
+        "large_loss_count": 0,
+        "quick_failure_count": 0,
+        "bought_and_knocked_out_count": 0,
+        "review_queue_path": "",
+        "reason_distribution": {},
+    }
+
+
+def _cache_meta(path: Path) -> dict[str, Any]:
+    return {
+        "used_cache": True,
+        "cache_path": str(path),
+        "cache_updated_at": format_datetime_shanghai(datetime.fromtimestamp(path.stat().st_mtime, tz=ZoneInfo("Asia/Shanghai"))),
+    }
+
+
+def _read_csv_if_exists(path: Path) -> pd.DataFrame:
+    if not path.exists() or path.suffix.lower() != ".csv":
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:  # noqa: BLE001
+        return pd.DataFrame()
+
+
+def _file_rows(path: Path, frame: pd.DataFrame) -> int:
+    if path.suffix.lower() == ".csv":
+        return int(len(frame))
+    if not path.exists():
+        return 0
+    text = path.read_text(encoding="utf-8", errors="ignore").strip()
+    return 1 if text else 0
+
+
+def _first_non_empty(*frames: pd.DataFrame) -> pd.DataFrame:
+    for frame in frames:
+        if frame is not None and not frame.empty:
+            return frame
+    return pd.DataFrame()
+
+
+def _nunique(frame: pd.DataFrame, col: str) -> int:
+    if frame.empty or col not in frame.columns:
+        return 0
+    return int(frame[col].nunique(dropna=True))
+
+
+def _nunique_date(frame: pd.DataFrame, cols: list[str]) -> int:
+    for col in cols:
+        if not frame.empty and col in frame.columns:
+            return int(pd.to_datetime(frame[col], errors="coerce").dt.normalize().nunique(dropna=True))
+    return 0
+
+
+def _bool_series(frame: pd.DataFrame, col: str) -> pd.Series:
+    if col not in frame.columns:
+        return pd.Series(False, index=frame.index)
+    s = frame[col]
+    if s.dtype == bool:
+        return s.fillna(False)
+    return s.fillna(False).map(lambda value: str(value).strip().lower() in {"1", "true", "yes", "y"})
+
+
+def _missed_winner_counts(labeled: pd.DataFrame) -> dict[str, int]:
+    ret10 = pd.to_numeric(labeled.get("future_return_10d"), errors="coerce")
+    not_bought = ~_bool_series(labeled, "was_bought")
+    raw = not_bought & (ret10 >= 0.06)
+    market = raw & _bool_series(labeled, "outperform_market_10d")
+    sector = raw & _bool_series(labeled, "outperform_sector_10d")
+    true = market | sector
+    return {
+        "missed_winner_count": int(raw.sum()),
+        "market_outperform_missed_winner_count": int(market.sum()),
+        "sector_outperform_missed_winner_count": int(sector.sum()),
+        "true_missed_winner_count": int(true.sum()),
+    }
+
+
+def _manual_label_stats(path: Path, auto_label_sample_count: int = 0, artifacts_dir: Path | None = None) -> dict[str, Any]:
+    effective_path = path if path.exists() else (artifacts_dir / "manual_review_queue_labeled.csv" if artifacts_dir else path)
+    if not effective_path.exists():
+        return _empty_manual_label_stats(auto_label_sample_count)
+    try:
+        df = pd.read_csv(effective_path)
+    except Exception:  # noqa: BLE001
+        return _empty_manual_label_stats(auto_label_sample_count)
+    stats = _manual_label_stats_from_frame(df)
+    stats["used_manual_labels"] = bool(stats["valid_manual_label_rows"] > 0)
+    stats["manual_label_sample_count"] = int(stats["valid_manual_label_rows"])
+    stats["auto_label_sample_count"] = int(auto_label_sample_count or 0)
+    denominator = max(1, int(auto_label_sample_count or len(df) or 0))
+    stats["manual_label_coverage"] = float(stats["valid_manual_label_rows"] / denominator)
+    return stats
+
+
+def _empty_manual_label_stats(auto_label_sample_count: int = 0) -> dict[str, Any]:
+    return {
+        "used_manual_labels": False,
+        "manual_label_sample_count": 0,
+        "valid_manual_label_rows": 0,
+        "empty_manual_label_rows": 0,
+        "invalid_rows": 0,
+        "auto_label_sample_count": int(auto_label_sample_count or 0),
+        "manual_label_coverage": 0.0,
+        "adopted_failure_rows": 0,
+        "adopted_missed_winner_rows": 0,
+        "pending_failure_rows": 0,
+        "pending_missed_winner_rows": 0,
+        "manual_label_balance_warning": "",
+    }
+
+
+def _manual_prefill_stats(artifacts_dir: Path) -> dict[str, Any]:
+    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    if not prefilled_path.exists():
+        return {
+            "auto_prefilled_rows": 0,
+            "high_confidence_rows": 0,
+            "medium_confidence_rows": 0,
+            "low_confidence_rows": 0,
+            "need_human_review_rows": 0,
+            "human_review_required_rows": 0,
+            "human_corrected_rows": 0,
+            "final_effective_label_rows": 0,
+            "missed_big_winner_total": 0,
+            "missed_big_winner_high_confidence": 0,
+            "missed_big_winner_medium_confidence": 0,
+            "missed_big_winner_low_confidence": 0,
+            "missed_big_winner_need_review": 0,
+            "missed_big_winner_accepted": 0,
+            "missed_big_winner_pending": 0,
+        }
+    try:
+        df = pd.read_csv(prefilled_path)
+    except Exception:  # noqa: BLE001
+        return {
+            "auto_prefilled_rows": 0,
+            "high_confidence_rows": 0,
+            "medium_confidence_rows": 0,
+            "low_confidence_rows": 0,
+            "need_human_review_rows": 0,
+            "human_review_required_rows": 0,
+            "human_corrected_rows": 0,
+            "final_effective_label_rows": 0,
+            "missed_big_winner_total": 0,
+            "missed_big_winner_high_confidence": 0,
+            "missed_big_winner_medium_confidence": 0,
+            "missed_big_winner_low_confidence": 0,
+            "missed_big_winner_need_review": 0,
+            "missed_big_winner_accepted": 0,
+            "missed_big_winner_pending": 0,
+        }
+    confidence = df.get("suggested_confidence", pd.Series(dtype=str)).fillna("").astype(str)
+    suggested = df.get("suggested_manual_label", pd.Series(dtype=str)).fillna("").astype(str).str.strip().ne("")
+    need = _bool_series(df, "need_human_review") if "need_human_review" in df.columns else pd.Series(False, index=df.index)
+    manual_label = df.get("manual_label", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    suggested_label = df.get("suggested_manual_label", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
+    corrected = manual_label.ne("") & manual_label.ne(suggested_label)
+    labeled_path = artifacts_dir / "manual_review_queue_labeled.csv"
+    final_rows = 0
+    if labeled_path.exists():
+        try:
+            labeled = pd.read_csv(labeled_path)
+            final_rows = int(labeled.get("manual_label", pd.Series(dtype=str)).fillna("").astype(str).str.strip().ne("").sum())
+        except Exception:  # noqa: BLE001
+            final_rows = 0
+    missed = _review_reason_mask(df, {"missed_big_winner"})
+    accepted = manual_label.ne("")
+    pending = ~accepted
+    return {
+        "auto_prefilled_rows": int(suggested.sum()),
+        "high_confidence_rows": int(confidence.eq("high").sum()),
+        "medium_confidence_rows": int(confidence.eq("medium").sum()),
+        "low_confidence_rows": int(confidence.eq("low").sum()),
+        "need_human_review_rows": int(need.sum()),
+        "human_review_required_rows": int(need.sum()),
+        "human_corrected_rows": int(corrected.sum()),
+        "final_effective_label_rows": int(final_rows),
+        "missed_big_winner_total": int(missed.sum()),
+        "missed_big_winner_high_confidence": int((missed & confidence.eq("high")).sum()),
+        "missed_big_winner_medium_confidence": int((missed & confidence.eq("medium")).sum()),
+        "missed_big_winner_low_confidence": int((missed & confidence.eq("low")).sum()),
+        "missed_big_winner_need_review": int((missed & need).sum()),
+        "missed_big_winner_accepted": int((missed & accepted).sum()),
+        "missed_big_winner_pending": int((missed & pending).sum()),
+    }
+
+
+def _preferred_manual_review_source(artifacts_dir: Path) -> Path:
+    labeled = artifacts_dir / "manual_review_queue_labeled.csv"
+    if labeled.exists():
+        return labeled
+    return artifacts_dir / "manual_review_queue_prefilled.csv"
+
+
+def _manual_label_stats_from_frame(df: pd.DataFrame) -> dict[str, Any]:
+    manual_cols = ["manual_label", "manual_failure_reason", "manual_review_note", "manual_action"]
+    if "manual_label" not in df.columns:
+        return {
+            "valid_manual_label_rows": 0,
+            "empty_manual_label_rows": int(len(df)),
+            "invalid_rows": 0,
+            "adopted_failure_rows": 0,
+            "adopted_missed_winner_rows": 0,
+            "pending_failure_rows": 0,
+            "pending_missed_winner_rows": 0,
+            "manual_label_balance_warning": "",
+        }
+    label = df["manual_label"].fillna("").astype(str).str.strip()
+    valid = label.ne("")
+    other_filled = pd.Series(False, index=df.index)
+    for col in manual_cols[1:]:
+        if col in df.columns:
+            other_filled = other_filled | df[col].fillna("").astype(str).str.strip().ne("")
+    invalid = label.eq("") & other_filled
+    failure = _review_reason_mask(df, {"large_loss_entry", "quick_failure_entry", "bought_and_knocked_out"})
+    missed = _review_reason_mask(df, {"missed_big_winner"})
+    warning = "当前人工标注覆盖偏向失败类样本，敢买类样本覆盖不足。" if int(missed.sum()) and int((valid & missed).sum()) == 0 else ""
+    return {
+        "valid_manual_label_rows": int(valid.sum()),
+        "empty_manual_label_rows": int((~valid).sum()),
+        "invalid_rows": int(invalid.sum()),
+        "adopted_failure_rows": int((valid & failure).sum()),
+        "adopted_missed_winner_rows": int((valid & missed).sum()),
+        "pending_failure_rows": int((~valid & failure).sum()),
+        "pending_missed_winner_rows": int((~valid & missed).sum()),
+        "manual_label_balance_warning": warning,
+    }
+
+
+def _review_reason_mask(df: pd.DataFrame, values: set[str]) -> pd.Series:
+    if "review_reason" not in df.columns:
+        return pd.Series(False, index=df.index)
+    return df["review_reason"].fillna("").astype(str).isin(values)
+
+
+def _write_task_result(record: dict[str, Any], summary: dict[str, Any]) -> Path:
+    result_dir = OUTPUT_DIR / "tasks" / "results"
+    result_dir.mkdir(parents=True, exist_ok=True)
+    result_file = result_dir / f"{record['task_id']}.json"
+    result_file.write_text(
+        json.dumps({"task_id": record["task_id"], "action_name": record.get("action_name", ""), "result_summary": summary}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return result_file
 
 
 def _record_only_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
