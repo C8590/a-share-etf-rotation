@@ -45,6 +45,8 @@ from data.portfolio_store import (
 from data.quotes import get_etf_quotes
 from signal.daily_signal import EMPTY_POSITION_REASON, NO_POSITION_INPUT_REASON, ensure_current_position
 from signal.trade_policy import normalize_error_message
+from api import control_actions as action_api
+from api.action_schema import format_datetime_shanghai, format_trade_date
 from ui.components import localize_columns, show_dataframe_or_empty, status_badge
 from ui.signal_parser import (
     DashboardData,
@@ -644,6 +646,10 @@ def _candidate_action_text(value: Any) -> str:
     text = str(value or "").strip()
     if text in {"观察", "watch", "Watch"}:
         return "候选观察（不是买入）"
+    if text == "WATCH":
+        return "观察，不买入"
+    if text in {"STANDARD_BUY", "PROBE_BUY", "FORBID_BUY", "HOLD", "RISK_EXIT", "TREND_DECAY_EXIT", "REPLACEMENT_EXIT"}:
+        return _clean_display_value(text)
     if text == "校验通过":
         return "校验通过（仅代表价格数据可信，不等于买入信号）"
     if ":观察" in text:
@@ -656,14 +662,66 @@ DISPLAY_VALUE_MAP = {
     "eligible_not_selected": "通过过滤但未进候选池",
     "filtered_out": "未通过过滤",
     "up_to_date": "行情已是最新",
+    "outdated": "行情需要更新",
     "cached_success": "使用缓存",
-    "success": "成功",
-    "failed": "失败",
+    "success": "更新成功",
+    "failed": "更新失败",
     "not_required": "无需校验",
+    "DRAFT": "订单草稿",
+    "SIMULATION": "模拟执行",
+    "MANUAL_CONFIRM": "人工确认",
+    "DRAFT_BUY": "买入订单草稿",
+    "BLOCKED_BUY": "买入已阻断",
+    "DRAFT_EXIT": "卖出订单草稿",
+    "NO_ORDER": "无订单意图",
+    "BUY": "买入方向",
+    "SELL": "卖出方向",
+    "LIMIT": "人工限价",
+    "V2_MODULAR": "V2.1 模块化总控信号",
+    "V1_LEGACY": "V1 传统信号（仅用于对照）",
+    "WATCH": "观察，不买入",
+    "watch": "观察，不买入",
+    "HOLD": "继续持有",
+    "FORBID_BUY": "禁止买入",
+    "STANDARD_BUY": "标准买入",
+    "PROBE_BUY": "试探买入",
+    "RISK_EXIT": "风险退出",
+    "TREND_DECAY_EXIT": "趋势衰减退出",
+    "REPLACEMENT_EXIT": "调仓替换退出",
+    "entry_signal.csv": "买入信号输出",
+    "exit_signal.csv": "退出信号输出",
+    "v21_orchestrator": "V2.1 总控",
+    "completed": "总控已完成",
+    "completed_with_fallback": "总控已完成（存在降级说明）",
     "true": "是",
     "false": "否",
     "True": "是",
     "False": "否",
+}
+
+DISPLAY_EMBEDDED_REPLACEMENTS = {
+    "fallback_reason": "降级原因",
+    "risk_block_reason": "风险阻断原因",
+    "manual_takeover_required": "需要人工接管",
+    "freeze_entry": "当前风险门控已冻结新买入",
+    "DRAFT/MANUAL_CONFIRM": "订单草稿/人工确认",
+    "MANUAL_CONFIRM": "人工确认",
+    "SIMULATION": "模拟执行",
+    "DRAFT": "订单草稿",
+    "V2_MODULAR": "V2.1 模块化总控信号",
+    "V1_LEGACY": "V1 传统信号（仅用于对照）",
+    "qmt_execution": "QMT 执行模块",
+    "historical_ml": "历史学习模块",
+    "risk_warning": "风险预警模块",
+    "RiskGate": "风险门控",
+    "entry 信号": "买入信号",
+    "entry_signal.csv": "买入信号输出",
+    "exit_signal.csv": "退出信号输出",
+    "V1/V2 selected ETFs match": "V1 与 V2.1 候选 ETF 一致",
+    "V1 empty while V2 has candidates": "V1 无候选，V2.1 已产生候选 ETF",
+    "V2 has no selected candidates; likely filtered by market, trend, or data rules": "V2.1 暂无候选 ETF，可能受市场、趋势或数据规则限制",
+    "V1/V2 candidate sets differ; V2 no-buy reasons": "V1 与 V2.1 候选集合不同；V2.1 未买入原因",
+    "V1/V2 candidate sets differ": "V1 与 V2.1 候选集合不同",
 }
 
 NAME_MISSING_TEXT = "名称未匹配"
@@ -680,11 +738,42 @@ def _clean_display_value(value: Any, default: str = "无") -> str:
     except (TypeError, ValueError):
         pass
     text = str(value).strip()
+    if re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", text):
+        return format_datetime_shanghai(text) or default
     if text.lower() in EMPTY_REASON_TEXTS:
         return default
     if text == "未记录":
         return default
-    return DISPLAY_VALUE_MAP.get(text, text)
+    if text in DISPLAY_VALUE_MAP:
+        return DISPLAY_VALUE_MAP[text]
+    return _translate_embedded_display_terms(text)
+
+
+def _translate_embedded_display_terms(text: str) -> str:
+    result = text
+    for raw, translated in DISPLAY_EMBEDDED_REPLACEMENTS.items():
+        result = result.replace(raw, translated)
+    return result
+
+
+def translate_status(value: Any, default: str = "暂无数据") -> str:
+    return _clean_display_value(value, default)
+
+
+def translate_signal_action(value: Any, default: str = "暂无动作") -> str:
+    return _candidate_action_text(value) if value not in ("", None) else default
+
+
+def translate_execution_mode(value: Any, default: str = "暂无执行模式") -> str:
+    return _clean_display_value(value, default)
+
+
+def translate_risk_level(value: Any, default: str = "暂无风险等级") -> str:
+    return _clean_display_value(value, default)
+
+
+def clean_display_value(value: Any, default: str = "暂无数据") -> str:
+    return _clean_display_value(value, default)
 
 
 def _is_missing_display_value(value: Any) -> bool:
@@ -2687,29 +2776,7 @@ def _v21_records(value: Any) -> list[dict[str, Any]]:
 
 
 def _v21_display_value(value: Any, default: str = "暂无") -> str:
-    if isinstance(value, bool):
-        return "是" if value else "否"
-    if value in ("", None):
-        return default
-    try:
-        if pd.isna(value):
-            return default
-    except (TypeError, ValueError):
-        pass
-    text = str(value).strip()
-    replacements = {
-        "selected": "进入候选池（不是买入计划）",
-        "filtered_out": "未进入候选池",
-        "up_to_date": "数据已是最新",
-        "nan": default,
-        "None": default,
-        "N/A": f"{default}（暂无可展示值）",
-        "true": "是",
-        "false": "否",
-        "True": "是",
-        "False": "否",
-    }
-    return replacements.get(text, text)
+    return _clean_display_value(value, default)
 
 
 def _v21_join(value: Any, default: str = "暂无") -> str:
@@ -2718,8 +2785,37 @@ def _v21_join(value: Any, default: str = "暂无") -> str:
         cleaned = [item for item in cleaned if item]
         return "、".join(cleaned) if cleaned else default
     if isinstance(value, dict):
-        return json.dumps(value, ensure_ascii=False)
+        parts = [f"{_v21_field_label(key)}：{_v21_display_value(item, default='暂无')}" for key, item in value.items()]
+        return "；".join(parts) if parts else default
     return _v21_display_value(value, default=default)
+
+
+def _v21_field_label(value: Any) -> str:
+    text = str(value or "").strip()
+    labels = {
+        "fallback_reason": "降级原因",
+        "risk_block_reason": "风险阻断原因",
+        "manual_takeover_required": "需要人工接管",
+        "freeze_entry": "冻结买入",
+        "execution_mode": "执行模式",
+        "requires_manual_confirm": "需要人工确认",
+        "risk_check_passed": "风险检查通过",
+        "source_signal": "来源信号",
+    }
+    return labels.get(text, _clean_display_value(text, "未命名字段"))
+
+
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value in ("", None):
+            continue
+        try:
+            if pd.isna(value):
+                continue
+        except (TypeError, ValueError):
+            pass
+        return value
+    return None
 
 
 def _v21_bool(value: Any) -> bool:
@@ -2754,19 +2850,19 @@ def build_v21_frontend_status(snapshots: Mapping[str, Any]) -> dict[str, Any]:
     risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
     status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
     return {
-        "signal_version": _v21_display_value(decision.get("signal_version") or status.get("signal_version")),
-        "trade_date": _v21_display_value(decision.get("trade_date") or risk.get("trade_date") or status.get("trade_date")),
+        "signal_version": _v21_display_value(_first_present(decision.get("signal_version"), status.get("signal_version"))),
+        "trade_date": format_trade_date(_first_present(decision.get("trade_date"), risk.get("trade_date"), status.get("trade_date"))) or _v21_display_value(_first_present(decision.get("trade_date"), risk.get("trade_date"), status.get("trade_date"))),
         "market_state": _v21_display_value(decision.get("market_state")),
-        "risk_level": _v21_display_value(decision.get("risk_level") or risk.get("risk_level")),
-        "risk_score": _v21_display_value(decision.get("risk_score") or risk.get("risk_score")),
+        "risk_level": _v21_display_value(_first_present(decision.get("risk_level"), risk.get("risk_level"))),
+        "risk_score": _v21_display_value(_first_present(decision.get("risk_score"), risk.get("risk_score"))),
         "allow_entry": _v21_display_value(decision.get("allow_entry")),
-        "freeze_entry": _v21_display_value(decision.get("freeze_entry") or risk.get("freeze_entry")),
-        "manual_takeover_required": _v21_display_value(decision.get("manual_takeover_required") or risk.get("manual_takeover_required")),
+        "freeze_entry": _v21_display_value(_first_present(decision.get("freeze_entry"), risk.get("freeze_entry"))),
+        "manual_takeover_required": _v21_display_value(_first_present(decision.get("manual_takeover_required"), risk.get("manual_takeover_required"))),
         "candidate_count": len(decision.get("candidate_etfs", []) or []),
         "actual_buy_count": len(decision.get("actual_buy_etfs", []) or []),
         "exit_count": _v21_count_actual_exit(decision),
-        "generated_at": _v21_display_value(status.get("generated_at") or decision.get("generated_at")),
-        "fallback_reason": _v21_display_value(decision.get("fallback_reason") or status.get("fallback_reason")),
+        "generated_at": format_datetime_shanghai(_first_present(status.get("generated_at"), decision.get("generated_at"))) or _v21_display_value(_first_present(status.get("generated_at"), decision.get("generated_at"))),
+        "fallback_reason": _v21_display_value(_first_present(decision.get("fallback_reason"), status.get("fallback_reason")), "暂无降级说明。"),
     }
 
 
@@ -2793,6 +2889,179 @@ def _v21_order_frame(records: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
     )
 
 
+V21_TASK_STATUS_LABELS = {
+    "pending": "等待执行",
+    "running": "正在执行",
+    "success": "执行成功",
+    "failed": "执行失败",
+    "cancelled": "已取消",
+}
+
+V21_ACTION_LABELS = {
+    "refresh_market_data": "刷新行情数据",
+    "run_daily_signal": "重新生成今日信号",
+    "rebuild_v21_snapshot": "重建 V2.1 总控快照",
+    "run_data_health_check": "运行数据健康检查",
+    "run_historical_replay": "运行历史回放",
+    "generate_daily_samples": "生成每日样本",
+    "generate_entry_samples": "生成 entry 候选样本",
+    "auto_label_samples": "自动打标签",
+    "generate_failure_samples": "生成失败样本",
+    "generate_missed_opportunity_samples": "生成错过样本",
+    "generate_manual_review_queue": "生成手工复核队列",
+    "generate_entry_calibration_report": "生成 entry 校准报告",
+    "generate_parameter_suggestions": "生成参数建议",
+    "run_overfit_check": "运行过拟合检查",
+    "sync_qmt_account": "同步 QMT 资金",
+    "sync_qmt_positions": "同步 QMT 持仓",
+    "sync_qmt_orders": "同步 QMT 委托",
+    "sync_qmt_trades": "同步 QMT 成交",
+}
+
+
+def _v21_clear_snapshot_cache() -> None:
+    _load_v21_snapshots_cached.clear()
+
+
+def _v21_store_action_response(label: str, response: Mapping[str, Any]) -> None:
+    st.session_state["v21_last_action_response"] = {"label": label, **dict(response)}
+    task_id = str(response.get("task_id") or "")
+    if task_id:
+        st.session_state["v21_active_task_id"] = task_id
+
+
+def _v21_run_action(
+    label: str,
+    action_func: Any,
+    *args: Any,
+    clear_snapshots: bool = False,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    response = action_func(*args, **kwargs)
+    _v21_store_action_response(label, response)
+    if clear_snapshots:
+        _v21_clear_snapshot_cache()
+    return dict(response)
+
+
+def _v21_action_button(
+    label: str,
+    action_func: Any,
+    key: str,
+    *,
+    args: Sequence[Any] = (),
+    action_kwargs: dict[str, Any] | None = None,
+    disabled: bool = False,
+    clear_snapshots: bool = False,
+    help: str | None = None,
+) -> None:
+    if st.button(label, key=key, width="stretch", disabled=disabled, help=help):
+        response = _v21_run_action(label, action_func, *args, clear_snapshots=clear_snapshots, **(action_kwargs or {}))
+        if response.get("success"):
+            st.success(_v21_display_value(response.get("message")))
+        else:
+            st.error(_v21_display_value(response.get("error") or response.get("message")))
+        if response.get("task_id"):
+            st.info(f"task_id：{response['task_id']}")
+
+
+def _v21_show_last_action_response() -> None:
+    response = st.session_state.get("v21_last_action_response")
+    if not isinstance(response, Mapping):
+        return
+    label = _v21_display_value(response.get("label"), "最近动作")
+    message = _v21_display_value(response.get("message"), "暂无动作结果")
+    task_id = str(response.get("task_id") or "")
+    error = _v21_display_value(response.get("error"), "")
+    with st.expander("最近动作结果", expanded=bool(task_id or error)):
+        st.write(f"**动作：** {label}")
+        st.write(f"**结果：** {message}")
+        if task_id:
+            st.write(f"**task_id：** {task_id}")
+        if error:
+            st.error(error)
+
+
+def _v21_unimplemented_action(label: str) -> None:
+    st.caption(f"{label}：该动作接口未实现，前端不提供假按钮。")
+
+
+def _v21_task_frame(tasks: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    for item in tasks:
+        progress = item.get("progress", 0)
+        try:
+            progress_text = f"{int(progress)}%"
+        except (TypeError, ValueError):
+            progress_text = _v21_display_value(progress)
+        rows.append(
+            {
+                "task_id": _v21_display_value(item.get("task_id"), ""),
+                "action_name": V21_ACTION_LABELS.get(str(item.get("action_name") or ""), _v21_display_value(item.get("action_name"))),
+                "status": V21_TASK_STATUS_LABELS.get(str(item.get("status") or ""), _v21_display_value(item.get("status"))),
+                "progress": progress_text,
+                "message": _v21_display_value(item.get("message"), ""),
+                "start_time": format_datetime_shanghai(item.get("start_time")),
+                "end_time": format_datetime_shanghai(item.get("end_time")),
+                "error": _v21_display_value(item.get("error"), ""),
+            }
+        )
+    return pd.DataFrame(rows, columns=["task_id", "action_name", "status", "progress", "message", "start_time", "end_time", "error"])
+
+
+def render_v21_task_queue_panel(expanded: bool = True, key_prefix: str = "v21_task_queue") -> None:
+    with st.expander("任务队列", expanded=expanded):
+        cols = st.columns([1, 1, 4])
+        if cols[0].button("刷新任务状态", key=f"{key_prefix}_refresh", width="stretch"):
+            st.session_state[f"{key_prefix}_refresh_at"] = time.time()
+        if cols[1].button("查看任务队列", key=f"{key_prefix}_get_tasks", width="stretch"):
+            _v21_run_action("查看任务队列", action_api.get_tasks)
+        response = action_api.get_tasks()
+        tasks = response.get("data", {}).get("tasks", []) if isinstance(response.get("data"), Mapping) else []
+        show_dataframe_or_empty(
+            _v21_task_frame(tasks),
+            empty_text="暂无后台任务。",
+            key=f"{key_prefix}_table",
+            height=280,
+        )
+        failed_response = action_api.get_failed_tasks()
+        failed = failed_response.get("data", {}).get("tasks", []) if isinstance(failed_response.get("data"), Mapping) else []
+        if failed:
+            st.markdown("**失败任务**")
+            show_dataframe_or_empty(_v21_task_frame(failed), empty_text="暂无失败任务。", key=f"{key_prefix}_failed_table", height=180)
+
+
+def render_v21_global_actions(snapshots: Mapping[str, Any]) -> None:
+    st.markdown("**全局操作区**")
+    st.caption("刷新页面快照只重新读取 output 快照；重新生成今日信号会进入后台任务队列。二者不是同一个动作。")
+    cols = st.columns(6)
+    if cols[0].button("刷新页面快照", key="v21_top_reload_snapshot", width="stretch"):
+        _v21_clear_snapshot_cache()
+        st.session_state["v21_last_action_response"] = {
+            "label": "刷新页面快照",
+            "success": True,
+            "message": "已重新读取本地总控快照；未重新生成信号，未创建 task_id。",
+            "task_id": "",
+            "data": {},
+            "error": "",
+            "timestamp": "",
+        }
+        st.rerun()
+    with cols[1]:
+        _v21_action_button("刷新行情数据", action_api.refresh_market_data, "v21_top_refresh_market")
+    with cols[2]:
+        _v21_action_button("重新生成今日信号", action_api.run_daily_signal, "v21_top_run_daily_signal")
+    with cols[3]:
+        _v21_action_button("重建 V2.1 总控快照", action_api.rebuild_v21_snapshot, "v21_top_rebuild_snapshot", clear_snapshots=True)
+    with cols[4]:
+        _v21_action_button("查看任务队列", action_api.get_tasks, "v21_top_get_tasks")
+    with cols[5]:
+        _v21_action_button("下载今日日报", action_api.download_daily_report, "v21_top_download_report")
+    _v21_show_last_action_response()
+    if st.session_state.get("v21_active_task_id") or st.session_state.get("v21_last_action_response", {}).get("label") == "查看任务队列":
+        render_v21_task_queue_panel(expanded=True, key_prefix="v21_global_task_queue")
+
+
 def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
     decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
     risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
@@ -2800,12 +3069,23 @@ def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
     level = str(risk.get("risk_level") or decision.get("risk_level") or "R0").upper()
     manual_takeover = _v21_bool(decision.get("manual_takeover_required") or risk.get("manual_takeover_required"))
     freeze_entry = _v21_bool(decision.get("freeze_entry") or risk.get("freeze_entry"))
+    action_cols = st.columns(5)
+    with action_cols[0]:
+        _v21_action_button("重新生成今日信号", action_api.run_daily_signal, "v21_overview_run_daily_signal")
+    with action_cols[1]:
+        _v21_action_button("刷新行情数据", action_api.refresh_market_data, "v21_overview_refresh_market")
+    with action_cols[2]:
+        _v21_action_button("重新计算市场状态", action_api.recalculate_market_state, "v21_overview_market_state")
+    with action_cols[3]:
+        _v21_action_button("重新计算风险门控", action_api.recalculate_risk_gate, "v21_overview_risk_gate", action_kwargs={"risk_level": level})
+    with action_cols[4]:
+        _v21_action_button("下载总控快照", action_api.download_daily_report, "v21_overview_download_snapshot")
     if level in {"R3", "R4", "P0"} or manual_takeover:
         st.error("R3/R4/P0 风险或人工接管已触发：今天优先风险处理，entry 买入信号不得绕过风险门控。")
     elif freeze_entry:
         st.warning("风险门控已冻结买入，候选 ETF 仅作为观察对象。")
     else:
-        st.success("RiskGate 未冻结买入；是否实际买入仍以总控 DailyDecision 和 OrderIntent 为准。")
+        st.success("风险门控未冻结买入；是否实际买入仍以总控日内裁决和订单意图为准。")
     render_compact_metric_grid(
         [
             ("信号版本", status["signal_version"]),
@@ -2820,11 +3100,17 @@ def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
             ("实际买入 ETF 数", status["actual_buy_count"]),
             ("退出/清仓建议数", status["exit_count"]),
             ("总控生成时间", status["generated_at"]),
+            ("当前数据日期", format_trade_date(_first_present(decision.get("trade_date"), status.get("trade_date"))) or status["trade_date"]),
+            ("行情最后更新时间", format_datetime_shanghai(_first_present(status.get("market_data_updated_at"), status.get("generated_at"), decision.get("generated_at"))) or status["generated_at"]),
+            ("信号生成时间", format_datetime_shanghai(_first_present(decision.get("generated_at"), status.get("generated_at"))) or status["generated_at"]),
+            ("总控版本", status["signal_version"]),
+            ("是否为最新快照", "是" if not snapshots.get("missing_files") else "否"),
+            ("是否存在降级原因", "是" if status["fallback_reason"] not in {"暂无降级说明。", "鏆傛棤闄嶇骇璇存槑銆?", "暂无"} else "否"),
         ],
         class_name="compact-metric-grid summary-metric-grid",
     )
     if int(status["actual_buy_count"] or 0) <= 0:
-        st.info("当前无实际买入计划，候选 ETF 仅为观察对象。")
+        st.info("当前无实际买入计划；候选 ETF 仅为观察对象，原因请继续查看买入动作裁决、风险阻断原因和降级说明。")
     if _v21_has_exit_priority(decision):
         st.warning("当前有退出风险优先处理，新买入被降级或冻结。")
     st.markdown("**总控解释**")
@@ -2838,7 +3124,19 @@ def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
 def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
     decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
     orders = _v21_records(snapshots.get("order_intent"))
-    st.info("候选 ETF 表示进入观察池，不是买入计划。买入计划只看 actual_buy_etfs 和 OrderIntent；OrderIntent 是订单意图/草稿，不是自动下单。")
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("重新运行 pre_selection", action_api.run_pre_selection, "v21_candidates_run_pre_selection")
+    with cols[1]:
+        _v21_action_button("重新运行 entry", action_api.run_entry, "v21_candidates_run_entry")
+    with cols[2]:
+        _v21_action_button("生成订单草稿", action_api.generate_order_intents, "v21_candidates_generate_order_intents")
+    with cols[3]:
+        _v21_action_button("导出候选列表", action_api.download_daily_report, "v21_candidates_export")
+    _v21_unimplemented_action("生成候选 ETF 列表")
+    _v21_unimplemented_action("查看暂不参与本策略 ETF")
+    _v21_unimplemented_action("查看同板块过滤原因")
+    st.info("候选 ETF 表示进入观察池，不是买入计划。买入计划只看实际买入 ETF 列表和订单意图；订单意图是草稿，不是自动下单。")
     render_compact_metric_grid(
         [
             ("允许买入", _v21_display_value(decision.get("allow_entry"))),
@@ -2881,7 +3179,7 @@ def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
         for item in _v21_records(decision.get("entry_actions")):
             st.write(f"**{_v21_display_value(item.get('etf_code'))} {_v21_display_value(item.get('etf_name'), '')}**")
             st.write(_v21_display_value(item.get("explain"), "暂无说明。"))
-    st.markdown("**OrderIntent 买入草稿**")
+    st.markdown("**订单意图/草稿（买入）**")
     show_dataframe_or_empty(
         _v21_order_frame([item for item in orders if str(item.get("side") or "").upper() == "BUY"]),
         empty_text="当前无买入订单草稿。",
@@ -2892,6 +3190,18 @@ def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
 
 def render_v21_portfolio(snapshots: Mapping[str, Any]) -> None:
     decision = snapshots.get("daily_decision") if isinstance(snapshots.get("daily_decision"), Mapping) else {}
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("刷新持仓", action_api.sync_qmt_positions, "v21_portfolio_sync_positions")
+    with cols[1]:
+        _v21_action_button("重新运行 exit", action_api.run_exit, "v21_portfolio_run_exit")
+    with cols[2]:
+        _v21_action_button("生成卖出建议", action_api.run_exit, "v21_portfolio_generate_exit_advice")
+    with cols[3]:
+        _v21_action_button("导出持仓快照", action_api.download_daily_report, "v21_portfolio_export_snapshot")
+    _v21_unimplemented_action("刷新实时价格")
+    _v21_unimplemented_action("查看持仓风险暴露")
+    st.caption("QMT 未连接时仍可展开持仓输入维护，手动导入持仓、更新成本、刷新价格；持仓写入只发生在表单点击保存持仓之后。")
     if _v21_has_exit_priority(decision):
         st.warning("当前有退出风险优先处理，新买入被降级或冻结。")
     st.info("持仓页只展示 V2.1 PortfolioSnapshot；数据校验通过表示数据可信，不等于买入信号。")
@@ -2929,6 +3239,41 @@ def render_v21_portfolio(snapshots: Mapping[str, Any]) -> None:
 def render_v21_risk(snapshots: Mapping[str, Any]) -> None:
     risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
     level = str(risk.get("risk_level") or "R0").upper()
+    with st.form("v21_create_risk_event_form", clear_on_submit=False):
+        st.markdown("**新增风险事件**")
+        event_title = st.text_input("事件标题", key="v21_risk_event_title")
+        event_level = st.selectbox("风险等级", ["R1", "R2", "R3", "R4"], key="v21_risk_event_level")
+        event_date = st.date_input("事件日期", value=date.today(), key="v21_risk_event_date")
+        event_desc = st.text_area("事件说明", key="v21_risk_event_desc")
+        if st.form_submit_button("新增风险事件", width="stretch"):
+            _v21_run_action(
+                "新增风险事件",
+                action_api.create_risk_event,
+                event_date=event_date.isoformat(),
+                event_type="other",
+                title=event_title or "人工录入风险事件",
+                description=event_desc,
+                risk_level=event_level,
+                status="active",
+            )
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("编辑风险事件", action_api.update_risk_event, "v21_risk_update_event")
+    with cols[1]:
+        _v21_action_button("关闭/过期风险事件", action_api.expire_risk_event, "v21_risk_expire_event")
+    with cols[2]:
+        _v21_action_button("重新计算风险评分", action_api.recalculate_risk_gate, "v21_risk_recalculate", action_kwargs={"risk_level": level})
+    with cols[3]:
+        _v21_action_button("导出风险日志", action_api.export_risk_log, "v21_risk_export_log")
+    cols2 = st.columns(4)
+    with cols2[0]:
+        _v21_action_button("触发人工接管", action_api.trigger_manual_takeover, "v21_risk_manual_takeover")
+    with cols2[1]:
+        _v21_action_button("解除人工接管", action_api.release_manual_takeover, "v21_risk_release_takeover")
+    with cols2[2]:
+        _v21_action_button("查看影响板块", action_api.get_affected_sectors, "v21_risk_affected_sectors")
+    with cols2[3]:
+        _v21_action_button("查看风险等级说明", action_api.get_risk_level_explain, "v21_risk_level_explain", action_kwargs={"risk_level": level})
     if level in {"R3", "R4", "P0"}:
         st.error("高风险状态：风险门控高于 entry 买入信号。")
     else:
@@ -2956,6 +3301,43 @@ def render_v21_risk(snapshots: Mapping[str, Any]) -> None:
 def render_v21_learning(snapshots: Mapping[str, Any]) -> None:
     learning = _v21_records(snapshots.get("learning"))
     historical = _v21_records(snapshots.get("historical_ml"))
+    st.markdown("**历史学习操作**")
+    range_cols = st.columns(2)
+    start_date = range_cols[0].date_input("历史区间开始", value=date.today() - timedelta(days=30), key="v21_hml_start_date")
+    end_date = range_cols[1].date_input("历史区间结束", value=date.today(), key="v21_hml_end_date")
+    action_kwargs = {"start_date": start_date.isoformat(), "end_date": end_date.isoformat()}
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("运行历史回放", action_api.run_historical_replay, "v21_hml_replay", args=(start_date.isoformat(), end_date.isoformat()))
+    with cols[1]:
+        _v21_action_button("生成每日样本", action_api.generate_daily_samples, "v21_hml_daily_samples", args=(start_date.isoformat(), end_date.isoformat()))
+    with cols[2]:
+        _v21_action_button("生成 entry 候选样本", action_api.generate_entry_samples, "v21_hml_entry_samples", args=(start_date.isoformat(), end_date.isoformat()))
+    with cols[3]:
+        _v21_action_button("自动打标签", action_api.auto_label_samples, "v21_hml_auto_label", action_kwargs=action_kwargs)
+    cols2 = st.columns(4)
+    with cols2[0]:
+        _v21_action_button("生成失败样本", action_api.generate_failure_samples, "v21_hml_failure_samples", action_kwargs=action_kwargs)
+    with cols2[1]:
+        _v21_action_button("生成错过样本", action_api.generate_missed_opportunity_samples, "v21_hml_missed_samples", action_kwargs=action_kwargs)
+    with cols2[2]:
+        _v21_action_button("生成手工复核队列", action_api.generate_manual_review_queue, "v21_hml_review_queue", action_kwargs=action_kwargs)
+    with cols2[3]:
+        _v21_action_button("导出人工标注表", action_api.export_manual_review_file, "v21_hml_export_review")
+    cols3 = st.columns(4)
+    manual_label_path = cols3[0].text_input("人工标注表路径", key="v21_manual_label_path")
+    with cols3[1]:
+        _v21_action_button("导入人工标注表", action_api.import_manual_labels, "v21_hml_import_labels", args=(manual_label_path,), disabled=not bool(manual_label_path))
+    with cols3[2]:
+        _v21_action_button("生成 entry 校准报告", action_api.generate_entry_calibration_report, "v21_hml_calibration_report", action_kwargs=action_kwargs)
+    with cols3[3]:
+        _v21_action_button("生成参数建议", action_api.generate_parameter_suggestions, "v21_hml_parameter_suggestions", action_kwargs=action_kwargs)
+    cols4 = st.columns(2)
+    with cols4[0]:
+        _v21_action_button("运行过拟合检查", action_api.run_overfit_check, "v21_hml_overfit_check", action_kwargs=action_kwargs)
+    with cols4[1]:
+        _v21_action_button("查看历史回放任务日志", action_api.get_historical_ml_task_logs, "v21_hml_task_logs")
+    render_v21_task_queue_panel(expanded=False, key_prefix="v21_hml_task_queue")
     st.info("学习/历史机器学习只提供校准建议，不自动修改当日交易参数。")
     st.caption("机构研报默认 C 级线索，研究纪律见 docs/research_source_policy.md。")
     render_compact_metric_grid(
@@ -2981,15 +3363,45 @@ def render_v21_learning(snapshots: Mapping[str, Any]) -> None:
         "calibration_suggestion": "校准建议",
         "explain": "中文解释",
     }
-    st.markdown("**Learning Summary**")
-    show_dataframe_or_empty(_v21_frame(learning, columns), empty_text="暂无 learning_summary。", key="v21_learning", height=320)
-    st.markdown("**Historical ML Summary**")
-    show_dataframe_or_empty(_v21_frame(historical, columns), empty_text="暂无 historical_ml_summary。", key="v21_historical", height=320)
+    st.markdown("**学习建议摘要**")
+    show_dataframe_or_empty(_v21_frame(learning, columns), empty_text="暂无学习建议摘要。", key="v21_learning", height=320)
+    st.markdown("**历史学习摘要**")
+    show_dataframe_or_empty(_v21_frame(historical, columns), empty_text="暂无历史学习摘要。", key="v21_historical", height=320)
 
 
 def render_v21_qmt(snapshots: Mapping[str, Any]) -> None:
     orders = _v21_records(snapshots.get("order_intent"))
     status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
+    risk = snapshots.get("risk_gate") if isinstance(snapshots.get("risk_gate"), Mapping) else {}
+    risk_level = str(risk.get("risk_level") or "R0").upper()
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("连接 QMT", action_api.connect_qmt, "v21_qmt_connect")
+    with cols[1]:
+        _v21_action_button("断开 QMT", action_api.disconnect_qmt, "v21_qmt_disconnect")
+    with cols[2]:
+        _v21_action_button("同步资金", action_api.sync_qmt_account, "v21_qmt_sync_account")
+    with cols[3]:
+        _v21_action_button("同步持仓", action_api.sync_qmt_positions, "v21_qmt_sync_positions")
+    cols2 = st.columns(4)
+    with cols2[0]:
+        _v21_action_button("同步委托", action_api.sync_qmt_orders, "v21_qmt_sync_orders")
+    with cols2[1]:
+        _v21_action_button("同步成交", action_api.sync_qmt_trades, "v21_qmt_sync_trades")
+    with cols2[2]:
+        _v21_action_button("生成订单草稿", action_api.generate_order_intents, "v21_qmt_generate_order_intents")
+    with cols2[3]:
+        _v21_action_button("运行下单前风控", action_api.run_pre_order_risk_check, "v21_qmt_pre_order_risk", action_kwargs={"risk_level": risk_level})
+    cols3 = st.columns(3)
+    with cols3[0]:
+        _v21_action_button("模拟盘提交订单", action_api.submit_mock_order, "v21_qmt_submit_mock", action_kwargs={"risk_level": risk_level})
+    with cols3[1]:
+        _v21_action_button("撤单", action_api.cancel_mock_order, "v21_qmt_cancel_order", action_kwargs={"order_id": str(st.session_state.get("v21_cancel_order_id", ""))})
+    with cols3[2]:
+        _v21_action_button("查看执行日志", action_api.get_execution_logs, "v21_qmt_execution_logs")
+    st.text_input("撤单订单号", key="v21_cancel_order_id")
+    if risk_level in {"R3", "R4", "P0"}:
+        st.error("当前 R3/R4/P0 风险状态会阻断 QMT 下单意图；模拟盘提交也会显示风险阻断原因。")
     st.warning("QMT 当前为人工确认/模拟执行边界，不自动实盘下单。")
     render_compact_metric_grid(
         [
@@ -3006,6 +3418,26 @@ def render_v21_qmt(snapshots: Mapping[str, Any]) -> None:
 def render_v21_data_quality(snapshots: Mapping[str, Any]) -> None:
     status = snapshots.get("status") if isinstance(snapshots.get("status"), Mapping) else {}
     missing = snapshots.get("missing_files") or []
+    cols = st.columns(4)
+    with cols[0]:
+        _v21_action_button("运行数据健康检查", action_api.run_data_health_check, "v21_dq_health_check")
+    with cols[1]:
+        _v21_action_button("检查 ETF 样本数量", action_api.check_etf_sample_count, "v21_dq_sample_count")
+    with cols[2]:
+        _v21_action_button("检查缺失数据", action_api.check_missing_data, "v21_dq_missing_data")
+    with cols[3]:
+        _v21_action_button("检查异常价格", action_api.check_abnormal_prices, "v21_dq_abnormal_prices")
+    cols2 = st.columns(4)
+    with cols2[0]:
+        _v21_action_button("检查交易日", action_api.check_trading_calendar, "v21_dq_calendar")
+    with cols2[1]:
+        _v21_action_button("清理缓存", action_api.clear_cache, "v21_dq_clear_cache")
+    with cols2[2]:
+        _v21_action_button("重建总控快照", action_api.rebuild_control_snapshot, "v21_dq_rebuild_snapshot", clear_snapshots=True)
+    with cols2[3]:
+        _v21_action_button("查看最近任务日志", action_api.get_recent_logs, "v21_dq_recent_logs")
+    _v21_action_button("查看失败任务", action_api.get_failed_tasks, "v21_dq_failed_tasks")
+    render_v21_task_queue_panel(expanded=False, key_prefix="v21_dq_task_queue")
     st.info("数据校验通过不等于买入信号；这里只展示总控状态和降级说明，不深入各模块临时文件。")
     render_compact_metric_grid(
         [
@@ -3018,7 +3450,7 @@ def render_v21_data_quality(snapshots: Mapping[str, Any]) -> None:
     )
     if missing:
         st.warning("缺失总控快照：" + "、".join(missing))
-    st.markdown("**fallback_reason**")
+    st.markdown("**降级原因**")
     st.write(_v21_display_value(status.get("fallback_reason"), "暂无降级说明。"))
     st.markdown("**运行警告**")
     for item in status.get("warnings") or []:
@@ -3097,6 +3529,7 @@ def render_page() -> None:
 
 def render_page() -> None:
     snapshots = _load_v21_snapshots_cached(str(PROJECT_ROOT), _v21_output_signature(PROJECT_ROOT))
+    render_v21_global_actions(snapshots)
 
     st.title("V2.1 ETF 总控决策台")
     st.caption("前端只读取 V2.1 总控快照；打开页面不会自动重新生成信号，也不会直接追 7 个项目部内部临时文件。")
