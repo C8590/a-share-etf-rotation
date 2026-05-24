@@ -12,7 +12,18 @@ from contracts.signal_schema import BuyAction, ENTRY_SIGNAL_FIELDS, MarketState
 
 OUTPUT_FILE = "entry_signal.csv"
 INPUT_FILE = "pre_selection_result.csv"
+ML_SUGGESTIONS_FILE = Path("artifacts") / "historical_ml_61" / "generated" / "entry_calibration_suggestions.csv"
 REQUIRED_OUTPUT_FIELDS = ENTRY_SIGNAL_FIELDS
+DEFAULT_ML_ADVICE = "无ML建议"
+DEFAULT_ML_REASON = "未找到历史校准建议，维持原 entry 判断。"
+VALID_ML_ACTION_SUGGESTIONS = {
+    "NO_ML",
+    "KEEP_ORIGINAL",
+    "UPGRADE_PROBE",
+    "DOWNGRADE_WATCH",
+    "WAIT_PULLBACK",
+    "FORBID_CHASE",
+}
 
 
 @dataclass(frozen=True)
@@ -26,6 +37,14 @@ class EntryDecision:
     warning: str
 
 
+@dataclass(frozen=True)
+class MLAdvice:
+    ml_entry_advice: str = DEFAULT_ML_ADVICE
+    ml_confidence: float = 0.0
+    ml_reason: str = DEFAULT_ML_REASON
+    ml_action_suggestion: str = "NO_ML"
+
+
 class EntryEngine:
     """Produce entry_signal.csv from pre_selection_result.csv."""
 
@@ -34,10 +53,12 @@ class EntryEngine:
         first_buy_weight: float = 0.30,
         target_weight: float = 1.00,
         generated_at: str | None = None,
+        ml_suggestions_path: str | Path | None = None,
     ) -> None:
         self.first_buy_weight = _clip_ratio(first_buy_weight)
         self.target_weight = _clip_ratio(target_weight)
         self.generated_at = generated_at
+        self.ml_suggestions_path = Path(ml_suggestions_path) if ml_suggestions_path is not None else None
 
     def run(
         self,
@@ -47,9 +68,10 @@ class EntryEngine:
         """Return rows that match REQUIRED_OUTPUT_FIELDS and write entry_signal.csv."""
         out_dir = Path(output_dir) if output_dir is not None else Path("output")
         rows = list(pre_selection_rows) if pre_selection_rows is not None else self._read_pre_selection(out_dir)
+        ml_suggestions = self._read_ml_suggestions(out_dir)
         generated_at = self.generated_at or datetime.now().isoformat(timespec="seconds")
 
-        results = [self._build_output_row(row, generated_at) for row in rows]
+        results = [self._build_output_row(row, generated_at, ml_suggestions) for row in rows]
         out_dir.mkdir(parents=True, exist_ok=True)
         self._write_csv(out_dir / OUTPUT_FILE, results)
         return results
@@ -61,8 +83,54 @@ class EntryEngine:
         with input_path.open("r", encoding="utf-8-sig", newline="") as file:
             return [dict(row) for row in csv.DictReader(file)]
 
-    def _build_output_row(self, row: Mapping[str, Any], generated_at: str) -> dict[str, Any]:
+    def _read_ml_suggestions(self, output_dir: Path) -> dict[str, MLAdvice]:
+        input_path = self._resolve_ml_suggestions_path(output_dir)
+        if input_path is None:
+            return {}
+
+        suggestions: dict[str, MLAdvice] = {}
+        with input_path.open("r", encoding="utf-8-sig", newline="") as file:
+            for row in csv.DictReader(file):
+                symbol = _symbol(_first_text(row, "etf_code", "code", "symbol"))
+                if symbol:
+                    suggestions[symbol] = _ml_advice_from_row(row)
+        return suggestions
+
+    def _resolve_ml_suggestions_path(self, output_dir: Path) -> Path | None:
+        candidates: list[Path] = []
+        if self.ml_suggestions_path is not None:
+            candidates.append(self.ml_suggestions_path)
+        candidates.extend(
+            [
+                output_dir / ML_SUGGESTIONS_FILE,
+                output_dir.parent / ML_SUGGESTIONS_FILE,
+                Path.cwd() / ML_SUGGESTIONS_FILE,
+                ML_SUGGESTIONS_FILE,
+            ]
+        )
+
+        seen: set[Path] = set()
+        for candidate in candidates:
+            path = candidate if candidate.is_absolute() else Path.cwd() / candidate
+            try:
+                resolved = path.resolve()
+            except OSError:
+                resolved = path
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            if resolved.exists():
+                return resolved
+        return None
+
+    def _build_output_row(
+        self,
+        row: Mapping[str, Any],
+        generated_at: str,
+        ml_suggestions: Mapping[str, MLAdvice] | None = None,
+    ) -> dict[str, Any]:
         decision = self._decide(row)
+        ml_advice = (ml_suggestions or {}).get(_symbol(row.get("symbol")), MLAdvice())
         entry_reason = (
             f"趋势成熟度：{decision.maturity}；买点质量：{decision.quality}；"
             f"理由：{decision.reason}；警示：{decision.warning}；"
@@ -78,6 +146,10 @@ class EntryEngine:
             "position_size": round(decision.position_size, 4),
             "confidence": round(decision.confidence, 4),
             "entry_reason": entry_reason,
+            "ml_entry_advice": ml_advice.ml_entry_advice,
+            "ml_confidence": round(ml_advice.ml_confidence, 4),
+            "ml_reason": ml_advice.ml_reason,
+            "ml_action_suggestion": ml_advice.ml_action_suggestion,
             "source_file": INPUT_FILE,
             "generated_at": generated_at,
         }
@@ -296,8 +368,56 @@ def _first_present(row: Mapping[str, Any], *keys: str) -> Any:
     return None
 
 
+def _first_text(row: Mapping[str, Any], *keys: str) -> str:
+    for key in keys:
+        if key in row and _text(row.get(key)) != "":
+            return _text(row.get(key))
+    return ""
+
+
 def _has_any(row: Mapping[str, Any], *keys: str) -> bool:
     return any(key in row and _text(row.get(key)) != "" for key in keys)
+
+
+def _ml_advice_from_row(row: Mapping[str, Any]) -> MLAdvice:
+    raw_action = _first_text(row, "ml_action_suggestion", "action_suggestion")
+    advice = _first_text(row, "ml_entry_advice", "entry_advice", "advice")
+    action = _normalize_ml_action_suggestion(raw_action, advice)
+    return MLAdvice(
+        ml_entry_advice=advice or _advice_from_ml_action(action),
+        ml_confidence=_clip_ratio(_first_present(row, "ml_confidence", "confidence")),
+        ml_reason=_first_text(row, "ml_reason", "reason") or "历史校准建议存在但原因字段缺失，维持原 entry 判断。",
+        ml_action_suggestion=action,
+    )
+
+
+def _normalize_ml_action_suggestion(raw_action: str, advice: str = "") -> str:
+    action = raw_action.strip().upper().replace("-", "_").replace(" ", "_")
+    if action in VALID_ML_ACTION_SUGGESTIONS:
+        return action
+
+    text = f"{raw_action} {advice}"
+    if "升级" in text or "试探" in text or "UPGRADE" in action:
+        return "UPGRADE_PROBE"
+    if "降级" in text or "观察" in text or "DOWNGRADE" in action:
+        return "DOWNGRADE_WATCH"
+    if "回踩" in text or "PULLBACK" in action:
+        return "WAIT_PULLBACK"
+    if "追高" in text or "禁止" in text or "CHASE" in action or "FORBID" in action:
+        return "FORBID_CHASE"
+    if "维持" in text or "保持" in text or "KEEP" in action:
+        return "KEEP_ORIGINAL"
+    return "KEEP_ORIGINAL"
+
+
+def _advice_from_ml_action(action: str) -> str:
+    return {
+        "KEEP_ORIGINAL": "建议维持原判断",
+        "UPGRADE_PROBE": "建议升级小仓试探",
+        "DOWNGRADE_WATCH": "建议降级观察",
+        "WAIT_PULLBACK": "建议等待回踩",
+        "FORBID_CHASE": "建议禁止追高",
+    }.get(action, DEFAULT_ML_ADVICE)
 
 
 def _truthy(value: Any) -> bool:

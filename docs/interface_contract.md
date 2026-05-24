@@ -75,6 +75,10 @@
 | `position_size` | 建议仓位比例 |
 | `confidence` | 信号置信度 |
 | `entry_reason` | 买入理由 |
+| `ml_entry_advice` | ML 对该候选的观察建议，不参与最终买卖裁决 |
+| `ml_confidence` | ML 建议置信度，0 到 1；无建议时为 0 |
+| `ml_reason` | ML 建议原因；无建议时说明维持原 entry 判断 |
+| `ml_action_suggestion` | ML 机器可读动作建议，取值为 `NO_ML`、`KEEP_ORIGINAL`、`UPGRADE_PROBE`、`DOWNGRADE_WATCH`、`WAIT_PULLBACK`、`FORBID_CHASE` |
 | `source_file` | 上游来源文件，通常为 `pre_selection_result.csv` |
 | `generated_at` | 信号生成时间 |
 

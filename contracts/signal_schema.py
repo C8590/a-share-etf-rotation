@@ -73,6 +73,10 @@ class FieldName(TextEnum):
     POSITION_SIZE = "position_size"
     CONFIDENCE = "confidence"
     ENTRY_REASON = "entry_reason"
+    ML_ENTRY_ADVICE = "ml_entry_advice"
+    ML_CONFIDENCE = "ml_confidence"
+    ML_REASON = "ml_reason"
+    ML_ACTION_SUGGESTION = "ml_action_suggestion"
     SELL_ACTION = "sell_action"
     SELL_PRICE = "sell_price"
     REDUCE_RATIO = "reduce_ratio"
@@ -111,6 +115,10 @@ ENTRY_SIGNAL_FIELDS = (
     FieldName.POSITION_SIZE.value,
     FieldName.CONFIDENCE.value,
     FieldName.ENTRY_REASON.value,
+    FieldName.ML_ENTRY_ADVICE.value,
+    FieldName.ML_CONFIDENCE.value,
+    FieldName.ML_REASON.value,
+    FieldName.ML_ACTION_SUGGESTION.value,
     FieldName.SOURCE_FILE.value,
     FieldName.GENERATED_AT.value,
 )

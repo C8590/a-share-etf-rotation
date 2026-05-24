@@ -27,6 +27,15 @@ def _row(**overrides: object) -> dict[str, object]:
     return data
 
 
+def _write_ml_file(path: Path, rows: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = sorted({key for row in rows for key in row})
+    with path.open("w", encoding="utf-8-sig", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 class EntryEngineTest(unittest.TestCase):
     def test_run_writes_contract_fields_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -52,6 +61,10 @@ class EntryEngineTest(unittest.TestCase):
         self.assertEqual(rows[0]["buy_price"], "4.200")
         self.assertIn("理由：", rows[0]["entry_reason"])
         self.assertIn("警示：", rows[0]["entry_reason"])
+        self.assertIn("ml_entry_advice", rows[0])
+        self.assertIn("ml_confidence", rows[0])
+        self.assertIn("ml_reason", rows[0])
+        self.assertIn("ml_action_suggestion", rows[0])
 
     def test_defensive_market_forbids_active_equity_buy(self) -> None:
         rows = EntryEngine(generated_at="fixed").run(
@@ -148,6 +161,110 @@ class EntryEngineTest(unittest.TestCase):
 
         self.assertEqual(rows[0]["buy_action"], BuyAction.WATCH.value)
         self.assertIn("未进入预选候选池", rows[0]["entry_reason"])
+
+    def test_missing_ml_file_uses_default_fields_without_changing_entry_action(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            row = EntryEngine(generated_at="fixed").run(
+                [
+                    _row(
+                        score=78,
+                        momentum_20=0.04,
+                        momentum_60=0.06,
+                        breakout_confirmed=True,
+                    )
+                ],
+                output_dir=tmp,
+            )[0]
+
+        self.assertEqual(row["buy_action"], BuyAction.STANDARD_BUY.value)
+        self.assertEqual(row["ml_entry_advice"], "无ML建议")
+        self.assertEqual(row["ml_confidence"], 0.0)
+        self.assertEqual(row["ml_reason"], "未找到历史校准建议，维持原 entry 判断。")
+        self.assertEqual(row["ml_action_suggestion"], "NO_ML")
+
+    def test_matching_ml_file_populates_advice_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ml_path = Path(tmp) / "artifacts" / "historical_ml_61" / "generated" / "entry_calibration_suggestions.csv"
+            _write_ml_file(
+                ml_path,
+                [
+                    {
+                        "etf_code": "510300",
+                        "ml_entry_advice": "建议等待回踩",
+                        "ml_confidence": 0.73,
+                        "ml_reason": "历史样本显示当前乖离偏高，回踩后胜率更好。",
+                        "ml_action_suggestion": "WAIT_PULLBACK",
+                    }
+                ],
+            )
+
+            row = EntryEngine(generated_at="fixed").run([_row()], output_dir=tmp)[0]
+
+        self.assertEqual(row["ml_entry_advice"], "建议等待回踩")
+        self.assertEqual(row["ml_confidence"], 0.73)
+        self.assertEqual(row["ml_reason"], "历史样本显示当前乖离偏高，回踩后胜率更好。")
+        self.assertEqual(row["ml_action_suggestion"], "WAIT_PULLBACK")
+
+    def test_ml_upgrade_probe_does_not_rewrite_original_entry_action(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ml_path = Path(tmp) / "artifacts" / "historical_ml_61" / "generated" / "entry_calibration_suggestions.csv"
+            _write_ml_file(
+                ml_path,
+                [
+                    {
+                        "code": "510300",
+                        "advice": "建议升级小仓试探",
+                        "confidence": 0.66,
+                        "reason": "类似启动形态试探仓收益风险比较好。",
+                        "action_suggestion": "UPGRADE_PROBE",
+                    }
+                ],
+            )
+
+            row = EntryEngine(generated_at="fixed").run([_row(selected=False, score=55)], output_dir=tmp)[0]
+
+        self.assertEqual(row["buy_action"], BuyAction.WATCH.value)
+        self.assertEqual(row["ml_action_suggestion"], "UPGRADE_PROBE")
+        self.assertEqual(row["ml_entry_advice"], "建议升级小仓试探")
+
+    def test_ml_downgrade_watch_does_not_rewrite_original_entry_action(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ml_path = Path(tmp) / "artifacts" / "historical_ml_61" / "generated" / "entry_calibration_suggestions.csv"
+            _write_ml_file(
+                ml_path,
+                [
+                    {
+                        "symbol": "510300",
+                        "entry_advice": "建议降级观察",
+                        "ml_confidence": 0.81,
+                        "ml_reason": "历史校准认为当前突破后失败率偏高。",
+                        "ml_action_suggestion": "DOWNGRADE_WATCH",
+                    }
+                ],
+            )
+
+            row = EntryEngine(generated_at="fixed").run(
+                [_row(score=78, momentum_20=0.04, momentum_60=0.06, breakout_confirmed=True)],
+                output_dir=tmp,
+            )[0]
+
+        self.assertEqual(row["buy_action"], BuyAction.STANDARD_BUY.value)
+        self.assertEqual(row["ml_action_suggestion"], "DOWNGRADE_WATCH")
+        self.assertEqual(row["ml_entry_advice"], "建议降级观察")
+
+    def test_output_fields_match_interface_contract_with_ml_columns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            rows = EntryEngine(generated_at="fixed").run([_row()], output_dir=tmp)
+            output_path = Path(tmp) / OUTPUT_FILE
+            with output_path.open("r", encoding="utf-8-sig", newline="") as file:
+                written = list(csv.DictReader(file))
+
+        self.assertEqual(list(rows[0].keys()), list(REQUIRED_OUTPUT_FIELDS))
+        self.assertEqual(list(written[0].keys()), list(REQUIRED_OUTPUT_FIELDS))
+        self.assertEqual(
+            list(REQUIRED_OUTPUT_FIELDS)[-6:-2],
+            ["ml_entry_advice", "ml_confidence", "ml_reason", "ml_action_suggestion"],
+        )
 
 
 if __name__ == "__main__":
