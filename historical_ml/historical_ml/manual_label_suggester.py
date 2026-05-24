@@ -16,7 +16,7 @@ SUGGESTION_COLUMNS = [
     "suggested_rule_hit",
     "need_human_review",
 ]
-MANUAL_COLUMNS = ["manual_label", "manual_failure_reason", "manual_review_note", "manual_action"]
+MANUAL_COLUMNS = ["manual_label", "manual_failure_reason", "manual_action", "manual_confidence", "manual_review_note"]
 SUMMARY_KEYS = [
     "total_rows",
     "auto_prefilled_rows",
@@ -50,6 +50,9 @@ def generate_manual_label_suggestions_from_file(input_path: str | Path, out_dir:
 
 def suggest_manual_labels(review_queue: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
     df = review_queue.copy()
+    for col in MANUAL_COLUMNS:
+        if col not in df.columns:
+            df[col] = ""
     if df.empty:
         for col in SUGGESTION_COLUMNS:
             df[col] = []
@@ -66,6 +69,7 @@ def adopt_high_confidence_suggestions(prefilled: pd.DataFrame, min_confidence: s
     for col in MANUAL_COLUMNS:
         if col not in df.columns:
             df[col] = ""
+        df[col] = df[col].fillna("").astype("object")
     if "suggested_confidence" not in df.columns:
         df["suggested_confidence"] = "low"
     threshold = {"low": 0, "medium": 1, "high": 2}.get(min_confidence, 2)
@@ -74,6 +78,7 @@ def adopt_high_confidence_suggestions(prefilled: pd.DataFrame, min_confidence: s
     df.loc[adopt, "manual_label"] = df.loc[adopt, "suggested_manual_label"].fillna("")
     df.loc[adopt, "manual_failure_reason"] = df.loc[adopt, "suggested_failure_reason"].fillna("")
     df.loc[adopt, "manual_action"] = df.loc[adopt, "suggested_action"].fillna("")
+    df.loc[adopt, "manual_confidence"] = df.loc[adopt, "suggested_confidence"].fillna("")
     df.loc[adopt, "manual_review_note"] = f"auto_adopted_{min_confidence}_confidence"
     summary = _summary(df)
     summary.update(

@@ -4,6 +4,7 @@ import pandas as pd
 
 from historical_ml.manual_label_suggester import (
     adopt_high_confidence_suggestions,
+    generate_manual_label_suggestions_from_file,
     low_confidence_review_rows,
     pending_review_rows,
     suggest_manual_labels,
@@ -87,7 +88,24 @@ def test_adopt_high_confidence_fills_manual_columns():
     assert summary["pending_missed_winner_rows"] == 1
     assert "敢买类样本覆盖不足" in summary["manual_label_balance_warning"]
     assert adopted.iloc[0]["manual_label"] == "valid_bad_entry"
+    assert adopted.iloc[0]["manual_confidence"] == "high"
     assert adopted.iloc[1]["manual_label"] == ""
+
+
+def test_generate_suggestions_outputs_manual_columns_for_review_file(tmp_path):
+    input_path = tmp_path / "manual_review_queue.csv"
+    out_dir = tmp_path / "to_review"
+    pd.DataFrame([_row()]).to_csv(input_path, index=False)
+
+    prefilled, summary = generate_manual_label_suggestions_from_file(input_path, out_dir, "manual_review_prefilled")
+
+    output_path = out_dir / "manual_review_prefilled.csv"
+    written = pd.read_csv(output_path)
+    for col in ["manual_label", "manual_failure_reason", "manual_action", "manual_confidence", "manual_review_note"]:
+        assert col in prefilled.columns
+        assert col in written.columns
+    assert summary["output_path"] == str(output_path)
+    assert summary["auto_prefilled_rows"] == 1
 
 
 def test_adopt_medium_confidence_can_accept_missed_winner():
