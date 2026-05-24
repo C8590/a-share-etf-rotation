@@ -33,6 +33,10 @@ SIGNAL_CASE_FIELDS = (
     "entry_action",
     "target_weight",
     "confidence",
+    "ml_entry_advice",
+    "ml_confidence",
+    "ml_reason",
+    "ml_action_suggestion",
     "reason",
     "price_valid",
     "price_status",
@@ -152,6 +156,10 @@ def build_signal_case_rows(
                 "entry_action": entry_action,
                 "target_weight": _text(entry_row.get("position_size")),
                 "confidence": _text(entry_row.get("confidence")),
+                "ml_entry_advice": _text(entry_row.get("ml_entry_advice")) or "无ML建议",
+                "ml_confidence": _text(entry_row.get("ml_confidence")) or "0",
+                "ml_reason": _text(entry_row.get("ml_reason")) or "未找到历史校准建议，维持原 entry 判断。",
+                "ml_action_suggestion": _text(entry_row.get("ml_action_suggestion")) or "NO_ML",
                 "reason": " | ".join(reasons),
                 "price_valid": price_valid,
                 "price_status": price_status,
@@ -244,7 +252,7 @@ def build_v1_v2_comparison_row(
     v1_symbols = _csv_symbols(v1_summary.get("target_symbols"))
     same_as_v1 = set(v1_symbols) == set(candidate_symbols)
     no_buy_reason = summarize_no_buy_reasons(pre_rows, entry_rows) if not actual_buy_symbols else ""
-    difference_reason = "V1/V2 selected ETFs match" if same_as_v1 else _difference_reason(v1_symbols, candidate_symbols, no_buy_reason)
+    difference_reason = "V1 与 V2.1 候选 ETF 一致" if same_as_v1 else _difference_reason(v1_symbols, candidate_symbols, no_buy_reason)
     trade_date = _text(v2_summary.get("effective_signal_date") or v2_summary.get("signal_date") or v1_summary.get("effective_signal_date"))
     return {
         "trade_date": trade_date,
@@ -439,12 +447,12 @@ def _classify_no_buy_reason(row: Mapping[str, Any]) -> set[str]:
 
 def _difference_reason(v1_symbols: list[str], v2_symbols: list[str], no_buy_reason: str) -> str:
     if not v1_symbols and v2_symbols:
-        return "V1 empty while V2 has candidates"
+        return "V1 无候选，V2.1 已产生候选 ETF"
     if v1_symbols and not v2_symbols:
-        return "V2 has no selected candidates; likely filtered by market, trend, or data rules"
+        return "V2.1 暂无候选 ETF，可能受市场、趋势或数据规则限制"
     if no_buy_reason:
-        return f"V1/V2 candidate sets differ; V2 no-buy reasons: {no_buy_reason}"
-    return "V1/V2 candidate sets differ"
+        return f"V1 与 V2.1 候选集合不同；V2.1 未买入原因：{no_buy_reason}"
+    return "V1 与 V2.1 候选集合不同"
 
 
 def _price_status(row: Mapping[str, Any], entry_action: str) -> tuple[str, str]:

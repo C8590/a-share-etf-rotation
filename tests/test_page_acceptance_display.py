@@ -11,6 +11,8 @@ from app import (
     _actual_buy_plan_frame,
     _candidate_action_text,
     _clean_display_frame,
+    _v21_display_value,
+    _v21_frame,
     _load_control_output,
     build_v2_etf_lookup,
     build_v2_action_table,
@@ -92,6 +94,44 @@ class PageAcceptanceDisplayTest(unittest.TestCase):
         self.assertNotIn("nan", text.lower())
         self.assertNotIn("None", text)
 
+    def test_v21_status_translation_covers_required_internal_codes(self) -> None:
+        frame = _v21_frame(
+            [
+                {
+                    "candidate": "selected",
+                    "cache": "up_to_date",
+                    "action": "WATCH",
+                    "mode": "DRAFT",
+                    "confirm": "MANUAL_CONFIRM",
+                    "reason": "fallback_reason: qmt_execution 缺失，当前仅输出 DRAFT/MANUAL_CONFIRM 草稿。",
+                }
+            ],
+            {
+                "candidate": "候选状态",
+                "cache": "行情状态",
+                "action": "买入动作",
+                "mode": "执行模式",
+                "confirm": "确认方式",
+                "reason": "降级原因",
+            },
+        )
+        text = " ".join(frame.iloc[0].astype(str).tolist())
+
+        self.assertIn("进入候选池", text)
+        self.assertIn("行情已是最新", text)
+        self.assertIn("观察，不买入", text)
+        self.assertIn("订单草稿", text)
+        self.assertIn("人工确认", text)
+        self.assertIn("降级原因", text)
+        self.assertNotIn("selected", text)
+        self.assertNotIn("up_to_date", text)
+        self.assertNotIn("WATCH", text)
+        self.assertNotIn("DRAFT", text)
+        self.assertNotIn("MANUAL_CONFIRM", text)
+
+    def test_price_validation_copy_says_data_not_buy_signal(self) -> None:
+        self.assertIn("数据可信，不等于买入信号", _v21_display_value("校验通过：数据可信，不等于买入信号"))
+
     def test_v2_long_summary_builds_separate_tables_with_reason_preview(self) -> None:
         row = pd.Series({"modular_candidate_etfs": "159915 创业板ETF、510300 沪深300ETF", "modular_selected_sectors": "成长"})
         cases = pd.DataFrame(
@@ -132,6 +172,55 @@ class PageAcceptanceDisplayTest(unittest.TestCase):
         self.assertEqual(table.iloc[0]["ETF名称"], "半导体设备ETF广发")
         self.assertEqual(table.iloc[0]["入选板块"], "半导体设备")
         self.assertEqual(table.iloc[0]["买入动作"], "候选观察（不是买入）")
+
+    def test_v2_candidate_and_buy_tables_show_ml_observation_fields(self) -> None:
+        entry = pd.DataFrame(
+            [
+                {
+                    "symbol": "159915",
+                    "name": "创业板ETF",
+                    "buy_action": "观察",
+                    "position_size": "0",
+                    "confidence": "0.32",
+                    "entry_reason": "entry reason",
+                    "ml_entry_advice": "建议等待回踩",
+                    "ml_confidence": "0.73",
+                    "ml_reason": "历史样本显示当前乖离偏高。",
+                    "ml_action_suggestion": "WAIT_PULLBACK",
+                }
+            ]
+        )
+        cases = pd.DataFrame(
+            [
+                {
+                    "trade_date": "2026-05-19",
+                    "etf_code": "159915",
+                    "etf_name": "创业板ETF",
+                    "level1_sector": "成长",
+                    "entry_action": "观察",
+                    "target_weight": "0",
+                    "confidence": "0.32",
+                    "reason": "候选观察",
+                    "ml_entry_advice": "建议等待回踩",
+                    "ml_confidence": "0.73",
+                    "ml_reason": "历史样本显示当前乖离偏高。",
+                    "ml_action_suggestion": "WAIT_PULLBACK",
+                }
+            ]
+        )
+        lookup = build_v2_etf_lookup(entry=entry, cases=cases, etf_names={})
+
+        candidate = build_v2_candidate_table(pd.Series({}), cases=cases, lookup=lookup)
+        buy = build_v2_action_table("159915:观察", action_label="买入动作", lookup=lookup)
+
+        for frame in (candidate, buy):
+            self.assertIn("ML观察建议", frame.columns)
+            self.assertIn("ML置信度", frame.columns)
+            self.assertIn("ML原因", frame.columns)
+            self.assertIn("ML动作建议", frame.columns)
+            self.assertIn("仅供观察，不自动修改交易参数。", frame.iloc[0].astype(str).to_string())
+        self.assertEqual(candidate.iloc[0]["ML观察建议"], "建议等待回踩")
+        self.assertEqual(buy.iloc[0]["ML动作建议"], "WAIT_PULLBACK")
 
     def test_v2_name_matching_handles_numeric_and_string_codes_consistently(self) -> None:
         entry = pd.DataFrame([{"symbol": 159558, "name": ""}])

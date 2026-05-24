@@ -10,6 +10,7 @@ import pandas as pd
 
 from signal.daily_signal import run_modular_signal_pipeline
 from main import SIGNAL_VERSION_V2, _apply_v2_signal_summary
+from risk_warning.gate import apply_risk_gate
 
 
 def _frame(periods: int = 150, start: float = 1.0, drift: float = 0.003) -> pd.DataFrame:
@@ -119,12 +120,18 @@ class ModularDailySignalPipelineTest(unittest.TestCase):
             exit_signal = pd.read_csv(output / "exit_signal.csv")
             learning = pd.read_csv(output / "learning_report.csv")
             daily = pd.read_csv(output / "daily_signal.csv")
+            chain = json.loads((output / "daily_signal_modular.json").read_text(encoding="utf-8"))
 
         self.assertEqual(len(pre_selection), 1)
         self.assertEqual(len(entry), 1)
         self.assertEqual(len(exit_signal), 1)
         self.assertEqual(len(learning), 0)
+        for field in ("ml_entry_advice", "ml_confidence", "ml_reason", "ml_action_suggestion"):
+            self.assertIn(field, entry.columns)
+            self.assertIn(field, chain["entry_signals"][0])
         self.assertIn("modular_pipeline_status", daily.columns)
+        self.assertIn("ml_observation_status", daily.columns)
+        self.assertEqual(str(entry.iloc[0]["ml_entry_advice"]), "无ML建议")
         self.assertIn(result["summary_fields"]["modular_pipeline_status"], {"已完成", "已完成（含降级）"})
 
     def test_pipeline_uses_execution_risk_date_when_provided(self) -> None:
@@ -170,6 +177,10 @@ class ModularDailySignalPipelineTest(unittest.TestCase):
                     "position_size": 0.3,
                     "confidence": 0.8,
                     "entry_reason": "V2 买入模型给出标准买入",
+                    "ml_entry_advice": "建议等待回踩",
+                    "ml_confidence": 0.73,
+                    "ml_reason": "历史样本提示当前买点偏急，仅供观察。",
+                    "ml_action_suggestion": "WAIT_PULLBACK",
                 }
             ],
             "exit": [],
@@ -178,6 +189,8 @@ class ModularDailySignalPipelineTest(unittest.TestCase):
                 "v2_market_state": "进攻",
                 "v2_selected_sectors": "成长",
                 "v2_entry_actions": "159915:标准买入",
+                "v2_ml_observation_status": "ML 观察模式已启用（仅供观察，不自动修改交易参数。）",
+                "v2_ml_entry_advice": "159915:建议等待回踩（仅供观察，不自动修改交易参数。）",
                 "v2_reason": "V2 选前模型入选 | V2 买入模型给出标准买入",
                 "fallback_reason": "无",
             },
@@ -195,8 +208,42 @@ class ModularDailySignalPipelineTest(unittest.TestCase):
         self.assertEqual(summary["target_symbols"], "159915")
         self.assertEqual(summary["suggested_buy"], "159915")
         self.assertIn("V2 买入模型", summary["buy_plan"])
+        self.assertIn("建议等待回踩", summary["buy_plan"])
+        self.assertIn("仅供观察，不自动修改交易参数", summary["buy_plan"])
         self.assertIn("V2 选前模型", summary["rank_table"])
+        self.assertIn("ml_entry_advice", summary["rank_table"])
+        self.assertEqual(summary["ml_observation_status"], "ML 观察模式已启用（仅供观察，不自动修改交易参数。）")
         self.assertNotIn("v1_selected_etfs", summary)
+
+    def test_ml_observation_does_not_bypass_risk_gate(self) -> None:
+        row = {
+            "symbol": "159915",
+            "buy_action": "标准买入",
+            "position_size": 0.5,
+            "ml_entry_advice": "建议升级小仓试探",
+            "ml_confidence": 0.81,
+            "ml_reason": "ML 仅观察，不应覆盖风控。",
+            "ml_action_suggestion": "UPGRADE_PROBE",
+        }
+
+        gated = apply_risk_gate(
+            [row],
+            {
+                "risk_level": "R4",
+                "risk_score": 99,
+                "freeze_entry": True,
+                "equity_cap_override": 0.0,
+                "require_manual_review": True,
+                "manual_takeover_required": True,
+                "affected_sectors": [],
+                "explain": "测试风控冻结",
+            },
+        )[0]
+
+        self.assertNotEqual(gated["buy_action"], row["buy_action"])
+        self.assertEqual(gated["position_size"], 0.0)
+        self.assertEqual(gated["ml_entry_advice"], row["ml_entry_advice"])
+        self.assertEqual(gated["ml_action_suggestion"], row["ml_action_suggestion"])
 
 
 if __name__ == "__main__":

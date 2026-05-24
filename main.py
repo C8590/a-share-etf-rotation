@@ -1245,6 +1245,14 @@ def _v2_entry_actions(modular_pipeline: dict[str, Any]) -> str:
     return " | ".join(actions) if actions else "无"
 
 
+def _v2_entry_by_symbol(modular_pipeline: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        normalize_symbol(row.get("symbol", "")): row
+        for row in modular_pipeline.get("entry", [])
+        if normalize_symbol(row.get("symbol", ""))
+    }
+
+
 def _v2_buy_plan(modular_pipeline: dict[str, Any], selected_symbols: list[str]) -> list[dict[str, Any]]:
     selected = set(selected_symbols)
     rows: list[dict[str, Any]] = []
@@ -1261,6 +1269,11 @@ def _v2_buy_plan(modular_pipeline: dict[str, Any], selected_symbols: list[str]) 
                 "建议仓位": row.get("position_size", ""),
                 "信号置信度": row.get("confidence", ""),
                 "买入原因": row.get("entry_reason", ""),
+                "ML观察建议": row.get("ml_entry_advice", "无ML建议"),
+                "ML置信度": row.get("ml_confidence", 0),
+                "ML原因": row.get("ml_reason", "未找到历史校准建议，维持原 entry 判断。"),
+                "ML动作建议": row.get("ml_action_suggestion", "NO_ML"),
+                "ML观察说明": "仅供观察，不自动修改交易参数。",
                 "信号来源": "V2 entry_signal.csv",
             }
         )
@@ -1285,11 +1298,14 @@ def _v2_sell_plan(modular_pipeline: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _v2_rank_records(modular_pipeline: dict[str, Any], max_rows: int = 80) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
+    entry_by_symbol = _v2_entry_by_symbol(modular_pipeline)
     for row in modular_pipeline.get("pre_selection", [])[:max_rows]:
+        symbol = normalize_symbol(row.get("symbol", ""))
+        entry = entry_by_symbol.get(symbol, {})
         selected = str(row.get("selected", "")).strip().lower() in {"true", "1", "yes", "y", "是", "selected", "入选"}
         records.append(
             {
-                "symbol": normalize_symbol(row.get("symbol", "")),
+                "symbol": symbol,
                 "name": row.get("name", ""),
                 "sector": row.get("sector", ""),
                 "latest_date": row.get("trade_date", ""),
@@ -1298,6 +1314,12 @@ def _v2_rank_records(modular_pipeline: dict[str, Any], max_rows: int = 80) -> li
                 "selected": selected,
                 "final_signal": "selected" if selected else "filtered_out",
                 "selection_reason": row.get("reason", ""),
+                "buy_action": entry.get("buy_action", ""),
+                "ml_entry_advice": entry.get("ml_entry_advice", "无ML建议"),
+                "ml_confidence": entry.get("ml_confidence", 0),
+                "ml_reason": entry.get("ml_reason", "未找到历史校准建议，维持原 entry 判断。"),
+                "ml_action_suggestion": entry.get("ml_action_suggestion", "NO_ML"),
+                "ml_observation_notice": "仅供观察，不自动修改交易参数。",
             }
         )
     return records
@@ -1368,6 +1390,9 @@ def _apply_v2_signal_summary(summary: dict[str, Any], modular_pipeline: dict[str
             "v2_market_state": summary_fields.get("v2_market_state", summary_fields.get("modular_market_state", "")),
             "v2_selected_sectors": summary_fields.get("v2_selected_sectors", summary_fields.get("modular_selected_sectors", "")),
             "v2_entry_actions": _v2_entry_actions(modular_pipeline),
+            "v2_ml_observation_status": summary_fields.get("v2_ml_observation_status", summary_fields.get("modular_ml_observation_status", "")),
+            "v2_ml_entry_advice": summary_fields.get("v2_ml_entry_advice", summary_fields.get("modular_ml_entry_advice", "无ML建议（仅供观察，不自动修改交易参数。）")),
+            "ml_observation_status": summary_fields.get("v2_ml_observation_status", summary_fields.get("modular_ml_observation_status", "")),
             "v2_reason": v2_reason,
             "fallback_reason": fallback_reason,
             "target_symbols": ",".join(v2_symbols) if v2_symbols else "空仓",

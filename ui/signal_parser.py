@@ -667,6 +667,13 @@ def build_overview(
     data_mode = _clean_text(main_row.get("data_mode", source_label(signal_date_source)))
     use_realtime_close_patch = _clean_text(main_row.get("use_realtime_close_patch", "False"))
     signal_version = _clean_text(main_row.get("signal_version", "V2_MODULAR"), "V2_MODULAR")
+    ml_observation_status = _clean_text(
+        main_row.get(
+            "ml_observation_status",
+            main_row.get("v2_ml_observation_status", main_row.get("modular_ml_observation_status", "未启用")),
+        ),
+        "未启用",
+    )
     current_positions = _clean_text(main_row.get("current_positions", "未填写"), "未填写")
 
     observation_cash = main_row.get("observation_cash", main_row.get("current_cash", ""))
@@ -717,6 +724,7 @@ def build_overview(
         "market_phase": market_phase or "N/A",
         "data_mode": data_mode or "N/A",
         "signal_version": signal_version,
+        "ml_observation_status": ml_observation_status,
         "use_realtime_close_patch": "是" if str(use_realtime_close_patch).lower() in {"true", "1", "yes", "是"} else "否",
         "latest_data_date": latest_data_date or "N/A",
         "observation_cash": observation_cash_text,
@@ -1129,6 +1137,12 @@ def parse_rank_table(row: pd.Series) -> pd.DataFrame:
             "selected": "是否进入候选池",
             "final_signal": "最终信号",
             "selection_reason": "候选 / 过滤原因",
+            "buy_action": "买入动作",
+            "ml_entry_advice": "ML观察建议",
+            "ml_confidence": "ML置信度",
+            "ml_reason": "ML原因",
+            "ml_action_suggestion": "ML动作建议",
+            "ml_observation_notice": "ML观察说明",
         }
     )
     for col in ["收盘价", "均线"]:
@@ -1145,7 +1159,8 @@ def parse_rank_table(row: pd.Series) -> pd.DataFrame:
                 "selected": "进入候选池",
                 "eligible_not_selected": "通过过滤但未进候选池",
                 "filtered_out": "未通过过滤",
-                "watch": "观察",
+                "watch": "观察，不买入",
+                "WATCH": "观察，不买入",
             }
         )
     for col in ["是否高于均线", "是否进入候选池"]:
@@ -1168,6 +1183,12 @@ def parse_rank_table(row: pd.Series) -> pd.DataFrame:
         "排名",
         "最终信号",
         "是否进入候选池",
+        "买入动作",
+        "ML观察建议",
+        "ML置信度",
+        "ML动作建议",
+        "ML原因",
+        "ML观察说明",
         "候选 / 过滤原因",
     ]
     return df[[col for col in columns if col in df.columns]]

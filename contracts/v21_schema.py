@@ -24,6 +24,8 @@ DAILY_DECISION_FIELDS = (
     "freeze_entry",
     "manual_takeover_required",
     "selected_sectors",
+    "ml_observation_status",
+    "ml_entry_advice",
     "candidate_etfs",
     "actual_buy_etfs",
     "entry_actions",
@@ -62,6 +64,10 @@ TRAINING_SAMPLE_FIELDS = (
     "entry_action",
     "exit_action",
     "confidence",
+    "ml_entry_advice",
+    "ml_confidence",
+    "ml_reason",
+    "ml_action_suggestion",
     "trend_maturity",
     "entry_quality",
     "post_924_regime",
@@ -124,6 +130,8 @@ class DailyDecision:
     freeze_entry: bool = False
     manual_takeover_required: bool = False
     selected_sectors: list[str] = field(default_factory=list)
+    ml_observation_status: str = ""
+    ml_entry_advice: str = ""
     candidate_etfs: list[dict[str, Any]] = field(default_factory=list)
     actual_buy_etfs: list[dict[str, Any]] = field(default_factory=list)
     entry_actions: list[dict[str, Any]] = field(default_factory=list)
@@ -170,6 +178,10 @@ class TrainingSample:
     entry_action: str = ""
     exit_action: str = ""
     confidence: Any = ""
+    ml_entry_advice: str = ""
+    ml_confidence: Any = ""
+    ml_reason: str = ""
+    ml_action_suggestion: str = ""
     trend_maturity: str = ""
     entry_quality: str = ""
     post_924_regime: bool = True

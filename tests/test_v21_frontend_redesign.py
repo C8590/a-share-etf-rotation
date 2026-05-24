@@ -8,6 +8,9 @@ import pandas as pd
 
 import app
 from data.portfolio_store import load_portfolio, save_portfolio
+from signal.entry.engine import EntryEngine
+from signal.v21_orchestrator import run_v21_backend_pipeline
+from contracts.signal_schema import MarketState
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -39,6 +42,166 @@ def test_v21_daily_decision_risk_and_order_intent_parse(tmp_path: Path) -> None:
     assert status["trade_date"] == "2026-05-20"
     assert status["risk_level"] == "R0"
     assert app._v21_records(snapshots["order_intent"])[0]["requires_manual_confirm"] is True
+
+
+def test_v21_frontend_exposes_ml_observation_status_and_fields(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "daily_decision_snapshot.json",
+        {
+            "trade_date": "2026-05-20",
+            "risk_level": "R0",
+            "ml_observation_status": "ML 观察模式已启用（仅供观察，不自动修改交易参数。）",
+            "candidate_etfs": [
+                {
+                    "etf_code": "159915",
+                    "ml_entry_advice": "建议等待回踩",
+                    "ml_confidence": 0.73,
+                    "ml_reason": "历史样本提示当前买点偏急。",
+                    "ml_action_suggestion": "WAIT_PULLBACK",
+                    "ml_observation_notice": "仅供观察，不自动修改交易参数。",
+                }
+            ],
+            "entry_actions": [
+                {
+                    "etf_code": "159915",
+                    "entry_action": "观察",
+                    "ml_entry_advice": "建议等待回踩",
+                    "ml_confidence": 0.73,
+                    "ml_reason": "历史样本提示当前买点偏急。",
+                    "ml_action_suggestion": "WAIT_PULLBACK",
+                    "ml_observation_notice": "仅供观察，不自动修改交易参数。",
+                }
+            ],
+        },
+    )
+
+    snapshots = app.load_v21_frontend_snapshots(tmp_path)
+    status = app.build_v21_frontend_status(snapshots)
+    frame = app._v21_frame(
+        app._v21_records(snapshots["daily_decision"]["entry_actions"]),
+        {
+            "ml_entry_advice": "ML观察建议",
+            "ml_confidence": "ML置信度",
+            "ml_reason": "ML原因",
+            "ml_action_suggestion": "ML动作建议",
+            "ml_observation_notice": "ML观察说明",
+        },
+    )
+
+    assert status["ml_observation_status"].startswith("ML 观察模式已启用")
+    text = " ".join(frame.iloc[0].astype(str).tolist())
+    assert "建议等待回踩" in text
+    assert "仅供观察，不自动修改交易参数" in text
+
+
+def test_positive_ml_suggestion_csv_reaches_controller_snapshot_and_frontend(tmp_path: Path) -> None:
+    suggestions_path = tmp_path / "artifacts" / "historical_ml_61" / "generated" / "entry_calibration_suggestions.csv"
+    suggestions_path.parent.mkdir(parents=True)
+    pd.DataFrame(
+        [
+            {
+                "etf_code": "159915",
+                "ml_entry_advice": "OBSERVE_WAIT_PULLBACK",
+                "ml_confidence": 0.73,
+                "ml_reason": "historical calibration matched current candidate; observe only",
+                "ml_action_suggestion": "WAIT_PULLBACK",
+            }
+        ]
+    ).to_csv(suggestions_path, index=False, encoding="utf-8-sig")
+    pre_rows = [
+        {
+            "trade_date": "2026-05-20",
+            "symbol": "159915",
+            "name": "创业板ETF",
+            "sector": "成长",
+            "market_state": MarketState.ATTACK.value,
+            "score": 88,
+            "rank": 1,
+            "selected": True,
+            "momentum_20": 0.05,
+            "momentum_60": 0.08,
+            "momentum_120": 0.10,
+            "distance_ma20": 0.01,
+            "pullback": True,
+            "close": 1.234,
+            "reason": "进入候选池",
+        }
+    ]
+
+    entry_rows = EntryEngine(first_buy_weight=0.3, target_weight=1.0).run(pre_rows, output_dir=tmp_path)
+    original_buy_action = entry_rows[0]["buy_action"]
+    original_position_size = entry_rows[0]["position_size"]
+
+    result = run_v21_backend_pipeline(
+        output_dir=tmp_path,
+        pre_selection_rows=pre_rows,
+        risk_gate={
+            "risk_date": "2026-05-20",
+            "risk_level": "R3",
+            "risk_score": 90,
+            "freeze_entry": True,
+            "equity_cap_override": 0.0,
+            "manual_takeover_required": True,
+            "affected_etfs": ["159915"],
+            "explain": "test RiskGate freeze",
+        },
+        entry_rows=entry_rows,
+        exit_rows=[],
+        learning_rows=[
+            {
+                "trade_date": "2026-05-20",
+                "symbol": "159915",
+                "lesson": "daily learning sample",
+            }
+        ],
+        historical_ml_rows=[
+            {
+                "trade_date": "2026-05-20",
+                "etf_code": "159915",
+                "ml_entry_advice": "OBSERVE_WAIT_PULLBACK",
+                "ml_confidence": 0.73,
+                "ml_reason": "historical calibration matched current candidate; observe only",
+                "ml_action_suggestion": "WAIT_PULLBACK",
+            }
+        ],
+        holdings=[],
+        qmt_execution_available=True,
+    )
+    snapshots = app.load_v21_frontend_snapshots(tmp_path)
+    frame = app._v21_frame(
+        app._v21_records(snapshots["daily_decision"]["entry_actions"]),
+        {
+            "entry_action": "买入动作",
+            "target_weight": "建议仓位",
+            "ml_entry_advice": "ML观察建议",
+            "ml_confidence": "ML置信度",
+            "ml_reason": "ML原因",
+            "ml_action_suggestion": "ML动作建议",
+            "ml_observation_notice": "ML观察说明",
+        },
+    )
+
+    entry_signal = pd.read_csv(tmp_path / "entry_signal.csv")
+    learning_summary = pd.read_csv(tmp_path / "learning_summary.csv")
+    historical_summary = pd.read_csv(tmp_path / "historical_ml_summary.csv")
+    decision = result["daily_decision"]
+    entry_action = decision["entry_actions"][0]
+
+    for field in ("ml_entry_advice", "ml_confidence", "ml_reason", "ml_action_suggestion"):
+        assert field in entry_signal.columns
+        assert field in entry_action
+        assert field in decision["candidate_etfs"][0]
+        assert field in learning_summary.columns
+        assert field in historical_summary.columns
+    assert entry_signal.iloc[0]["ml_entry_advice"] == "OBSERVE_WAIT_PULLBACK"
+    assert entry_signal.iloc[0]["ml_action_suggestion"] == "WAIT_PULLBACK"
+    assert entry_action["entry_action"] == original_buy_action
+    assert entry_action["target_weight"] == original_position_size
+    assert decision["actual_buy_etfs"] == []
+    assert result["order_intent"][0]["risk_check_passed"] is False
+    assert "OBSERVE_WAIT_PULLBACK" in frame.iloc[0].astype(str).to_string()
+    assert "WAIT_PULLBACK" in frame.iloc[0].astype(str).to_string()
+    assert "仅供观察，不自动修改交易参数" in frame.iloc[0].astype(str).to_string()
 
 
 def test_v21_display_values_do_not_expose_raw_codes() -> None:
@@ -196,6 +359,9 @@ def test_v21_historical_qmt_and_data_quality_actions_are_bound() -> None:
     assert "action_api.export_missed_winner_review_file" in learning_source
     assert "action_api.export_low_confidence_review_file" in learning_source
     assert "action_api.import_manual_corrections" in learning_source
+    assert "强制重新生成校准报告" in learning_source
+    assert "强制重新生成参数建议" in learning_source
+    assert "强制重新运行过拟合检查" in learning_source
     assert "action_api.run_overfit_check" in learning_source
     assert "action_api.get_historical_ml_task_logs" in learning_source
     assert "action_api.submit_mock_order" in qmt_source
@@ -236,6 +402,27 @@ def test_v21_task_queue_frame_formats_status_and_time_without_iso_raw() -> None:
     assert "cache_hit" in text
     assert "T21:08:42" not in text
     assert "+08:00" not in text
+
+
+def test_v21_long_task_buttons_open_status_dialog() -> None:
+    store_source = inspect.getsource(app._v21_store_action_response)
+    dialog_source = inspect.getsource(app._v21_task_status_dialog)
+    dialog_body_source = inspect.getsource(app._v21_task_status_dialog_body)
+    button_source = inspect.getsource(app._v21_action_button)
+    global_source = inspect.getsource(app.render_v21_global_actions)
+
+    assert "v21_task_dialog_open" in store_source
+    assert "v21_active_task_id" in store_source
+    assert "open_dialog: bool = False" in inspect.getsource(app._v21_run_action)
+    assert "@st.dialog" in dialog_source
+    assert "action_api.get_task" in inspect.getsource(app._v21_current_task)
+    assert "@st.fragment(run_every=1)" in dialog_body_source
+    assert "st.progress" in dialog_body_source
+    assert "确认关闭" in dialog_body_source
+    assert "st.rerun" not in dialog_body_source
+    assert "_v21_close_task_dialog_without_app_rerun" in dialog_body_source
+    assert "_v21_task_status_dialog()" in button_source
+    assert "_v21_render_task_status_dialog_if_needed" not in global_source
 
 
 def test_manual_label_import_empty_path_disabled_with_reason() -> None:

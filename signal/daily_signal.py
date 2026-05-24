@@ -1088,6 +1088,59 @@ def run_modular_signal_pipeline(
     }
 
 
+ML_OBSERVATION_NOTICE = "仅供观察，不自动修改交易参数。"
+
+
+def _ml_observation_enabled(entry_rows: list[dict[str, Any]]) -> bool:
+    for row in entry_rows:
+        advice = str(row.get("ml_entry_advice") or "").strip()
+        action = str(row.get("ml_action_suggestion") or "").strip().upper()
+        try:
+            confidence = float(row.get("ml_confidence") or 0)
+        except (TypeError, ValueError):
+            confidence = 0.0
+        if action and action != "NO_ML":
+            return True
+        if confidence > 0:
+            return True
+        if advice and advice != "无ML建议":
+            return True
+    return False
+
+
+def _ml_observation_status(entry_rows: list[dict[str, Any]]) -> str:
+    if not entry_rows:
+        return f"ML 观察模式未启用（无 entry 输出；{ML_OBSERVATION_NOTICE}）"
+    if not all("ml_entry_advice" in row for row in entry_rows):
+        return f"ML 观察模式未启用（entry 输出缺少 ML 字段；{ML_OBSERVATION_NOTICE}）"
+    if _ml_observation_enabled(entry_rows):
+        return f"ML 观察模式已启用（{ML_OBSERVATION_NOTICE}）"
+    return f"ML 观察模式已启用（当前无ML建议，维持原 entry 判断；{ML_OBSERVATION_NOTICE}）"
+
+
+def _ml_observation_summaries(entry_rows: list[dict[str, Any]], selected_symbols: set[str]) -> list[str]:
+    summaries: list[str] = []
+    for row in entry_rows:
+        symbol = _modular_symbol(row.get("symbol"))
+        if symbol not in selected_symbols:
+            continue
+        advice = str(row.get("ml_entry_advice") or "无ML建议").strip()
+        confidence = row.get("ml_confidence", 0)
+        action = str(row.get("ml_action_suggestion") or "NO_ML").strip()
+        reason = str(row.get("ml_reason") or "未找到历史校准建议，维持原 entry 判断。").strip()
+        summaries.append(f"{symbol}:{advice}（置信度{confidence}，动作建议{action}，{reason}；{ML_OBSERVATION_NOTICE}）")
+    return summaries
+
+
+def _ml_field_summary(entry_rows: list[dict[str, Any]], selected_symbols: set[str], field: str, default: str) -> str:
+    values = [
+        f"{_modular_symbol(row.get('symbol'))}:{row.get(field, default)}"
+        for row in entry_rows
+        if _modular_symbol(row.get("symbol")) in selected_symbols
+    ]
+    return " | ".join(values) if values else default
+
+
 def _modular_summary_fields(
     *,
     market_state: str,
@@ -1108,6 +1161,7 @@ def _modular_summary_fields(
         for row in entry_rows
         if _modular_symbol(row.get("symbol")) in selected_symbol_set and str(row.get("buy_action", "")).strip()
     ]
+    ml_advice = _ml_observation_summaries(entry_rows, selected_symbol_set)
     exit_actions = [f"{row.get('symbol', '')}:{row.get('sell_action', '')}" for row in exit_rows if str(row.get("sell_action", "")).strip()]
     learning_advice = [
         str(row.get("adjustment") or row.get("lesson") or "").strip()
@@ -1124,6 +1178,8 @@ def _modular_summary_fields(
         "modular_selected_sectors": "、".join(selected_sectors) if selected_sectors else "无",
         "modular_candidate_etfs": "、".join(candidate_etfs) if candidate_etfs else "无",
         "modular_buy_actions": " | ".join(buy_actions) if buy_actions else "无",
+        "modular_ml_observation_status": _ml_observation_status(entry_rows),
+        "modular_ml_entry_advice": " | ".join(ml_advice[:8]) if ml_advice else f"无ML建议（{ML_OBSERVATION_NOTICE}）",
         "modular_exit_actions": " | ".join(exit_actions) if exit_actions else "无",
         "modular_learning_advice": " | ".join(learning_advice[:3]),
         "modular_pre_selection_count": len(pre_selection_rows),
@@ -1136,6 +1192,13 @@ def _modular_summary_fields(
         "v2_market_state": market_state or "均衡",
         "v2_selected_sectors": "、".join(selected_sectors) if selected_sectors else "无",
         "v2_entry_actions": " | ".join(buy_actions) if buy_actions else "无",
+        "v2_ml_observation_status": _ml_observation_status(entry_rows),
+        "v2_ml_entry_advice": " | ".join(ml_advice[:8]) if ml_advice else f"无ML建议（{ML_OBSERVATION_NOTICE}）",
+        "ml_observation_status": _ml_observation_status(entry_rows),
+        "ml_entry_advice": _ml_field_summary(entry_rows, selected_symbol_set, "ml_entry_advice", "无ML建议"),
+        "ml_confidence": _ml_field_summary(entry_rows, selected_symbol_set, "ml_confidence", "0"),
+        "ml_reason": _ml_field_summary(entry_rows, selected_symbol_set, "ml_reason", "未找到历史校准建议，维持原 entry 判断。"),
+        "ml_action_suggestion": _ml_field_summary(entry_rows, selected_symbol_set, "ml_action_suggestion", "NO_ML"),
         "v2_reason": _modular_v2_reason(selected_rows, entry_rows),
         "fallback_reason": " | ".join(warnings) if warnings else "无",
     }
@@ -1171,6 +1234,18 @@ def _modular_decision_chain(
         "selected_sectors": _unique_text(row.get("sector") for row in selected_rows),
         "pre_selection_candidates": selected_rows,
         "entry_signals": entry_rows,
+        "ml_observation": [
+            {
+                "symbol": row.get("symbol", ""),
+                "name": row.get("name", ""),
+                "ml_entry_advice": row.get("ml_entry_advice", "无ML建议"),
+                "ml_confidence": row.get("ml_confidence", 0),
+                "ml_reason": row.get("ml_reason", "未找到历史校准建议，维持原 entry 判断。"),
+                "ml_action_suggestion": row.get("ml_action_suggestion", "NO_ML"),
+                "observation_notice": ML_OBSERVATION_NOTICE,
+            }
+            for row in entry_rows
+        ],
         "exit_signals": exit_rows,
         "learning_summary": [
             {

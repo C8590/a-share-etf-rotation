@@ -15,6 +15,7 @@ from urllib.parse import urlencode
 
 import pandas as pd
 import streamlit as st
+from streamlit.components.v1 import html as st_html
 import yaml
 
 
@@ -877,6 +878,18 @@ def _merge_v2_reference_frame(frame: pd.DataFrame, source: str, lookup: dict[str
         reason = _value_from_columns(row, ("reason", "entry_reason", "selection_reason", "买入原因"))
         if reason and _is_missing_display_value(item.get("完整原因")):
             item["完整原因"] = reason
+        ml_advice = _value_from_columns(row, ("ml_entry_advice", "ML观察建议"), "无ML建议")
+        if ml_advice and _is_missing_display_value(item.get("ML观察建议")):
+            item["ML观察建议"] = ml_advice
+        ml_confidence = _value_from_columns(row, ("ml_confidence", "ML置信度"), "0")
+        if not _is_missing_display_value(ml_confidence) and _is_missing_display_value(item.get("ML置信度")):
+            item["ML置信度"] = ml_confidence
+        ml_reason = _value_from_columns(row, ("ml_reason", "ML原因"), "未找到历史校准建议，维持原 entry 判断。")
+        if ml_reason and _is_missing_display_value(item.get("ML原因")):
+            item["ML原因"] = ml_reason
+        ml_action = _value_from_columns(row, ("ml_action_suggestion", "ML动作建议"), "NO_ML")
+        if ml_action and _is_missing_display_value(item.get("ML动作建议")):
+            item["ML动作建议"] = ml_action
 
 
 def build_v2_etf_lookup(
@@ -907,6 +920,10 @@ def build_v2_etf_lookup(
     for item in lookup.values():
         item.setdefault("ETF名称", NAME_MISSING_TEXT)
         item.setdefault("名称来源", "未匹配")
+        item.setdefault("ML观察建议", "无ML建议")
+        item.setdefault("ML置信度", "0")
+        item.setdefault("ML原因", "未找到历史校准建议，维持原 entry 判断。")
+        item.setdefault("ML动作建议", "NO_ML")
     return lookup
 
 
@@ -965,6 +982,11 @@ def build_v2_candidate_table(
                     "买入动作": _candidate_action_text(item.get("entry_action")),
                     "建议仓位": _clean_display_value(item.get("target_weight"), "0"),
                     "置信度": _clean_display_value(item.get("confidence") or info.get("置信度"), "无"),
+                    "ML观察建议": _clean_display_value(item.get("ml_entry_advice") or info.get("ML观察建议"), "无ML建议"),
+                    "ML置信度": _clean_display_value(item.get("ml_confidence") or info.get("ML置信度"), "0"),
+                    "ML动作建议": _clean_display_value(item.get("ml_action_suggestion") or info.get("ML动作建议"), "NO_ML"),
+                    "ML原因": _clean_display_value(item.get("ml_reason") or info.get("ML原因"), "未找到历史校准建议，维持原 entry 判断。"),
+                    "ML观察说明": "仅供观察，不自动修改交易参数。",
                     "完整原因": _clean_display_value(item.get("reason") or info.get("完整原因"), "无"),
                     "名称来源": info.get("名称来源", "未匹配"),
                 }
@@ -981,6 +1003,11 @@ def build_v2_candidate_table(
                     "主题": _clean_display_value(info.get("主题"), "主题未录入"),
                     "风险分组": _clean_display_value(info.get("风险分组"), "风险分组未录入"),
                     "买入动作": "候选观察（不是买入）",
+                    "ML观察建议": _clean_display_value(info.get("ML观察建议"), "无ML建议"),
+                    "ML置信度": _clean_display_value(info.get("ML置信度"), "0"),
+                    "ML动作建议": _clean_display_value(info.get("ML动作建议"), "NO_ML"),
+                    "ML原因": _clean_display_value(info.get("ML原因"), "未找到历史校准建议，维持原 entry 判断。"),
+                    "ML观察说明": "仅供观察，不自动修改交易参数。",
                     "完整原因": _clean_display_value(info.get("完整原因") or row.get("v2_reason"), "无"),
                     "名称来源": info.get("名称来源", "未匹配"),
                 }
@@ -1014,6 +1041,11 @@ def build_v2_action_table(
                 "是否实际买入": "是" if normalized in actual_buy_symbols or _is_actual_buy_action(final_action) else "否",
                 "建议仓位": _clean_display_value(info.get("建议仓位"), "0"),
                 "置信度": _clean_display_value(info.get("置信度"), "无"),
+                "ML观察建议": _clean_display_value(info.get("ML观察建议"), "无ML建议"),
+                "ML置信度": _clean_display_value(info.get("ML置信度"), "0"),
+                "ML动作建议": _clean_display_value(info.get("ML动作建议"), "NO_ML"),
+                "ML原因": _clean_display_value(info.get("ML原因"), "未找到历史校准建议，维持原 entry 判断。"),
+                "ML观察说明": "仅供观察，不自动修改交易参数。",
                 "完整原因": _clean_display_value(info.get("完整原因"), "无"),
                 "名称来源": info.get("名称来源", "未匹配"),
             }
@@ -1030,6 +1062,7 @@ def build_v2_status_cards(row: pd.Series, comparison_row: pd.Series, cases: pd.D
     sample_state = build_hindsight_sample_status(cases)
     return [
         ("当前信号版本", _clean_display_value(row.get("signal_version", "V2_MODULAR"), "V2_MODULAR")),
+        ("ML 观察模式", _clean_display_value(row.get("ml_observation_status", row.get("v2_ml_observation_status", row.get("modular_ml_observation_status"))), "未启用")),
         ("市场状态", _clean_display_value(row.get("modular_market_state", row.get("v2_market_state")), "未生成")),
         ("是否有实际买入计划", "是" if actual_buy_count > 0 else "否"),
         ("候选数量", candidate_count),
@@ -1582,6 +1615,7 @@ def render_overview(overview: dict[str, Any], selected_date: date, observation_c
     render_compact_metric_grid(
         [
             ("当前信号来源", str(overview.get("signal_version", "V2_MODULAR"))),
+            ("ML 观察模式", str(overview.get("ml_observation_status", "未启用"))),
             ("你选择的信号日", _format_cn_date(selected_date)),
             ("实际计算信号日", _format_cn_date(overview.get("actual_signal_date", overview["effective_signal_date"]))),
             ("数据截止日", _format_cn_date(overview.get("data_cutoff_date", overview["latest_data_date"]))),
@@ -2257,6 +2291,8 @@ def render_modular_pipeline_summary(row: pd.Series, key_prefix: str, etf_names: 
         "modular_selected_sectors",
         "modular_candidate_etfs",
         "modular_buy_actions",
+        "modular_ml_observation_status",
+        "modular_ml_entry_advice",
         "modular_exit_actions",
         "modular_learning_advice",
         "modular_pipeline_status",
@@ -2267,6 +2303,8 @@ def render_modular_pipeline_summary(row: pd.Series, key_prefix: str, etf_names: 
 
     cases = _load_control_output("signal_cases.csv")
     lookup = build_v2_etf_lookup(etf_names=etf_names, cases=cases)
+    ml_status = _clean_display_value(row.get("ml_observation_status", row.get("v2_ml_observation_status", row.get("modular_ml_observation_status"))), "未启用")
+    st.info(f"{ml_status}。ML 建议仅供观察，不自动修改交易参数。")
     st.markdown("**入选板块**")
     sector_items = _split_signal_items(row.get("modular_selected_sectors", row.get("v2_selected_sectors", "")))
     if sector_items:
@@ -2275,6 +2313,7 @@ def render_modular_pipeline_summary(row: pd.Series, key_prefix: str, etf_names: 
         st.caption("暂无入选板块。")
 
     st.markdown("**候选 ETF**")
+    st.caption("候选表中的 ML 观察字段仅供观察，不自动修改交易参数。")
     candidate_table = build_v2_candidate_table(row, cases=cases, etf_names=etf_names, lookup=lookup)
     display_candidate = candidate_table.drop(columns=["完整原因", "名称来源"], errors="ignore")
     show_dataframe_or_empty(
@@ -2292,6 +2331,7 @@ def render_modular_pipeline_summary(row: pd.Series, key_prefix: str, etf_names: 
             )
 
     st.markdown("**买入计划**")
+    st.caption("ML 观察建议只作为旁路提示，不改变 buy_action、不改变建议仓位，也不绕过 RiskGate。")
     actual_buy = _split_signal_items(row.get("v2_actual_buy_etfs", ""))
     actual_buy_symbols = {_normal_etf_code(_split_code_and_text(item)[0] or item) for item in actual_buy}
     buy_actions = build_v2_action_table(
@@ -2858,6 +2898,7 @@ def build_v21_frontend_status(snapshots: Mapping[str, Any]) -> dict[str, Any]:
         "allow_entry": _v21_display_value(decision.get("allow_entry")),
         "freeze_entry": _v21_display_value(_first_present(decision.get("freeze_entry"), risk.get("freeze_entry"))),
         "manual_takeover_required": _v21_display_value(_first_present(decision.get("manual_takeover_required"), risk.get("manual_takeover_required"))),
+        "ml_observation_status": _v21_display_value(decision.get("ml_observation_status"), "ML 观察模式未启用"),
         "candidate_count": len(decision.get("candidate_etfs", []) or []),
         "actual_buy_count": len(decision.get("actual_buy_etfs", []) or []),
         "exit_count": _v21_count_actual_exit(decision),
@@ -2896,6 +2937,7 @@ V21_TASK_STATUS_LABELS = {
     "failed": "执行失败",
     "cancelled": "已取消",
 }
+V21_TASK_TERMINAL_STATUSES = {"success", "failed", "cancelled"}
 
 V21_ACTION_LABELS = {
     "refresh_market_data": "刷新行情数据",
@@ -2932,11 +2974,13 @@ def _v21_clear_snapshot_cache() -> None:
     _load_v21_snapshots_cached.clear()
 
 
-def _v21_store_action_response(label: str, response: Mapping[str, Any]) -> None:
+def _v21_store_action_response(label: str, response: Mapping[str, Any], *, open_dialog: bool = False) -> None:
     st.session_state["v21_last_action_response"] = {"label": label, **dict(response)}
     task_id = str(response.get("task_id") or "")
     if task_id:
         st.session_state["v21_active_task_id"] = task_id
+        st.session_state["v21_task_dialog_open"] = bool(open_dialog)
+        st.session_state["v21_task_dialog_label"] = label
 
 
 def _v21_run_action(
@@ -2944,13 +2988,126 @@ def _v21_run_action(
     action_func: Any,
     *args: Any,
     clear_snapshots: bool = False,
+    open_dialog: bool = False,
     **kwargs: Any,
 ) -> dict[str, Any]:
     response = action_func(*args, **kwargs)
-    _v21_store_action_response(label, response)
+    _v21_store_action_response(label, response, open_dialog=open_dialog)
     if clear_snapshots:
         _v21_clear_snapshot_cache()
     return dict(response)
+
+
+def _v21_current_task(task_id: str) -> dict[str, Any]:
+    response = action_api.get_task(task_id)
+    data = response.get("data") if isinstance(response, Mapping) else {}
+    task = data.get("task") if isinstance(data, Mapping) else {}
+    return dict(task) if isinstance(task, Mapping) else {}
+
+
+def _v21_task_progress_value(task: Mapping[str, Any]) -> int:
+    try:
+        return max(0, min(100, int(float(task.get("progress", 0) or 0))))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _v21_task_status_text(task: Mapping[str, Any]) -> str:
+    status = str(task.get("status") or "pending")
+    detail = _v21_display_value(task.get("status_detail"), "")
+    label = V21_TASK_STATUS_LABELS.get(status, _v21_display_value(status))
+    return f"{label} / {detail}" if detail else label
+
+
+def _v21_task_dialog_summary(task: Mapping[str, Any]) -> list[tuple[str, Any]]:
+    return [
+        ("任务", V21_ACTION_LABELS.get(str(task.get("action_name") or ""), _v21_display_value(task.get("action_name"), ""))),
+        ("状态", _v21_task_status_text(task)),
+        ("耗时", _v21_display_value(task.get("elapsed_seconds"), 0)),
+        ("结果数量", _v21_display_value(_v21_task_result_count(task), "")),
+        ("输出路径", _v21_display_value(_v21_task_summary_value(task, "output_path", task.get("result_file", "")), "")),
+        ("下一步", _v21_display_value(_v21_task_summary_value(task, "next_step", _v21_task_summary_value(task, "suggested_next_step", "")), "")),
+    ]
+
+
+def _v21_close_task_dialog_without_app_rerun() -> None:
+    st.session_state["v21_task_dialog_open"] = False
+    st.session_state["v21_active_task_id"] = ""
+    st.session_state["v21_task_dialog_label"] = ""
+    st_html(
+        """
+        <script>
+        const doc = window.parent.document;
+        function visible(element) {
+          return Boolean(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
+        }
+        function closeDialog(attempt) {
+          const buttons = Array.from(doc.querySelectorAll('button'));
+          const closeButton = buttons.find((button) => (
+            visible(button)
+            && (button.getAttribute('aria-label') === 'Close' || button.getAttribute('title') === 'Close')
+          ));
+          if (closeButton) {
+            closeButton.click();
+            return;
+          }
+          if (attempt < 20) {
+            window.setTimeout(() => closeDialog(attempt + 1), 100);
+          }
+        }
+        closeDialog(0);
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+    st.stop()
+
+
+@st.fragment(run_every=1)
+def _v21_task_status_dialog_body() -> None:
+    task_id = str(st.session_state.get("v21_active_task_id") or "")
+    label = _v21_display_value(st.session_state.get("v21_task_dialog_label"), "")
+    task = _v21_current_task(task_id) if task_id else {}
+    if not task:
+        st.warning("没有找到当前任务记录。")
+        if st.button("确认关闭", key="v21_task_dialog_close_missing", width="stretch"):
+            _v21_close_task_dialog_without_app_rerun()
+        return
+
+    status = str(task.get("status") or "pending")
+    progress_value = _v21_task_progress_value(task)
+    title = label or V21_ACTION_LABELS.get(str(task.get("action_name") or ""), "后台任务")
+    st.write(f"**{title}**")
+    st.caption(f"task_id: {task_id}")
+    st.progress(progress_value / 100, text=f"{_v21_task_status_text(task)} · {progress_value}%")
+    message = _v21_display_value(task.get("message"), "")
+    if status == "failed":
+        st.error(_v21_display_value(task.get("error") or message, "任务失败。"))
+    elif status in V21_TASK_TERMINAL_STATUSES:
+        st.success(message or "任务已完成。")
+    else:
+        st.info(message or "任务正在后台执行。")
+
+    cols = st.columns(2)
+    for index, (name, value) in enumerate(_v21_task_dialog_summary(task)):
+        cols[index % 2].write(f"**{name}：** {_v21_display_value(value, '')}")
+
+    if status in V21_TASK_TERMINAL_STATUSES:
+        if st.button("确认关闭", key=f"v21_task_dialog_close_{task_id}", width="stretch"):
+            _v21_close_task_dialog_without_app_rerun()
+    else:
+        st.caption("弹窗会自动更新进度，任务完成后再确认关闭。")
+
+
+@st.dialog("任务状态", width="large", dismissible=True, on_dismiss="ignore")
+def _v21_task_status_dialog() -> None:
+    _v21_task_status_dialog_body()
+
+
+def _v21_render_task_status_dialog_if_needed() -> None:
+    if st.session_state.get("v21_task_dialog_open") and st.session_state.get("v21_active_task_id"):
+        _v21_task_status_dialog()
 
 
 def _v21_action_button(
@@ -2965,13 +3122,14 @@ def _v21_action_button(
     help: str | None = None,
 ) -> None:
     if st.button(label, key=key, width="stretch", disabled=disabled, help=help):
-        response = _v21_run_action(label, action_func, *args, clear_snapshots=clear_snapshots, **(action_kwargs or {}))
+        response = _v21_run_action(label, action_func, *args, clear_snapshots=clear_snapshots, open_dialog=True, **(action_kwargs or {}))
         if response.get("success"):
             st.success(_v21_display_value(response.get("message")))
         else:
             st.error(_v21_display_value(response.get("error") or response.get("message")))
         if response.get("task_id"):
             st.info(f"task_id：{response['task_id']}")
+            _v21_task_status_dialog()
 
 
 def _v21_show_last_action_response() -> None:
@@ -3022,7 +3180,7 @@ def _v21_task_summary_value(item: Mapping[str, Any], key: str, default: Any = ""
 
 
 def _v21_task_result_count(item: Mapping[str, Any]) -> Any:
-    for key in ["output_rows", "review_queue_count", "failed_sample_count", "missed_winner_count"]:
+    for key in ["result_count", "output_rows", "review_queue_count", "failed_sample_count", "missed_winner_count"]:
         value = _v21_task_summary_value(item, key, "")
         if value not in ("", None):
             return value
@@ -3050,6 +3208,15 @@ def _v21_task_frame(tasks: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
                 "elapsed_seconds": _v21_display_value(item.get("elapsed_seconds"), 0),
                 "result_count": _v21_display_value(_v21_task_result_count(item), ""),
                 "output_path": _v21_display_value(_v21_task_summary_value(item, "output_path", item.get("result_file", "")), ""),
+                "input_fingerprint": _v21_display_value(_v21_task_summary_value(item, "input_fingerprint", ""), ""),
+                "cache_hit": _v21_display_value(_v21_task_summary_value(item, "used_cache", False)),
+                "stale_after_task": _v21_display_value(
+                    any(
+                        bool(_v21_task_summary_value(item, key, False))
+                        for key in ["calibration_report_stale", "suggestions_stale", "stability_report_stale"]
+                    )
+                ),
+                "next_step": _v21_display_value(_v21_task_summary_value(item, "next_step", _v21_task_summary_value(item, "suggested_next_step", "")), ""),
                 "used_cache": _v21_display_value(_v21_task_summary_value(item, "used_cache", False)),
                 "status_detail": _v21_display_value(item.get("status_detail") or _v21_task_summary_value(item, "status_detail", "")),
                 "result_summary": _v21_display_value(json.dumps(item.get("result_summary", {}), ensure_ascii=False, default=str), ""),
@@ -3070,6 +3237,10 @@ def _v21_task_frame(tasks: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
             "elapsed_seconds",
             "result_count",
             "output_path",
+            "input_fingerprint",
+            "cache_hit",
+            "stale_after_task",
+            "next_step",
             "used_cache",
             "status_detail",
             "result_summary",
@@ -3165,6 +3336,7 @@ def render_v21_overview(snapshots: Mapping[str, Any]) -> None:
             ("允许买入", status["allow_entry"]),
             ("冻结买入", status["freeze_entry"]),
             ("人工接管", status["manual_takeover_required"]),
+            ("ML 观察模式", status["ml_observation_status"]),
             ("候选 ETF 数", status["candidate_count"]),
             ("实际买入 ETF 数", status["actual_buy_count"]),
             ("退出/清仓建议数", status["exit_count"]),
@@ -3206,10 +3378,12 @@ def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
     _v21_unimplemented_action("查看暂不参与本策略 ETF")
     _v21_unimplemented_action("查看同板块过滤原因")
     st.info("候选 ETF 表示进入观察池，不是买入计划。买入计划只看实际买入 ETF 列表和订单意图；订单意图是草稿，不是自动下单。")
+    st.info(f"{_v21_display_value(decision.get('ml_observation_status'), 'ML 观察模式未启用')}。ML 建议仅供观察，不自动修改交易参数。")
     render_compact_metric_grid(
         [
             ("允许买入", _v21_display_value(decision.get("allow_entry"))),
             ("冻结买入", _v21_display_value(decision.get("freeze_entry"))),
+            ("ML 观察模式", _v21_display_value(decision.get("ml_observation_status"), "未启用")),
             ("入选板块", _v21_join(decision.get("selected_sectors"))),
             ("订单草稿数", len(orders)),
         ],
@@ -3219,7 +3393,19 @@ def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
     show_dataframe_or_empty(
         _v21_frame(
             _v21_records(decision.get("candidate_etfs")),
-            {"etf_code": "ETF代码", "etf_name": "ETF名称", "sector": "所属板块", "rank": "排名", "score": "得分", "explain": "中文解释"},
+            {
+                "etf_code": "ETF代码",
+                "etf_name": "ETF名称",
+                "sector": "所属板块",
+                "rank": "排名",
+                "score": "得分",
+                "ml_entry_advice": "ML观察建议",
+                "ml_confidence": "ML置信度",
+                "ml_action_suggestion": "ML动作建议",
+                "ml_reason": "ML原因",
+                "ml_observation_notice": "ML观察说明",
+                "explain": "中文解释",
+            },
         ),
         empty_text="暂无候选 ETF。",
         key="v21_candidates",
@@ -3236,6 +3422,11 @@ def render_v21_candidates(snapshots: Mapping[str, Any]) -> None:
                 "actual_buy": "是否实际买入",
                 "target_weight": "建议仓位",
                 "confidence": "置信度",
+                "ml_entry_advice": "ML观察建议",
+                "ml_confidence": "ML置信度",
+                "ml_action_suggestion": "ML动作建议",
+                "ml_reason": "ML原因",
+                "ml_observation_notice": "ML观察说明",
                 "block_reason": "风险阻断原因",
                 "explain": "中文解释",
             },
@@ -3367,72 +3558,345 @@ def render_v21_risk(snapshots: Mapping[str, Any]) -> None:
     st.write(_v21_display_value(risk.get("explain"), "暂无风险解释。"))
 
 
+HML_ARTIFACT_ROOT = PROJECT_ROOT / "artifacts" / "historical_ml_61"
+
+
+def _hml_dirs() -> dict[str, Path]:
+    root = HML_ARTIFACT_ROOT
+    return {
+        "root": root,
+        "generated": root / "generated",
+        "to_review": root / "to_review",
+        "review_return": root / "review_return",
+        "state": root / "state",
+        "logs": root / "logs",
+    }
+
+
+def _hml_existing(bucket: str, filename: str) -> Path:
+    dirs = _hml_dirs()
+    primary = dirs[bucket] / filename
+    legacy = dirs["root"] / filename
+    return primary if primary.exists() or not legacy.exists() else legacy
+
+
+def _hml_count_rows(path: Path) -> int:
+    if not path.exists():
+        return 0
+    if path.suffix.lower() != ".csv":
+        return 1 if path.read_text(encoding="utf-8", errors="ignore").strip() else 0
+    try:
+        return int(len(pd.read_csv(path)))
+    except Exception:
+        return 0
+
+
+def _hml_csv(path: Path) -> pd.DataFrame:
+    if not path.exists() or path.suffix.lower() != ".csv":
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+
+
+def _hml_latest_return_file() -> Path | None:
+    review_return = _hml_dirs()["review_return"]
+    patterns = [
+        "manual_review_labeled.csv",
+        "manual_corrections.csv",
+        "low_confidence_review_labeled.csv",
+        "missed_big_winner_review_labeled.csv",
+        "pending_human_review_labeled.csv",
+        "*_labeled.csv",
+        "*_corrections.csv",
+    ]
+    files: dict[Path, None] = {}
+    for pattern in patterns:
+        for path in review_return.glob(pattern):
+            if path.is_file():
+                files[path] = None
+    return max(files, key=lambda path: path.stat().st_mtime_ns) if files else None
+
+
+def _hml_stale_flags() -> dict[str, Any]:
+    path = _hml_dirs()["state"] / "historical_ml_stale_flags.json"
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _hml_status(outputs: list[Path], deps: list[Path] | None = None, stale_key: str = "") -> tuple[str, bool, str]:
+    deps = deps or []
+    missing = [path for path in deps if not path.exists()]
+    if missing:
+        return "未开始", True, f"依赖未满足：{missing[0]}"
+    if stale_key and _hml_stale_flags().get(stale_key):
+        return "已过期，需要重跑", False, "上游人工标注已变化"
+    if all(path.exists() for path in outputs):
+        return "已完成", False, ""
+    return "可运行", False, ""
+
+
+def _hml_metrics(paths: list[Path], labels: list[str]) -> list[tuple[str, Any]]:
+    return [(label, _hml_count_rows(path)) for label, path in zip(labels, paths)]
+
+
+def _hml_render_step(
+    step_no: int,
+    title: str,
+    *,
+    status: tuple[str, bool, str],
+    buttons: list[dict[str, Any]],
+    outputs: list[Path],
+    metrics: list[tuple[str, Any]],
+    note: str = "",
+) -> None:
+    status_text, dependency_disabled, reason = status
+    with st.container(border=True):
+        st.markdown(f"**Step {step_no}: {title}**")
+        st.caption(f"状态：{status_text}" + (f"；{reason}" if reason else ""))
+        if outputs:
+            st.caption("输出：" + " | ".join(str(path) for path in outputs))
+        if metrics:
+            render_compact_metric_grid(metrics, class_name="compact-metric-grid strategy-metric-grid")
+        if note:
+            st.info(note)
+        cols = st.columns(max(1, len(buttons)))
+        for idx, button in enumerate(buttons):
+            disabled = bool(button.get("disabled", False) or dependency_disabled)
+            help_text = str(button.get("help") or reason or "")
+            with cols[idx]:
+                _v21_action_button(
+                    button["label"],
+                    button["action"],
+                    button["key"],
+                    args=button.get("args", ()),
+                    action_kwargs=button.get("kwargs"),
+                    disabled=disabled,
+                    help=help_text or None,
+                )
+
+
 def render_v21_learning(snapshots: Mapping[str, Any]) -> None:
     learning = _v21_records(snapshots.get("learning"))
     historical = _v21_records(snapshots.get("historical_ml"))
-    st.markdown("**历史学习操作**")
+    dirs = _hml_dirs()
+    for path in dirs.values():
+        path.mkdir(parents=True, exist_ok=True)
+
+    st.markdown("**历史学习流程向导**")
+    st.caption(f"真实目录：{dirs['root']}；系统结果在 generated，待复核文件在 to_review，人工回传文件在 review_return。")
     range_cols = st.columns(2)
     start_date = range_cols[0].date_input("历史区间开始", value=date.today() - timedelta(days=30), key="v21_hml_start_date")
     end_date = range_cols[1].date_input("历史区间结束", value=date.today(), key="v21_hml_end_date")
-    action_kwargs = {"start_date": start_date.isoformat(), "end_date": end_date.isoformat()}
-    cols = st.columns(4)
-    with cols[0]:
-        _v21_action_button("运行历史回放", action_api.run_historical_replay, "v21_hml_replay", args=(start_date.isoformat(), end_date.isoformat()))
-    with cols[1]:
-        _v21_action_button("生成每日样本", action_api.generate_daily_samples, "v21_hml_daily_samples", args=(start_date.isoformat(), end_date.isoformat()))
-    with cols[2]:
-        _v21_action_button("生成 entry 候选样本", action_api.generate_entry_samples, "v21_hml_entry_samples", args=(start_date.isoformat(), end_date.isoformat()))
-    with cols[3]:
-        _v21_action_button("自动打标签", action_api.auto_label_samples, "v21_hml_auto_label", action_kwargs=action_kwargs)
-    cols2 = st.columns(4)
-    with cols2[0]:
-        _v21_action_button("生成失败样本", action_api.generate_failure_samples, "v21_hml_failure_samples", action_kwargs=action_kwargs)
-    with cols2[1]:
-        _v21_action_button("生成错过样本", action_api.generate_missed_opportunity_samples, "v21_hml_missed_samples", action_kwargs=action_kwargs)
-    with cols2[2]:
-        _v21_action_button("生成手工复核队列", action_api.generate_manual_review_queue, "v21_hml_review_queue", action_kwargs=action_kwargs)
-    with cols2[3]:
-        _v21_action_button("导出人工标注表", action_api.export_manual_review_file, "v21_hml_export_review")
-    cols3 = st.columns(4)
-    manual_label_path = cols3[0].text_input("人工标注表路径", key="v21_manual_label_path")
-    manual_label_state = _v21_manual_label_import_state(manual_label_path)
-    if manual_label_state["level"] == "error":
-        cols3[0].error(manual_label_state["message"])
-    elif manual_label_state["level"] == "success":
-        cols3[0].success(manual_label_state["message"])
-    else:
-        cols3[0].caption(manual_label_state["message"])
-    manual_label_path = manual_label_path if not manual_label_state["disabled"] else ""
-    with cols3[1]:
-        _v21_action_button("导入人工标注表", action_api.import_manual_labels, "v21_hml_import_labels", args=(manual_label_path,), disabled=not bool(manual_label_path))
-    with cols3[2]:
-        _v21_action_button("生成 entry 校准报告", action_api.generate_entry_calibration_report, "v21_hml_calibration_report", action_kwargs=action_kwargs)
-    with cols3[3]:
-        _v21_action_button("生成参数建议", action_api.generate_parameter_suggestions, "v21_hml_parameter_suggestions", action_kwargs=action_kwargs)
-    cols4 = st.columns(4)
-    with cols4[0]:
-        _v21_action_button("自动预填人工复核", action_api.prefill_manual_review_labels, "v21_hml_prefill_review", action_kwargs=action_kwargs)
-    with cols4[1]:
-        _v21_action_button("一键采纳高置信标注", action_api.adopt_high_confidence_manual_labels, "v21_hml_adopt_high_conf", action_kwargs=action_kwargs)
-    with cols4[2]:
-        _v21_action_button("一键采纳中置信标注", action_api.adopt_medium_confidence_manual_labels, "v21_hml_adopt_medium_conf", action_kwargs=action_kwargs)
-    with cols4[3]:
-        _v21_action_button("导出 missed_big_winner 复核表", action_api.export_missed_winner_review_file, "v21_hml_export_missed_winner", action_kwargs=action_kwargs)
-    cols5 = st.columns(4)
-    with cols5[0]:
-        _v21_action_button("导出低置信复核表", action_api.export_low_confidence_review_file, "v21_hml_export_low_conf", action_kwargs=action_kwargs)
-    with cols5[1]:
-        _v21_action_button("导出待人工复核表", action_api.export_pending_manual_review_file, "v21_hml_export_pending", action_kwargs=action_kwargs)
-    with cols5[2]:
-        _v21_action_button("导入人工修正表", action_api.import_manual_corrections, "v21_hml_import_corrections", args=(manual_label_path,), disabled=not bool(manual_label_path))
-    with cols5[3]:
-        _v21_action_button("运行过拟合检查", action_api.run_overfit_check, "v21_hml_overfit_check", action_kwargs=action_kwargs)
-    cols6 = st.columns(1)
-    with cols6[0]:
-        _v21_action_button("查看历史回放任务日志", action_api.get_historical_ml_task_logs, "v21_hml_task_logs")
+    action_kwargs = {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "artifacts_dir": str(dirs["root"])}
+    force_cols = st.columns(3)
+    force_calibration_report = force_cols[0].checkbox("强制重新生成校准报告", key="v21_hml_force_calibration_report")
+    force_parameter_suggestions = force_cols[1].checkbox("强制重新生成参数建议", key="v21_hml_force_parameter_suggestions")
+    force_overfit_check = force_cols[2].checkbox("强制重新运行过拟合检查", key="v21_hml_force_overfit_check")
+    calibration_action_kwargs = {**action_kwargs, "force_regenerate_calibration_report": force_calibration_report}
+    suggestion_action_kwargs = {**action_kwargs, "force_regenerate_parameter_suggestions": force_parameter_suggestions}
+    overfit_action_kwargs = {**action_kwargs, "force_regenerate_overfit_check": force_overfit_check}
+
+    daily_snapshot = _hml_existing("generated", "daily_decision_snapshot.csv")
+    daily_etf = _hml_existing("generated", "daily_etf_samples.csv")
+    daily_sector = _hml_existing("generated", "daily_sector_samples.csv")
+    entry_unlabeled = _hml_existing("generated", "entry_candidate_samples_unlabeled.csv")
+    entry_labeled = _hml_existing("generated", "entry_candidate_samples_labeled.csv")
+    failure_samples = _hml_existing("generated", "failure_samples.csv")
+    missed_samples = _hml_existing("generated", "missed_opportunity_samples.csv")
+    review_queue = _hml_existing("to_review", "manual_review_queue.csv")
+    review_prefilled = _hml_existing("to_review", "manual_review_prefilled.csv")
+    review_accepted = _hml_existing("to_review", "manual_review_accepted.csv")
+    low_conf = _hml_existing("to_review", "low_confidence_review.csv")
+    missed_review = _hml_existing("to_review", "missed_big_winner_review.csv")
+    pending_review = _hml_existing("to_review", "pending_human_review.csv")
+    calibration_report = _hml_existing("generated", "entry_calibration_report.md")
+    suggestions = _hml_existing("generated", "entry_calibration_suggestions.csv")
+    stability_report = _hml_existing("generated", "ml_stability_report.md")
+    latest_return = _hml_latest_return_file()
+
+    labeled_df = _hml_csv(entry_labeled)
+    review_df = _hml_csv(review_queue)
+    prefilled_df = _hml_csv(review_prefilled)
+    accepted_df = _hml_csv(review_accepted)
+    failure_df = _hml_csv(failure_samples)
+    missed_df = _hml_csv(missed_samples)
+
+    _hml_render_step(
+        1,
+        "运行历史回放",
+        status=_hml_status([daily_snapshot]),
+        buttons=[{"label": "运行历史回放", "action": action_api.run_historical_replay, "key": "v21_hml_replay", "args": (start_date.isoformat(), end_date.isoformat()), "kwargs": {"artifacts_dir": str(dirs["root"])}}],
+        outputs=[daily_snapshot],
+        metrics=[("回放交易日数量", _hml_count_rows(daily_snapshot)), ("覆盖 ETF 数量", _v21_display_value("")), ("耗时", "见任务队列"), ("输出路径", daily_snapshot)],
+    )
+    _hml_render_step(
+        2,
+        "生成每日样本",
+        status=_hml_status([daily_etf, daily_sector], [daily_snapshot]),
+        buttons=[{"label": "生成每日样本", "action": action_api.generate_daily_samples, "key": "v21_hml_daily_samples", "args": (start_date.isoformat(), end_date.isoformat()), "kwargs": {"artifacts_dir": str(dirs["root"])}}],
+        outputs=[daily_etf, daily_sector],
+        metrics=[("样本行数", _hml_count_rows(daily_etf) + _hml_count_rows(daily_sector)), ("交易日数量", _v21_display_value("")), ("ETF 数量", _v21_display_value("")), ("板块数量", _v21_display_value(""))],
+    )
+    _hml_render_step(
+        3,
+        "生成 entry 候选样本",
+        status=_hml_status([entry_unlabeled], [daily_etf]),
+        buttons=[{"label": "生成 entry 候选样本", "action": action_api.generate_entry_samples, "key": "v21_hml_entry_samples", "args": (start_date.isoformat(), end_date.isoformat()), "kwargs": {"artifacts_dir": str(dirs["root"])}}],
+        outputs=[entry_unlabeled],
+        metrics=[("候选样本数量", _hml_count_rows(entry_unlabeled)), ("候选 ETF 数量", _v21_display_value("")), ("候选交易日数量", _v21_display_value(""))],
+    )
+    _hml_render_step(
+        4,
+        "自动打标签",
+        status=_hml_status([entry_labeled], [entry_unlabeled]),
+        buttons=[{"label": "自动打标签", "action": action_api.auto_label_samples, "key": "v21_hml_auto_label", "kwargs": action_kwargs}],
+        outputs=[entry_labeled],
+        metrics=[
+            ("good_entry 数量", int(labeled_df.get("auto_label", pd.Series(dtype=str)).fillna("").astype(str).eq("good_entry").sum()) if not labeled_df.empty else 0),
+            ("bad_entry 数量", int(labeled_df.get("auto_label", pd.Series(dtype=str)).fillna("").astype(str).eq("bad_entry").sum()) if not labeled_df.empty else 0),
+            ("neutral_entry 数量", int(labeled_df.get("auto_label", pd.Series(dtype=str)).fillna("").astype(str).eq("neutral_entry").sum()) if not labeled_df.empty else 0),
+            ("unlabeled 数量", int(labeled_df.get("auto_label", pd.Series(dtype=str)).fillna("").astype(str).eq("unlabeled").sum()) if not labeled_df.empty else 0),
+        ],
+    )
+    _hml_render_step(
+        5,
+        "生成失败和错过样本",
+        status=_hml_status([failure_samples, missed_samples], [entry_labeled]),
+        buttons=[
+            {"label": "生成失败样本", "action": action_api.generate_failure_samples, "key": "v21_hml_failure_samples", "kwargs": action_kwargs},
+            {"label": "生成错过样本", "action": action_api.generate_missed_opportunity_samples, "key": "v21_hml_missed_samples", "kwargs": action_kwargs},
+        ],
+        outputs=[failure_samples, missed_samples],
+        metrics=[
+            ("large_loss_entry 数量", int(failure_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("large_loss_entry").sum()) if not failure_df.empty else 0),
+            ("quick_failure_entry 数量", int(failure_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("quick_failure_entry").sum()) if not failure_df.empty else 0),
+            ("bought_and_knocked_out 数量", int(failure_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("bought_and_knocked_out").sum()) if not failure_df.empty else 0),
+            ("missed_big_winner 数量", int(missed_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("missed_big_winner").sum()) if not missed_df.empty else _hml_count_rows(missed_samples)),
+        ],
+    )
+    _hml_render_step(
+        6,
+        "生成人工复核队列",
+        status=_hml_status([review_queue], [failure_samples, missed_samples]),
+        buttons=[
+            {"label": "生成手工复核队列", "action": action_api.generate_manual_review_queue, "key": "v21_hml_review_queue", "kwargs": action_kwargs},
+            {"label": "打开待复核文件夹", "action": action_api.open_manual_review_folder, "key": "v21_hml_open_to_review", "kwargs": {"artifacts_dir": str(dirs["root"])}},
+        ],
+        outputs=[review_queue],
+        metrics=[
+            ("review_queue 总数", _hml_count_rows(review_queue)),
+            ("失败类样本数", int(review_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).isin(["large_loss_entry", "quick_failure_entry", "bought_and_knocked_out"]).sum()) if not review_df.empty else 0),
+            ("错过机会样本数", int(review_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("missed_big_winner").sum()) if not review_df.empty else 0),
+        ],
+    )
+    _hml_render_step(
+        7,
+        "自动预填人工复核",
+        status=_hml_status([review_prefilled], [review_queue]),
+        buttons=[{"label": "自动预填人工复核", "action": action_api.prefill_manual_review_labels, "key": "v21_hml_prefill_review", "kwargs": action_kwargs}],
+        outputs=[review_prefilled],
+        metrics=[
+            ("总行数", _hml_count_rows(review_prefilled)),
+            ("自动预填数", int(prefilled_df.get("suggested_manual_label", pd.Series(dtype=str)).fillna("").astype(str).str.strip().ne("").sum()) if not prefilled_df.empty else 0),
+            ("高置信数", int(prefilled_df.get("suggested_confidence", pd.Series(dtype=str)).fillna("").astype(str).eq("high").sum()) if not prefilled_df.empty else 0),
+            ("中置信数", int(prefilled_df.get("suggested_confidence", pd.Series(dtype=str)).fillna("").astype(str).eq("medium").sum()) if not prefilled_df.empty else 0),
+            ("低置信数", int(prefilled_df.get("suggested_confidence", pd.Series(dtype=str)).fillna("").astype(str).eq("low").sum()) if not prefilled_df.empty else 0),
+            ("需要人工复核数", int(prefilled_df.get("need_human_review", pd.Series(dtype=str)).fillna("").astype(str).isin(["1", "true", "True", "yes", "是"]).sum()) if not prefilled_df.empty else 0),
+            ("missed_big_winner 覆盖数", int(prefilled_df.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str).eq("missed_big_winner").sum()) if not prefilled_df.empty else 0),
+        ],
+    )
+    _hml_render_step(
+        8,
+        "采纳高置信标注",
+        status=_hml_status([review_accepted], [review_prefilled]),
+        buttons=[{"label": "一键采纳高置信标注", "action": action_api.adopt_high_confidence_manual_labels, "key": "v21_hml_adopt_high_conf", "kwargs": action_kwargs}],
+        outputs=[review_accepted],
+        metrics=[
+            ("高置信采纳数量", int(accepted_df.get("manual_confidence", pd.Series(dtype=str)).fillna("").astype(str).eq("high").sum()) if not accepted_df.empty else 0),
+            ("有效 manual_label 数量", int(accepted_df.get("manual_label", pd.Series(dtype=str)).fillna("").astype(str).str.strip().ne("").sum()) if not accepted_df.empty else 0),
+            ("剩余待复核数量", int(accepted_df.get("manual_label", pd.Series(dtype=str)).fillna("").astype(str).str.strip().eq("").sum()) if not accepted_df.empty else 0),
+        ],
+    )
+    low_note = "无低置信样本需要人工复核，可直接继续生成校准报告。" if low_conf.exists() and _hml_count_rows(low_conf) == 0 else ""
+    _hml_render_step(
+        9,
+        "导出待人工复核文件",
+        status=_hml_status([low_conf, missed_review, pending_review], [review_prefilled]),
+        buttons=[
+            {"label": "导出低置信复核表", "action": action_api.export_low_confidence_review_file, "key": "v21_hml_export_low_conf", "kwargs": action_kwargs},
+            {"label": "导出 missed_big_winner 复核表", "action": action_api.export_missed_winner_review_file, "key": "v21_hml_export_missed_winner", "kwargs": action_kwargs},
+            {"label": "导出全部待复核表", "action": action_api.export_pending_manual_review_file, "key": "v21_hml_export_pending", "kwargs": action_kwargs},
+        ],
+        outputs=[low_conf, missed_review, pending_review],
+        metrics=_hml_metrics([low_conf, missed_review, pending_review], ["低置信表行数", "missed_big_winner 行数", "全部待复核行数"]),
+        note=low_note,
+    )
+    latest_return_text = str(latest_return) if latest_return else "未在 review_return 目录发现人工修正表，请将填写后的文件放入该目录。"
+    _hml_render_step(
+        10,
+        "导入人工回传文件",
+        status=("可运行" if latest_return else "未开始", False, "" if latest_return else "review_return 里没有有效文件"),
+        buttons=[
+            {"label": "打开回传文件夹", "action": action_api.open_manual_review_return_folder, "key": "v21_hml_open_review_return", "kwargs": {"artifacts_dir": str(dirs["root"])}, "disabled": False},
+            {"label": "扫描回传文件", "action": action_api.scan_manual_review_return_files, "key": "v21_hml_scan_return", "kwargs": {"artifacts_dir": str(dirs["root"])}, "disabled": False},
+            {"label": "导入最新回传文件", "action": action_api.import_latest_manual_review_return, "key": "v21_hml_import_latest_return", "kwargs": {"artifacts_dir": str(dirs["root"])}, "disabled": not bool(latest_return)},
+        ],
+        outputs=[dirs["review_return"]],
+        metrics=[("即将导入文件", latest_return_text), ("是否会影响校准报告", "导入后按有效 manual_label 判断")],
+    )
+    _hml_render_step(
+        11,
+        "生成 entry 校准报告",
+        status=_hml_status([calibration_report], [entry_labeled], "calibration_report_stale"),
+        buttons=[{"label": "生成 entry 校准报告", "action": action_api.generate_entry_calibration_report, "key": "v21_hml_calibration_report", "kwargs": calibration_action_kwargs}],
+        outputs=[calibration_report],
+        metrics=[("自动标签样本数", _hml_count_rows(entry_labeled)), ("人工修正数", "见任务队列"), ("input_fingerprint", "见任务队列")],
+    )
+    _hml_render_step(
+        12,
+        "生成参数建议",
+        status=_hml_status([suggestions], [calibration_report], "suggestions_stale"),
+        buttons=[{"label": "生成参数建议", "action": action_api.generate_parameter_suggestions, "key": "v21_hml_parameter_suggestions", "kwargs": suggestion_action_kwargs}],
+        outputs=[suggestions],
+        metrics=[("防错建议", "避免假突破/追高尾段/震荡冲高/板块拥挤"), ("敢买建议", "entry 不敢买/错过大涨/阈值过高/小仓试探")],
+    )
+    _hml_render_step(
+        13,
+        "运行过拟合检查",
+        status=_hml_status([stability_report], [suggestions], "stability_report_stale"),
+        buttons=[{"label": "运行过拟合检查", "action": action_api.run_overfit_check, "key": "v21_hml_overfit_check", "kwargs": overfit_action_kwargs}],
+        outputs=[stability_report],
+        metrics=[("训练区间", start_date.isoformat()), ("验证区间", end_date.isoformat()), ("参数稳定性", "见报告"), ("是否疑似过拟合", "见报告"), ("是否允许进入观察模式", "见报告")],
+    )
+
+    with st.expander("高级：手动路径和中置信采纳", expanded=False):
+        manual_label_path = st.text_input("人工标注表路径", key="v21_manual_label_path")
+        manual_label_state = _v21_manual_label_import_state(manual_label_path)
+        if manual_label_state["level"] == "error":
+            st.error(manual_label_state["message"])
+        elif manual_label_state["level"] == "success":
+            st.success(manual_label_state["message"])
+        else:
+            st.caption(manual_label_state["message"])
+        usable_manual_path = manual_label_path if not manual_label_state["disabled"] else ""
+        adv_cols = st.columns(3)
+        with adv_cols[0]:
+            _v21_action_button("导入人工标注表", action_api.import_manual_labels, "v21_hml_import_labels", args=(usable_manual_path,), action_kwargs={"artifacts_dir": str(dirs["root"])}, disabled=not bool(usable_manual_path))
+        with adv_cols[1]:
+            _v21_action_button("导入人工修正表", action_api.import_manual_corrections, "v21_hml_import_corrections", args=(usable_manual_path,), action_kwargs={"artifacts_dir": str(dirs["root"])}, disabled=not bool(usable_manual_path))
+        with adv_cols[2]:
+            _v21_action_button("一键采纳中置信标注", action_api.adopt_medium_confidence_manual_labels, "v21_hml_adopt_medium_conf", action_kwargs=action_kwargs)
+
+    _v21_action_button("查看历史学习任务日志", action_api.get_historical_ml_task_logs, "v21_hml_task_logs")
     render_v21_task_queue_panel(expanded=False, key_prefix="v21_hml_task_queue")
     st.info("学习/历史机器学习只提供校准建议，不自动修改当日交易参数。")
-    st.caption("机构研报默认 C 级线索，研究纪律见 docs/research_source_policy.md。")
     render_compact_metric_grid(
         [
             ("learning 样本数", len(learning)),

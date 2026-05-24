@@ -52,6 +52,7 @@ OUTPUT_FILES = (
 
 SAFE_EXECUTION_MODES = {"SIMULATION", "DRAFT", "MANUAL_CONFIRM"}
 RISK_FREEZE_LEVELS = {"R3", "R4", "P0"}
+ML_OBSERVATION_NOTICE = "仅供观察，不自动修改交易参数。"
 
 
 def run_v21_backend_pipeline(
@@ -105,7 +106,17 @@ def run_v21_backend_pipeline(
     selected_rows = [row for row in pre_rows if _truthy(row.get("selected"))]
     selected_symbols = {_symbol(row.get("symbol") or row.get("etf_code") or row.get("code")) for row in selected_rows}
     selected_sectors = _unique(row.get("sector") for row in selected_rows)
-    candidate_etfs = [_candidate_payload(row) for row in selected_rows]
+    entry_by_symbol = {
+        _symbol(row.get("symbol") or row.get("etf_code") or row.get("code")): row
+        for row in entry
+    }
+    candidate_etfs = [
+        _candidate_payload(
+            row,
+            entry_by_symbol.get(_symbol(row.get("symbol") or row.get("etf_code") or row.get("code")), {}),
+        )
+        for row in selected_rows
+    ]
 
     portfolio = _build_portfolio_snapshot(
         holdings=portfolio_holdings,
@@ -118,6 +129,8 @@ def run_v21_backend_pipeline(
     high_priority_exit = any(_is_high_priority_exit(row) for row in exits)
     entry_actions = _build_entry_actions(entry, selected_symbols, v21_risk, high_priority_exit)
     actual_buy_etfs = [item for item in entry_actions if item["actual_buy"]]
+    ml_observation_status = _ml_observation_status(entry)
+    ml_entry_advice = _ml_entry_advice_summary(entry, selected_symbols)
     portfolio_actions = _build_portfolio_actions(portfolio, exit_actions)
 
     learning_summary = [_learning_sample(row, entry, exits).to_dict() for row in learning]
@@ -151,6 +164,8 @@ def run_v21_backend_pipeline(
         freeze_entry=bool(v21_risk.freeze_entry),
         manual_takeover_required=bool(v21_risk.manual_takeover_required),
         selected_sectors=selected_sectors,
+        ml_observation_status=ml_observation_status,
+        ml_entry_advice=ml_entry_advice,
         candidate_etfs=candidate_etfs,
         actual_buy_etfs=actual_buy_etfs,
         entry_actions=entry_actions,
@@ -384,6 +399,11 @@ def _build_entry_actions(
                 "entry_action": action,
                 "target_weight": target_weight,
                 "confidence": _number(row.get("confidence"), ""),
+                "ml_entry_advice": str(row.get("ml_entry_advice") or "无ML建议"),
+                "ml_confidence": _number(row.get("ml_confidence"), 0),
+                "ml_reason": str(row.get("ml_reason") or "未找到历史校准建议，维持原 entry 判断。"),
+                "ml_action_suggestion": str(row.get("ml_action_suggestion") or "NO_ML"),
+                "ml_observation_notice": ML_OBSERVATION_NOTICE,
                 "intended_buy": intended_buy,
                 "actual_buy": actionable,
                 "block_reason": block_reason,
@@ -392,6 +412,39 @@ def _build_entry_actions(
             }
         )
     return actions
+
+
+def _ml_advice_active(row: Mapping[str, Any]) -> bool:
+    action = str(row.get("ml_action_suggestion") or "").strip().upper()
+    advice = str(row.get("ml_entry_advice") or "").strip()
+    try:
+        confidence = float(row.get("ml_confidence") or 0)
+    except (TypeError, ValueError):
+        confidence = 0.0
+    return bool((action and action != "NO_ML") or confidence > 0 or (advice and advice != "无ML建议"))
+
+
+def _ml_observation_status(entry_rows: Sequence[Mapping[str, Any]]) -> str:
+    if not entry_rows:
+        return f"ML 观察模式未启用（无 entry 输出；{ML_OBSERVATION_NOTICE}）"
+    if not all("ml_entry_advice" in row for row in entry_rows):
+        return f"ML 观察模式未启用（entry 输出缺少 ML 字段；{ML_OBSERVATION_NOTICE}）"
+    if any(_ml_advice_active(row) for row in entry_rows):
+        return f"ML 观察模式已启用（{ML_OBSERVATION_NOTICE}）"
+    return f"ML 观察模式已启用（当前无ML建议，维持原 entry 判断；{ML_OBSERVATION_NOTICE}）"
+
+
+def _ml_entry_advice_summary(entry_rows: Sequence[Mapping[str, Any]], selected_symbols: set[str]) -> str:
+    items: list[str] = []
+    for row in entry_rows:
+        symbol = _symbol(row.get("symbol") or row.get("etf_code") or row.get("code"))
+        if symbol not in selected_symbols:
+            continue
+        items.append(
+            f"{symbol}:{row.get('ml_entry_advice', '无ML建议')}"
+            f"（置信度{row.get('ml_confidence', 0)}，动作建议{row.get('ml_action_suggestion', 'NO_ML')}；{ML_OBSERVATION_NOTICE}）"
+        )
+    return " | ".join(items) if items else f"无ML建议（{ML_OBSERVATION_NOTICE}）"
 
 
 def _build_exit_actions(exit_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -614,6 +667,10 @@ def _learning_sample(
         entry_action=str(entry.get("buy_action") or row.get("entry_action") or ""),
         exit_action=str(exit_row.get("sell_action") or row.get("exit_action") or ""),
         confidence=entry.get("confidence") or row.get("confidence") or "",
+        ml_entry_advice=str(entry.get("ml_entry_advice") or row.get("ml_entry_advice") or "无ML建议"),
+        ml_confidence=entry.get("ml_confidence") or row.get("ml_confidence") or 0,
+        ml_reason=str(entry.get("ml_reason") or row.get("ml_reason") or "未找到历史校准建议，维持原 entry 判断。"),
+        ml_action_suggestion=str(entry.get("ml_action_suggestion") or row.get("ml_action_suggestion") or "NO_ML"),
         trend_maturity=_extract_between(str(entry.get("entry_reason") or ""), "趋势成熟度：", "；"),
         entry_quality=_extract_between(str(entry.get("entry_reason") or ""), "买点质量：", "；"),
         post_924_regime=_post_924(row.get("trade_date")),
@@ -639,6 +696,10 @@ def _historical_sample(row: Mapping[str, Any]) -> TrainingSample:
         entry_action=str(row.get("entry_action") or row.get("was_bought") or ""),
         exit_action=str(row.get("exit_action") or ""),
         confidence=row.get("confidence") or "",
+        ml_entry_advice=str(row.get("ml_entry_advice") or "无ML建议"),
+        ml_confidence=row.get("ml_confidence") or 0,
+        ml_reason=str(row.get("ml_reason") or "未找到历史校准建议，维持原 entry 判断。"),
+        ml_action_suggestion=str(row.get("ml_action_suggestion") or "NO_ML"),
         trend_maturity=str(row.get("trend_maturity") or ""),
         entry_quality=str(row.get("entry_quality") or row.get("parameter_area") or ""),
         post_924_regime=_post_924(row.get("trade_date") or row.get("signal_date")),
@@ -716,13 +777,19 @@ def _decision_explain(
     return "".join(parts)
 
 
-def _candidate_payload(row: Mapping[str, Any]) -> dict[str, Any]:
+def _candidate_payload(row: Mapping[str, Any], entry_row: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    entry_row = entry_row or {}
     return {
         "etf_code": _symbol(row.get("symbol") or row.get("etf_code") or row.get("code")),
         "etf_name": str(row.get("name") or row.get("etf_name") or ""),
         "sector": str(row.get("sector") or ""),
         "rank": row.get("rank") or "",
         "score": row.get("score") or "",
+        "ml_entry_advice": str(entry_row.get("ml_entry_advice") or "无ML建议"),
+        "ml_confidence": _number(entry_row.get("ml_confidence"), 0),
+        "ml_reason": str(entry_row.get("ml_reason") or "未找到历史校准建议，维持原 entry 判断。"),
+        "ml_action_suggestion": str(entry_row.get("ml_action_suggestion") or "NO_ML"),
+        "ml_observation_notice": ML_OBSERVATION_NOTICE,
         "explain": str(row.get("reason") or row.get("explain") or ""),
     }
 

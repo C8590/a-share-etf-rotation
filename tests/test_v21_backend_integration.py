@@ -158,6 +158,43 @@ def test_daily_decision_and_risk_gate_write_csv_json(tmp_path: Path) -> None:
     assert set(RISK_GATE_FIELDS).issubset(risk_json.keys())
 
 
+def test_ml_observation_fields_pass_through_v21_snapshot_without_changing_trade_fields(tmp_path: Path) -> None:
+    entry_rows = _entry_rows("标准买入", 0.3)
+    entry_rows[0].update(
+        {
+            "ml_entry_advice": "建议等待回踩",
+            "ml_confidence": 0.73,
+            "ml_reason": "历史样本提示当前买点偏急，仅供观察。",
+            "ml_action_suggestion": "WAIT_PULLBACK",
+        }
+    )
+
+    result = run_v21_backend_pipeline(
+        output_dir=tmp_path,
+        pre_selection_rows=_pre_rows(),
+        risk_gate=_risk(),
+        entry_rows=entry_rows,
+        exit_rows=[],
+        learning_rows=[],
+        historical_ml_rows=[],
+        holdings=[],
+        qmt_execution_available=True,
+    )
+
+    decision = result["daily_decision"]
+    entry_action = decision["entry_actions"][0]
+    candidate = decision["candidate_etfs"][0]
+    assert decision["ml_observation_status"].startswith("ML 观察模式已启用")
+    assert "仅供观察，不自动修改交易参数" in decision["ml_entry_advice"]
+    assert entry_action["entry_action"] == "标准买入"
+    assert entry_action["target_weight"] == 0.3
+    assert entry_action["ml_entry_advice"] == "建议等待回踩"
+    assert entry_action["ml_action_suggestion"] == "WAIT_PULLBACK"
+    assert candidate["ml_entry_advice"] == "建议等待回踩"
+    daily_json = json.loads((tmp_path / "daily_decision_snapshot.json").read_text(encoding="utf-8"))
+    assert daily_json["entry_actions"][0]["ml_reason"] == "历史样本提示当前买点偏急，仅供观察。"
+
+
 def test_order_intent_defaults_to_manual_confirm(tmp_path: Path) -> None:
     result = run_v21_backend_pipeline(
         output_dir=tmp_path,
