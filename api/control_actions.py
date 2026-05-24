@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import time
+import hashlib
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -19,25 +21,54 @@ OUTPUT_DIR = Path("output")
 SAFE_QMT_MODES = {"DRAFT", "SIMULATION", "MANUAL_CONFIRM"}
 RISK_BLOCK_LEVELS = {"R3", "R4", "P0"}
 DEFAULT_HISTORICAL_ML_ARTIFACTS = Path("artifacts") / "historical_ml_61"
+HISTORICAL_GENERATED_DIR = "generated"
+HISTORICAL_TO_REVIEW_DIR = "to_review"
+HISTORICAL_REVIEW_RETURN_DIR = "review_return"
+HISTORICAL_STATE_DIR = "state"
+HISTORICAL_LOGS_DIR = "logs"
 HISTORICAL_CACHE_FILES = {
     "run_historical_replay": "daily_decision_snapshot.csv",
     "generate_daily_samples": "daily_etf_samples.csv",
     "generate_entry_samples": "entry_candidate_samples_unlabeled.csv",
     "auto_label_samples": "entry_candidate_samples_labeled.csv",
-    "generate_failure_samples": "manual_review_queue.csv",
-    "generate_missed_opportunity_samples": "entry_candidate_samples_labeled.csv",
+    "generate_failure_samples": "failure_samples.csv",
+    "generate_missed_opportunity_samples": "missed_opportunity_samples.csv",
     "generate_manual_review_queue": "manual_review_queue.csv",
     "generate_entry_calibration_report": "entry_calibration_report.md",
     "generate_parameter_suggestions": "entry_calibration_suggestions.csv",
     "run_overfit_check": "ml_stability_report.md",
-    "prefill_manual_review_labels": "manual_review_queue_prefilled.csv",
-    "adopt_high_confidence_manual_labels": "manual_review_queue_labeled.csv",
-    "adopt_medium_confidence_manual_labels": "manual_review_queue_labeled.csv",
-    "export_low_confidence_review_file": "manual_review_queue_low_confidence.csv",
-    "export_pending_manual_review_file": "manual_review_queue_pending.csv",
-    "export_missed_winner_review_file": "manual_review_queue_missed_winner.csv",
+    "prefill_manual_review_labels": "manual_review_prefilled.csv",
+    "adopt_high_confidence_manual_labels": "manual_review_accepted.csv",
+    "adopt_medium_confidence_manual_labels": "manual_review_accepted.csv",
+    "export_low_confidence_review_file": "low_confidence_review.csv",
+    "export_pending_manual_review_file": "pending_human_review.csv",
+    "export_missed_winner_review_file": "missed_big_winner_review.csv",
 }
-HISTORICAL_TASK_ACTIONS = set(HISTORICAL_CACHE_FILES) | {"export_manual_review_file", "import_manual_labels", "import_manual_corrections"}
+HISTORICAL_TASK_ACTIONS = set(HISTORICAL_CACHE_FILES) | {
+    "export_manual_review_file",
+    "import_manual_labels",
+    "import_manual_corrections",
+    "open_manual_review_folder",
+    "open_manual_review_return_folder",
+    "scan_manual_review_return_files",
+    "import_latest_manual_review_return",
+}
+HISTORICAL_FINGERPRINTED_ACTIONS = {"generate_entry_calibration_report", "generate_parameter_suggestions", "run_overfit_check"}
+HISTORICAL_MATERIALIZED_SAMPLE_ACTIONS = {
+    "generate_failure_samples",
+    "generate_missed_opportunity_samples",
+    "generate_manual_review_queue",
+}
+HISTORICAL_STALE_FLAG_FILE = "historical_ml_stale_flags.json"
+HISTORICAL_REVIEW_RETURN_PATTERNS = (
+    "manual_review_labeled.csv",
+    "manual_corrections.csv",
+    "low_confidence_review_labeled.csv",
+    "missed_big_winner_review_labeled.csv",
+    "pending_human_review_labeled.csv",
+    "*_labeled.csv",
+    "*_corrections.csv",
+)
 
 
 def get_control_snapshot(output_dir: str | Path = OUTPUT_DIR) -> dict[str, Any]:
@@ -256,6 +287,22 @@ def import_manual_corrections(file_path: str, **parameters: Any) -> dict[str, An
     return _enqueue_long_action("import_manual_corrections", "导入人工修正表任务已提交。", payload, runner=_manual_review_import_runner)
 
 
+def open_manual_review_folder(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("open_manual_review_folder", "打开待复核文件夹任务已提交。", parameters, runner=_manual_review_open_folder_runner)
+
+
+def open_manual_review_return_folder(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("open_manual_review_return_folder", "打开回传文件夹任务已提交。", parameters, runner=_manual_review_open_folder_runner)
+
+
+def scan_manual_review_return_files(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("scan_manual_review_return_files", "扫描人工回传文件任务已提交。", parameters, runner=_manual_review_scan_return_runner)
+
+
+def import_latest_manual_review_return(**parameters: Any) -> dict[str, Any]:
+    return _enqueue_long_action("import_latest_manual_review_return", "导入最新人工回传文件任务已提交。", parameters, runner=_manual_review_import_latest_return_runner)
+
+
 def get_historical_ml_task_logs(limit: int = 50) -> dict[str, Any]:
     logs = [item for item in get_default_queue().recent_logs(limit=limit) if str(item.get("action_name", "")) in HISTORICAL_TASK_ACTIONS]
     return action_response(success=True, message="已读取 historical_ml 任务日志。", data={"logs": logs})
@@ -453,13 +500,128 @@ def _instant_action(action_name: str, message: str, parameters: dict[str, Any] |
     return action_response(success=True, message=message, data=payload)
 
 
+def _historical_dirs(artifacts_dir: Path) -> dict[str, Path]:
+    dirs = {
+        "root": artifacts_dir,
+        "generated": artifacts_dir / HISTORICAL_GENERATED_DIR,
+        "to_review": artifacts_dir / HISTORICAL_TO_REVIEW_DIR,
+        "review_return": artifacts_dir / HISTORICAL_REVIEW_RETURN_DIR,
+        "state": artifacts_dir / HISTORICAL_STATE_DIR,
+        "logs": artifacts_dir / HISTORICAL_LOGS_DIR,
+    }
+    for path in dirs.values():
+        path.mkdir(parents=True, exist_ok=True)
+    return dirs
+
+
+def _historical_generated_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_dirs(artifacts_dir)["generated"] / filename
+
+
+def _historical_to_review_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_dirs(artifacts_dir)["to_review"] / filename
+
+
+def _historical_state_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_dirs(artifacts_dir)["state"] / filename
+
+
+def _historical_review_return_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_dirs(artifacts_dir)["review_return"] / filename
+
+
+def _historical_output_path(artifacts_dir: Path, action_name: str) -> Path:
+    filename = HISTORICAL_CACHE_FILES.get(action_name, "entry_candidate_samples_labeled.csv")
+    if action_name in {
+        "generate_manual_review_queue",
+        "prefill_manual_review_labels",
+        "adopt_high_confidence_manual_labels",
+        "adopt_medium_confidence_manual_labels",
+        "export_low_confidence_review_file",
+        "export_pending_manual_review_file",
+        "export_missed_winner_review_file",
+    }:
+        return _historical_to_review_path(artifacts_dir, filename)
+    return _historical_generated_path(artifacts_dir, filename)
+
+
+def _historical_existing_path(artifacts_dir: Path, filename: str, bucket: str = "generated") -> Path:
+    primary = _historical_dirs(artifacts_dir)[bucket] / filename
+    legacy = artifacts_dir / filename
+    if primary.exists():
+        return primary
+    return legacy if legacy.exists() else primary
+
+
+def _historical_existing_review_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_existing_path(artifacts_dir, filename, "to_review")
+
+
+def _historical_existing_generated_path(artifacts_dir: Path, filename: str) -> Path:
+    return _historical_existing_path(artifacts_dir, filename, "generated")
+
+
+def _historical_existing_any_path(artifacts_dir: Path, filename: str, buckets: Sequence[str]) -> Path:
+    dirs = _historical_dirs(artifacts_dir)
+    for bucket in buckets:
+        path = dirs[bucket] / filename
+        if path.exists():
+            return path
+    legacy = artifacts_dir / filename
+    if legacy.exists():
+        return legacy
+    return dirs[buckets[0]] / filename
+
+
+def _mirror_legacy_historical_file(path: Path, artifacts_dir: Path) -> None:
+    if not path.exists() or not path.is_file():
+        return
+    legacy = artifacts_dir / path.name
+    if legacy.resolve() == path.resolve():
+        return
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(path, legacy)
+
+
+def _historical_latest_return_file(artifacts_dir: Path) -> Path | None:
+    review_return = _historical_dirs(artifacts_dir)["review_return"]
+    candidates: dict[Path, None] = {}
+    for pattern in HISTORICAL_REVIEW_RETURN_PATTERNS:
+        for path in review_return.glob(pattern):
+            if path.is_file():
+                candidates[path] = None
+    if not candidates:
+        return None
+    return max(candidates.keys(), key=lambda path: path.stat().st_mtime_ns)
+
+
+def _historical_return_scan_summary(artifacts_dir: Path) -> dict[str, Any]:
+    review_return = _historical_dirs(artifacts_dir)["review_return"]
+    files: list[Path] = []
+    seen: set[Path] = set()
+    for pattern in HISTORICAL_REVIEW_RETURN_PATTERNS:
+        for path in review_return.glob(pattern):
+            if path.is_file() and path not in seen:
+                seen.add(path)
+                files.append(path)
+    files.sort(key=lambda path: path.stat().st_mtime_ns, reverse=True)
+    latest = files[0] if files else None
+    return {
+        "review_return_dir": str(review_return),
+        "valid_return_file_count": len(files),
+        "latest_return_file": str(latest or ""),
+        "return_files": [str(path) for path in files],
+        "result_count": len(files),
+        "output_path": str(latest or review_return),
+    }
+
+
 def _manual_review_export_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
     started = time.perf_counter()
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
-    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    source = artifacts_dir / "manual_review_queue.csv"
-    out_path = output_dir / "historical_ml_manual_review.csv"
+    source = _historical_existing_review_path(artifacts_dir, "manual_review_queue.csv")
+    out_path = _historical_to_review_path(artifacts_dir, "manual_review_queue.csv")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出人工标注表：{out_path}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -467,16 +629,19 @@ def _manual_review_export_runner(record: dict[str, Any], queue: TaskQueue) -> di
         df = _read_csv_if_exists(source)
     else:
         df = pd.DataFrame(columns=["sample_id", "review_label", "review_note"])
-    for col in ["manual_label", "manual_failure_reason", "manual_review_note", "manual_action"]:
+    for col in ["manual_label", "manual_failure_reason", "manual_action", "manual_confidence", "manual_review_note"]:
         if col not in df.columns:
             df[col] = ""
     df.to_csv(out_path, index=False, encoding="utf-8-sig")
+    _mirror_legacy_historical_file(out_path, artifacts_dir)
     summary = {
         "output_path": str(out_path),
         "result_count": int(len(df)),
         "output_rows": int(len(df)),
         "exported_columns": list(df.columns),
-        "suggested_next_step": "人工填写 manual_label/manual_failure_reason/manual_review_note/manual_action 后，在路径框中填入文件路径，再导入。",
+        "to_review_dir": str(out_path.parent),
+        "review_return_dir": str(_historical_dirs(artifacts_dir)["review_return"]),
+        "suggested_next_step": "人工填写后请另存到 review_return 文件夹，再点击扫描回传文件或导入最新回传文件。",
         "used_cache": bool(source.exists()),
         "cache_path": str(source) if source.exists() else "",
         "elapsed_seconds": round(time.perf_counter() - started, 3),
@@ -496,9 +661,12 @@ def _manual_review_import_runner(record: dict[str, Any], queue: TaskQueue) -> di
         raise FileNotFoundError(f"找不到人工标注表：{input_path}")
     df = pd.read_csv(input_path)
     stats = _manual_label_stats_from_frame(df)
-    target = OUTPUT_DIR / "historical_ml_manual_labels_imported.csv"
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    target = _historical_to_review_path(artifacts_dir, "manual_review_labeled.csv")
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(input_path, target)
+    _mirror_legacy_historical_file(target, artifacts_dir)
+    stale_flags = _mark_historical_downstream_stale(artifacts_dir, reason=str(record.get("action_name") or "manual_labels_imported"), input_path=target)
     summary = {
         "input_path": str(input_path),
         "total_rows": int(len(df)),
@@ -510,6 +678,7 @@ def _manual_review_import_runner(record: dict[str, Any], queue: TaskQueue) -> di
         "used_manual_labels": bool(stats["valid_manual_label_rows"] > 0),
         "used_cache": False,
         "cache_path": "",
+        **stale_flags,
         "suggested_next_step": "下一步：生成 entry 校准报告。",
         "elapsed_seconds": round(time.perf_counter() - started, 3),
     }
@@ -524,23 +693,115 @@ def _manual_review_import_runner(record: dict[str, Any], queue: TaskQueue) -> di
     return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": status_detail}
 
 
+def _manual_review_open_folder_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    dirs = _historical_dirs(artifacts_dir)
+    folder = dirs["review_return"] if record.get("action_name") == "open_manual_review_return_folder" else dirs["to_review"]
+    queue.update_task(record["task_id"], status="running", progress=35, message=f"正在打开文件夹：{folder}")
+    opened = False
+    try:
+        if subprocess.run(["cmd", "/c", "start", "", str(folder)], shell=False, check=False).returncode == 0:
+            opened = True
+    except Exception:
+        opened = False
+    summary = {
+        "output_path": str(folder),
+        "result_count": 1,
+        "opened": opened,
+        "elapsed_seconds": round(time.perf_counter() - started, 3),
+        "next_step": "从 to_review 取文件修改，完成后放入 review_return。" if folder == dirs["to_review"] else "把填写后的回传文件放入该目录，然后点击扫描回传文件。",
+    }
+    result_file = _write_task_result(record, summary)
+    message = f"文件夹已准备：{folder}。下一步：{summary['next_step']}"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="folder_opened")
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "folder_opened"}
+
+
+def _manual_review_scan_return_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    started = time.perf_counter()
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    queue.update_task(record["task_id"], status="running", progress=35, message="正在扫描 review_return 目录。")
+    summary = _historical_return_scan_summary(artifacts_dir)
+    summary.update(
+        {
+            "used_cache": False,
+            "cache_path": "",
+            "elapsed_seconds": round(time.perf_counter() - started, 3),
+            "next_step": "点击导入最新回传文件。" if summary["latest_return_file"] else "请将填写后的人工修正表放入 review_return 目录。",
+        }
+    )
+    result_file = _write_task_result(record, summary)
+    if summary["latest_return_file"]:
+        message = f"扫描完成：发现 {summary['valid_return_file_count']} 个有效回传文件；即将导入的最新文件：{summary['latest_return_file']}。下一步：导入最新回传文件。"
+        status_detail = "return_file_found"
+    else:
+        message = "未在 review_return 目录发现人工修正表，请将填写后的文件放入该目录。"
+        status_detail = "no_return_file"
+    queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail=status_detail)
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": status_detail}
+
+
+def _manual_review_import_latest_return_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
+    parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
+    artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
+    latest = _historical_latest_return_file(artifacts_dir)
+    if not latest:
+        summary = {
+            **_historical_return_scan_summary(artifacts_dir),
+            "valid_manual_label_rows": 0,
+            "empty_manual_label_rows": 0,
+            "invalid_rows": 0,
+            "affects_calibration_report": False,
+            "next_step": "请将填写后的人工修正表放入 review_return 目录。",
+        }
+        result_file = _write_task_result(record, summary)
+        message = "未在 review_return 目录发现人工修正表，请将填写后的文件放入该目录。"
+        queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="no_return_file")
+        return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "no_return_file"}
+    record = dict(record)
+    params = dict(parameters)
+    params["file_path"] = str(latest)
+    params["artifacts_dir"] = str(artifacts_dir)
+    record["parameters"] = params
+    result = _manual_review_import_runner(record, queue)
+    summary = dict(result.get("result_summary") or {})
+    summary["latest_return_file"] = str(latest)
+    summary["affects_calibration_report"] = bool(summary.get("valid_manual_label_rows", 0))
+    summary["next_step"] = "生成 entry 校准报告。" if summary["affects_calibration_report"] else "有效人工标注为 0，可先补充标注或继续查看自动标签报告。"
+    result_file = _write_task_result(record, summary)
+    message = str(result.get("message") or "")
+    if int(summary.get("valid_manual_label_rows", 0) or 0) == 0:
+        message = "导入成功，但有效人工标注为 0，本次不会改变校准报告。"
+    else:
+        message = f"已导入最新回传文件：{latest}；有效人工标注 {summary.get('valid_manual_label_rows', 0)} 行；会影响校准报告。下一步：生成 entry 校准报告。"
+    return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": result.get("status_detail") or "imported_with_manual_labels"}
+
+
 def _manual_review_prefill_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str, Any]:
     started = time.perf_counter()
     from historical_ml.manual_label_suggester import generate_manual_label_suggestions_from_file
 
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    source = artifacts_dir / "manual_review_queue.csv"
+    source = _historical_existing_review_path(artifacts_dir, "manual_review_queue.csv")
     if not source.exists():
         raise FileNotFoundError(f"找不到 manual_review_queue：{source}")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在自动预填人工复核建议：{source}")
-    _, summary = generate_manual_label_suggestions_from_file(source, artifacts_dir)
+    _, summary = generate_manual_label_suggestions_from_file(source, _historical_dirs(artifacts_dir)["to_review"], "manual_review_prefilled")
+    _mirror_legacy_historical_file(_historical_to_review_path(artifacts_dir, "manual_review_prefilled.csv"), artifacts_dir)
+    legacy_prefill = artifacts_dir / "manual_review_queue_prefilled.csv"
+    shutil.copyfile(_historical_to_review_path(artifacts_dir, "manual_review_prefilled.csv"), legacy_prefill)
+    stale_flags = _mark_historical_downstream_stale(artifacts_dir, reason=str(record.get("action_name") or "manual_review_prefilled"), input_path=_historical_to_review_path(artifacts_dir, "manual_review_prefilled.csv"))
     summary.update(
         {
             "input_path": str(source),
             "result_count": int(summary.get("auto_prefilled_rows", 0)),
             "used_cache": False,
             "cache_path": "",
+            **stale_flags,
             "suggested_next_step": "下一步：一键采纳高置信标注，或导出低置信复核表。",
             "elapsed_seconds": round(time.perf_counter() - started, 3),
         }
@@ -569,13 +830,18 @@ def _manual_review_adopt_runner(record: dict[str, Any], queue: TaskQueue) -> dic
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
     min_confidence = "medium" if str(record.get("action_name")) == "adopt_medium_confidence_manual_labels" else "high"
-    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_prefilled.csv")
+    if not prefilled_path.exists():
+        prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_queue_prefilled.csv")
     if not prefilled_path.exists():
         raise FileNotFoundError(f"请先运行自动预填人工标注：{prefilled_path}")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在采纳高置信预标：{prefilled_path}")
     prefilled = pd.read_csv(prefilled_path)
     adopted, summary = adopt_high_confidence_suggestions(prefilled, min_confidence=min_confidence)
-    output_path = write_table(adopted, artifacts_dir, "manual_review_queue_labeled", "csv")
+    output_path = write_table(adopted, _historical_dirs(artifacts_dir)["to_review"], "manual_review_accepted", "csv")
+    _mirror_legacy_historical_file(output_path, artifacts_dir)
+    shutil.copyfile(output_path, artifacts_dir / "manual_review_queue_labeled.csv")
+    stale_flags = _mark_historical_downstream_stale(artifacts_dir, reason=str(record.get("action_name") or "manual_label_adopted"), input_path=output_path)
     summary.update(
         {
             "input_path": str(prefilled_path),
@@ -583,6 +849,7 @@ def _manual_review_adopt_runner(record: dict[str, Any], queue: TaskQueue) -> dic
             "result_count": int(summary.get("adopted_rows", 0)),
             "used_cache": False,
             "cache_path": "",
+            **stale_flags,
             "suggested_next_step": "下一步：导出低置信复核表，人工修正后导入；或生成使用人工标注的校准报告。",
             "elapsed_seconds": round(time.perf_counter() - started, 3),
         }
@@ -608,14 +875,17 @@ def _manual_review_low_confidence_runner(record: dict[str, Any], queue: TaskQueu
 
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
-    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    output_dir = _historical_dirs(artifacts_dir)["to_review"]
+    prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_prefilled.csv")
+    if not prefilled_path.exists():
+        prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_queue_prefilled.csv")
     if not prefilled_path.exists():
         raise FileNotFoundError(f"请先运行自动预填人工标注：{prefilled_path}")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出低置信复核表：{prefilled_path}")
     prefilled = pd.read_csv(prefilled_path)
     low, summary = low_confidence_review_rows(prefilled)
-    output_path = write_table(low, output_dir, "manual_review_queue_low_confidence", "csv")
+    output_path = write_table(low, output_dir, "low_confidence_review", "csv")
+    _mirror_legacy_historical_file(output_path, artifacts_dir)
     summary.update(
         {
             "input_path": str(prefilled_path),
@@ -632,6 +902,8 @@ def _manual_review_low_confidence_runner(record: dict[str, Any], queue: TaskQueu
         f"低置信复核表已导出：{output_path}；低置信/需复核 {summary.get('low_confidence_review_rows', len(low))} 行；"
         f"missed_big_winner pending={summary.get('pending_missed_winner_rows', 0)}。下一步：{summary['suggested_next_step']}"
     )
+    if int(summary.get("low_confidence_review_rows", len(low)) or 0) == 0:
+        message += " 无低置信样本需要人工复核，可直接继续生成校准报告。"
     queue.update_task(record["task_id"], progress=85, message=message, result_summary=summary, status_detail="exported_low_confidence")
     return {"message": message, "result_file": str(result_file), "result_summary": summary, "status_detail": "exported_low_confidence"}
 
@@ -643,14 +915,15 @@ def _manual_review_pending_runner(record: dict[str, Any], queue: TaskQueue) -> d
 
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    output_dir = _historical_dirs(artifacts_dir)["to_review"]
     source_path = _preferred_manual_review_source(artifacts_dir)
     if not source_path.exists():
         raise FileNotFoundError(f"请先运行自动预填或采纳标注：{source_path}")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出待人工复核表：{source_path}")
     source = pd.read_csv(source_path)
     pending, summary = pending_review_rows(source)
-    output_path = write_table(pending, output_dir, "manual_review_queue_pending", "csv")
+    output_path = write_table(pending, output_dir, "pending_human_review", "csv")
+    _mirror_legacy_historical_file(output_path, artifacts_dir)
     summary.update(
         {
             "input_path": str(source_path),
@@ -678,14 +951,15 @@ def _manual_review_missed_winner_runner(record: dict[str, Any], queue: TaskQueue
 
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    output_dir = Path(parameters.get("output_dir") or OUTPUT_DIR)
+    output_dir = _historical_dirs(artifacts_dir)["to_review"]
     source_path = _preferred_manual_review_source(artifacts_dir)
     if not source_path.exists():
         raise FileNotFoundError(f"请先运行自动预填或采纳标注：{source_path}")
     queue.update_task(record["task_id"], status="running", progress=35, message=f"正在导出 missed_big_winner 复核表：{source_path}")
     source = pd.read_csv(source_path)
     missed = source.loc[source.get("review_reason", pd.Series("", index=source.index)).fillna("").astype(str).eq("missed_big_winner")].copy()
-    output_path = write_table(missed, output_dir, "manual_review_queue_missed_winner", "csv")
+    output_path = write_table(missed, output_dir, "missed_big_winner_review", "csv")
+    _mirror_legacy_historical_file(output_path, artifacts_dir)
     _, summary = pending_review_rows(source)
     summary.update(
         {
@@ -709,10 +983,16 @@ def _historical_ml_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str,
     action_name = str(record.get("action_name") or "")
     parameters = record.get("parameters") if isinstance(record.get("parameters"), dict) else {}
     artifacts_dir = Path(parameters.get("artifacts_dir") or DEFAULT_HISTORICAL_ML_ARTIFACTS)
-    cache_path = artifacts_dir / HISTORICAL_CACHE_FILES.get(action_name, "entry_candidate_samples_labeled.csv")
+    cache_path = _historical_output_path(artifacts_dir, action_name)
+    legacy_cache_path = artifacts_dir / HISTORICAL_CACHE_FILES.get(action_name, "entry_candidate_samples_labeled.csv")
+    if not cache_path.exists() and legacy_cache_path.exists() and legacy_cache_path.is_file():
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(legacy_cache_path, cache_path)
     queue.update_task(record["task_id"], status="running", progress=30, message=f"正在读取 historical_ml 产物：{cache_path}")
 
     summary = _historical_result_summary(action_name, artifacts_dir, cache_path, parameters)
+    if legacy_cache_path.exists() and legacy_cache_path.is_file():
+        summary["legacy_cache_path"] = str(legacy_cache_path)
     elapsed = round(time.perf_counter() - started, 3)
     summary["elapsed_seconds"] = elapsed
 
@@ -723,8 +1003,12 @@ def _historical_ml_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str,
 
     if summary["used_cache"]:
         message = (
-            f"命中缓存：{summary['cache_path']}；缓存更新时间：{summary.get('cache_updated_at', '')}；"
-            f"缓存文件行数：{summary['output_rows']}；elapsed_seconds={elapsed:.3f}。下一步：{summary['next_step']}"
+            f"命中缓存：{summary['cache_path']}；原因：{summary.get('cache_hit_reason', 'input_fingerprint 未变化')}；"
+            f"input_fingerprint={summary.get('input_fingerprint', '')}；缓存生成时间：{summary.get('cache_generated_at', summary.get('cache_updated_at', ''))}；"
+            f"缓存更新时间：{summary.get('cache_updated_at', '')}；是否包含人工标注：{'是' if summary.get('used_manual_labels') else '否'}；"
+            f"valid_manual_label_rows={summary.get('valid_manual_label_rows', 0)}；缓存文件行数：{summary['output_rows']}；"
+            f"legacy_cache_path={summary.get('legacy_cache_path', '')}；"
+            f"elapsed_seconds={elapsed:.3f}。下一步：{summary['next_step']}"
         )
         status_detail = "cache_hit"
     elif summary["output_rows"] <= 0:
@@ -757,15 +1041,49 @@ def _historical_ml_runner(record: dict[str, Any], queue: TaskQueue) -> dict[str,
 
 def _historical_result_summary(action_name: str, artifacts_dir: Path, cache_path: Path, parameters: dict[str, Any]) -> dict[str, Any]:
     summary = _blank_result_summary(action_name, cache_path, parameters)
-    if not cache_path.exists():
+    fingerprint = _historical_input_fingerprint(artifacts_dir, parameters)
+    summary.update(
+        {
+            "input_fingerprint": fingerprint["fingerprint"],
+            "input_fingerprint_detail": fingerprint,
+            "force_regenerate": _force_regenerate_requested(action_name, parameters),
+        }
+    )
+
+    cache_decision = _historical_cache_decision(action_name, artifacts_dir, cache_path, summary)
+    executed_this_run = False
+    if cache_decision["execute"]:
+        summary["used_cache"] = False
+        summary["cache_path"] = ""
+        summary["cache_hit_reason"] = ""
+        summary["cache_miss_reason"] = cache_decision["reason"]
+        executed = _execute_historical_output_action(action_name, artifacts_dir, cache_path, summary)
+        if executed:
+            executed_this_run = True
+            _write_historical_cache_metadata(action_name, cache_path, summary)
+            _clear_historical_stale_flag(artifacts_dir, action_name)
+        else:
+            summary["used_cache"] = False
+            summary["cache_hit_reason"] = ""
+            summary["cache_miss_reason"] = cache_decision["reason"]
+            summary["empty_reason"] = summary.get("empty_reason") or f"缓存失效但无法重新生成：{cache_path}"
+            return summary
+    elif not cache_path.exists():
         summary["empty_reason"] = f"缓存文件不存在：{cache_path}"
         return summary
+    else:
+        summary["used_cache"] = True
+        summary["cache_hit_reason"] = cache_decision["reason"]
 
     summary.update(_cache_meta(cache_path))
-    daily = _read_csv_if_exists(artifacts_dir / "daily_etf_samples.csv")
-    candidates = _read_csv_if_exists(artifacts_dir / "entry_candidate_samples_unlabeled.csv")
-    labeled = _read_csv_if_exists(artifacts_dir / "entry_candidate_samples_labeled.csv")
-    review = _read_csv_if_exists(artifacts_dir / "manual_review_queue.csv")
+    if executed_this_run:
+        summary["used_cache"] = False
+        summary["cache_path"] = ""
+    summary["cache_metadata_path"] = str(_historical_cache_metadata_path(cache_path))
+    daily = _read_csv_if_exists(_historical_existing_generated_path(artifacts_dir, "daily_etf_samples.csv"))
+    candidates = _read_csv_if_exists(_historical_existing_generated_path(artifacts_dir, "entry_candidate_samples_unlabeled.csv"))
+    labeled = _read_csv_if_exists(_historical_existing_generated_path(artifacts_dir, "entry_candidate_samples_labeled.csv"))
+    review = _read_csv_if_exists(_historical_existing_review_path(artifacts_dir, "manual_review_queue.csv"))
     target = _read_csv_if_exists(cache_path) if cache_path.suffix.lower() == ".csv" else pd.DataFrame()
 
     summary["output_rows"] = _file_rows(cache_path, target)
@@ -789,7 +1107,7 @@ def _historical_result_summary(action_name: str, artifacts_dir: Path, cache_path
         reasons = review.get("review_reason", pd.Series(dtype=str)).fillna("").astype(str)
         reason_counts = reasons.value_counts().to_dict()
         summary["review_queue_count"] = len(review)
-        summary["review_queue_path"] = str(artifacts_dir / "manual_review_queue.csv")
+        summary["review_queue_path"] = str(_historical_existing_review_path(artifacts_dir, "manual_review_queue.csv"))
         summary["reason_distribution"] = {str(k): int(v) for k, v in reason_counts.items()}
         summary["large_loss_count"] = int(reason_counts.get("large_loss_entry", 0))
         summary["quick_failure_count"] = int(reason_counts.get("quick_failure_entry", 0))
@@ -798,8 +1116,12 @@ def _historical_result_summary(action_name: str, artifacts_dir: Path, cache_path
 
     summary.update(_manual_prefill_stats(artifacts_dir))
     summary.update(_manual_label_stats(OUTPUT_DIR / "historical_ml_manual_labels_imported.csv", summary.get("labeled_rows", 0), artifacts_dir=artifacts_dir))
+    summary.update(_historical_cache_metadata_fields(cache_path))
     if summary["output_rows"] <= 0:
         summary["empty_reason"] = "输出文件存在但没有可用数据行"
+    if action_name == "generate_entry_calibration_report" and cache_path.exists():
+        _write_entry_report_run_metadata(cache_path, summary)
+        _mirror_legacy_historical_file(cache_path, artifacts_dir)
     return summary
 
 
@@ -918,8 +1240,325 @@ def _missed_winner_counts(labeled: pd.DataFrame) -> dict[str, int]:
     }
 
 
+def _historical_input_fingerprint(artifacts_dir: Path, parameters: dict[str, Any]) -> dict[str, Any]:
+    accepted_path = _effective_manual_label_path(artifacts_dir)
+    latest_return_path = _historical_latest_return_file(artifacts_dir)
+    files = {
+        "daily_etf_samples": _historical_existing_generated_path(artifacts_dir, "daily_etf_samples.csv"),
+        "entry_candidate_samples_labeled": _historical_existing_generated_path(artifacts_dir, "entry_candidate_samples_labeled.csv"),
+        "manual_review_queue": _historical_existing_review_path(artifacts_dir, "manual_review_queue.csv"),
+        "manual_review_prefilled": _historical_existing_review_path(artifacts_dir, "manual_review_prefilled.csv"),
+        "manual_review_accepted": _historical_existing_review_path(artifacts_dir, "manual_review_accepted.csv"),
+        "latest_review_return": latest_return_path,
+        "accepted_manual_labels": accepted_path,
+    }
+    file_meta = {name: _fingerprint_file(path) for name, path in files.items()}
+    manual_stats = _manual_label_stats(Path("__missing_manual_labels__.csv"), artifacts_dir=artifacts_dir)
+    payload = {
+        "version": 2,
+        "files": file_meta,
+        "valid_manual_label_rows": int(manual_stats.get("valid_manual_label_rows", 0)),
+        "accepted_high_confidence_rows": int(manual_stats.get("accepted_high_confidence_rows", 0)),
+        "accepted_manual_label_rows": int(manual_stats.get("valid_manual_label_rows", 0)),
+        "missed_big_winner_accepted_rows": int(manual_stats.get("adopted_missed_winner_rows", 0)),
+        "config_version": str(parameters.get("config_version") or parameters.get("parameter_version") or "default"),
+        "run_config": {
+            "start_date": str(parameters.get("start_date") or ""),
+            "end_date": str(parameters.get("end_date") or ""),
+            "artifacts_dir": str(artifacts_dir),
+        },
+    }
+    normalized = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+    payload["fingerprint"] = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return payload
+
+
+def _fingerprint_file(path: Path | None) -> dict[str, Any]:
+    if path is None or not path.exists() or not path.is_file():
+        return {"path": str(path) if path else "", "exists": False, "mtime_ns": 0, "size": 0, "sha256": ""}
+    stat = path.stat()
+    return {
+        "path": str(path),
+        "exists": True,
+        "mtime_ns": int(stat.st_mtime_ns),
+        "mtime": format_datetime_shanghai(datetime.fromtimestamp(stat.st_mtime, tz=ZoneInfo("Asia/Shanghai"))),
+        "size": int(stat.st_size),
+        "sha256": _sha256_file(path),
+    }
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _force_regenerate_requested(action_name: str, parameters: dict[str, Any]) -> bool:
+    keys = {
+        "generate_entry_calibration_report": "force_regenerate_calibration_report",
+        "generate_parameter_suggestions": "force_regenerate_parameter_suggestions",
+        "run_overfit_check": "force_regenerate_overfit_check",
+    }
+    return bool(parameters.get("force_regenerate") or parameters.get(keys.get(action_name, "")))
+
+
+def _historical_cache_decision(action_name: str, artifacts_dir: Path, cache_path: Path, summary: dict[str, Any]) -> dict[str, Any]:
+    if action_name not in HISTORICAL_FINGERPRINTED_ACTIONS:
+        if cache_path.exists():
+            return {"execute": False, "reason": "legacy cache action does not require input_fingerprint"}
+        if action_name in HISTORICAL_MATERIALIZED_SAMPLE_ACTIONS:
+            return {"execute": True, "reason": "cache file missing; materialize historical_ml sample output"}
+        return {"execute": False, "reason": "cache file missing"}
+    if summary.get("force_regenerate"):
+        return {"execute": True, "reason": "用户请求强制重新生成"}
+    if _is_historical_downstream_stale(artifacts_dir, action_name):
+        return {"execute": True, "reason": "人工标注/预标状态变化，下游产物已标记 stale"}
+    if not cache_path.exists():
+        return {"execute": True, "reason": "缓存文件不存在"}
+    metadata = _read_historical_cache_metadata(cache_path, artifacts_dir)
+    if not metadata:
+        return {"execute": True, "reason": "缓存缺少 input_fingerprint 元数据"}
+    if metadata.get("input_fingerprint") != summary.get("input_fingerprint"):
+        return {"execute": True, "reason": "input_fingerprint 已变化"}
+    cached_valid = int(metadata.get("valid_manual_label_rows", -1))
+    current_valid = int(summary.get("input_fingerprint_detail", {}).get("valid_manual_label_rows", 0))
+    if cached_valid != current_valid:
+        return {"execute": True, "reason": "缓存报告有效人工标注数与当前不一致"}
+    return {"execute": False, "reason": "input_fingerprint unchanged and manual label count matched"}
+
+
+def _historical_cache_metadata_path(cache_path: Path) -> Path:
+    return cache_path.with_name(f"{cache_path.name}.meta.json")
+
+
+def _read_historical_cache_metadata(cache_path: Path, artifacts_dir: Path) -> dict[str, Any]:
+    primary = _historical_cache_metadata_path(cache_path)
+    legacy = artifacts_dir / primary.name
+    candidates = [path for path in [primary, legacy] if path.exists()]
+    if not candidates:
+        return {}
+    newest = max(candidates, key=lambda path: path.stat().st_mtime_ns)
+    data = _read_json(newest, {})
+    return data if isinstance(data, dict) else {}
+
+
+def _historical_cache_metadata_fields(cache_path: Path) -> dict[str, Any]:
+    artifacts_dir = cache_path.parent.parent if cache_path.parent.name in {HISTORICAL_GENERATED_DIR, HISTORICAL_TO_REVIEW_DIR} else cache_path.parent
+    metadata = _read_historical_cache_metadata(cache_path, artifacts_dir)
+    if not isinstance(metadata, dict):
+        return {}
+    return {
+        "cache_generated_at": metadata.get("generated_at", ""),
+        "cache_input_fingerprint": metadata.get("input_fingerprint", ""),
+        "cache_valid_manual_label_rows": int(metadata.get("valid_manual_label_rows", 0) or 0),
+        "cache_used_manual_labels": bool(metadata.get("used_manual_labels", False)),
+    }
+
+
+def _write_historical_cache_metadata(action_name: str, cache_path: Path, summary: dict[str, Any]) -> None:
+    detail = summary.get("input_fingerprint_detail") if isinstance(summary.get("input_fingerprint_detail"), dict) else {}
+    valid_rows = int(summary.get("valid_manual_label_rows", detail.get("valid_manual_label_rows", 0)) or 0)
+    metadata = {
+        "action_name": action_name,
+        "artifact_path": str(cache_path),
+        "generated_at": format_datetime_shanghai(datetime.now(ZoneInfo("Asia/Shanghai"))),
+        "input_fingerprint": summary.get("input_fingerprint", ""),
+        "input_fingerprint_detail": detail,
+        "used_manual_labels": bool(valid_rows > 0),
+        "valid_manual_label_rows": valid_rows,
+        "accepted_high_confidence_rows": int(detail.get("accepted_high_confidence_rows", 0) or 0),
+    }
+    path = _historical_cache_metadata_path(cache_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    artifacts_dir = Path(str(summary.get("input_fingerprint_detail", {}).get("run_config", {}).get("artifacts_dir") or cache_path.parent.parent))
+    if cache_path.parent.name in {HISTORICAL_GENERATED_DIR, HISTORICAL_TO_REVIEW_DIR}:
+        legacy_path = artifacts_dir / path.name
+        legacy_path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+
+
+def _execute_historical_output_action(action_name: str, artifacts_dir: Path, cache_path: Path, summary: dict[str, Any]) -> bool:
+    labeled = _historical_labeled_samples_for_outputs(artifacts_dir)
+    if labeled.empty:
+        summary["empty_reason"] = f"缺少 entry_candidate_samples_labeled，无法重新生成：{artifacts_dir / 'entry_candidate_samples_labeled.csv'}"
+        return False
+    if action_name in HISTORICAL_MATERIALIZED_SAMPLE_ACTIONS:
+        try:
+            review = _build_historical_review_queue_for_outputs(labeled)
+            if action_name == "generate_failure_samples":
+                output = review.loc[_review_reason_mask(review, {"large_loss_entry", "quick_failure_entry", "bought_and_knocked_out"})].copy()
+            elif action_name == "generate_missed_opportunity_samples":
+                output = review.loc[_review_reason_mask(review, {"missed_big_winner"})].copy()
+            else:
+                output = review
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            output.to_csv(cache_path, index=False, encoding="utf-8-sig")
+            _mirror_legacy_historical_file(cache_path, artifacts_dir)
+        except Exception as exc:  # noqa: BLE001
+            summary["empty_reason"] = f"historical_ml 样本文件无法生成：{exc}"
+            return False
+        summary["output_path"] = str(cache_path)
+        return cache_path.exists()
+    if action_name in {"generate_entry_calibration_report", "generate_parameter_suggestions"}:
+        from historical_ml.calibration import generate_entry_calibration_outputs
+
+        generate_entry_calibration_outputs(labeled, _historical_dirs(artifacts_dir)["generated"])
+        _mirror_legacy_historical_file(_historical_generated_path(artifacts_dir, "entry_calibration_report.md"), artifacts_dir)
+        _mirror_legacy_historical_file(_historical_generated_path(artifacts_dir, "entry_calibration_suggestions.csv"), artifacts_dir)
+        summary["output_path"] = str(cache_path)
+        return cache_path.exists()
+    if action_name == "run_overfit_check":
+        from historical_ml.ml_stability import run_ml_stability
+
+        try:
+            run_ml_stability(labeled, _historical_dirs(artifacts_dir)["generated"])
+            _mirror_legacy_historical_file(_historical_generated_path(artifacts_dir, "ml_stability_report.md"), artifacts_dir)
+        except Exception as exc:  # noqa: BLE001
+            summary["empty_reason"] = f"过拟合/稳定性检查无法重新生成：{exc}"
+            return False
+        summary["output_path"] = str(cache_path)
+        return cache_path.exists()
+    return False
+
+
+def _build_historical_review_queue_for_outputs(labeled: pd.DataFrame) -> pd.DataFrame:
+    from historical_ml.review_queue import build_manual_review_queue
+
+    if "review_reason" in labeled.columns:
+        return labeled.copy()
+    return build_manual_review_queue(labeled)
+
+
+def _historical_labeled_samples_for_outputs(artifacts_dir: Path) -> pd.DataFrame:
+    labeled = _read_csv_if_exists(_historical_existing_generated_path(artifacts_dir, "entry_candidate_samples_labeled.csv"))
+    if labeled.empty:
+        return labeled
+    manual_path = _effective_manual_label_path(artifacts_dir)
+    manual = _read_csv_if_exists(manual_path) if manual_path else pd.DataFrame()
+    if manual.empty or "manual_label" not in manual.columns:
+        return labeled
+    return _merge_manual_labels(labeled, manual)
+
+
+def _merge_manual_labels(labeled: pd.DataFrame, manual: pd.DataFrame) -> pd.DataFrame:
+    out = labeled.copy()
+    manual_cols = [col for col in ["manual_label", "manual_failure_reason", "manual_action", "manual_confidence", "manual_review_note", "review_reason"] if col in manual.columns]
+    keys = _manual_merge_keys(out, manual)
+    if keys:
+        overlay = manual[keys + manual_cols].copy()
+        overlay = overlay.drop_duplicates(subset=keys, keep="last")
+        out = out.merge(overlay, on=keys, how="left", suffixes=("", "_manual_src"))
+        for col in manual_cols:
+            src = f"{col}_manual_src"
+            if src in out.columns:
+                if col in out.columns:
+                    out[col] = out[src].combine_first(out[col])
+                else:
+                    out[col] = out[src]
+                out = out.drop(columns=[src])
+        return out
+    if len(manual) == len(out):
+        for col in manual_cols:
+            out[col] = manual[col].to_numpy()
+    return out
+
+
+def _manual_merge_keys(labeled: pd.DataFrame, manual: pd.DataFrame) -> list[str]:
+    candidates = [
+        ["sample_id"],
+        ["trade_date", "code"],
+        ["signal_date", "code"],
+        ["execution_date", "code"],
+    ]
+    for keys in candidates:
+        if all(key in labeled.columns and key in manual.columns for key in keys):
+            return keys
+    return []
+
+
+def _mark_historical_downstream_stale(artifacts_dir: Path, reason: str, input_path: Path | None = None) -> dict[str, Any]:
+    flags = {
+        "calibration_report_stale": True,
+        "suggestions_stale": True,
+        "stability_report_stale": True,
+        "reason": reason,
+        "input_path": str(input_path or ""),
+        "marked_at": format_datetime_shanghai(datetime.now(ZoneInfo("Asia/Shanghai"))),
+    }
+    path = _historical_state_path(artifacts_dir, HISTORICAL_STALE_FLAG_FILE)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(flags, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {key: flags[key] for key in ["calibration_report_stale", "suggestions_stale", "stability_report_stale"]}
+
+
+def _read_historical_stale_flags(artifacts_dir: Path) -> dict[str, Any]:
+    data = _read_json(_historical_state_path(artifacts_dir, HISTORICAL_STALE_FLAG_FILE), {})
+    return data if isinstance(data, dict) else {}
+
+
+def _is_historical_downstream_stale(artifacts_dir: Path, action_name: str) -> bool:
+    key = {
+        "generate_entry_calibration_report": "calibration_report_stale",
+        "generate_parameter_suggestions": "suggestions_stale",
+        "run_overfit_check": "stability_report_stale",
+    }.get(action_name, "")
+    flags = _read_historical_stale_flags(artifacts_dir)
+    return bool(key and flags.get(key))
+
+
+def _clear_historical_stale_flag(artifacts_dir: Path, action_name: str) -> None:
+    key = {
+        "generate_entry_calibration_report": "calibration_report_stale",
+        "generate_parameter_suggestions": "suggestions_stale",
+        "run_overfit_check": "stability_report_stale",
+    }.get(action_name, "")
+    if not key:
+        return
+    path = _historical_state_path(artifacts_dir, HISTORICAL_STALE_FLAG_FILE)
+    flags = _read_historical_stale_flags(artifacts_dir)
+    if not flags:
+        return
+    flags[key] = False
+    path.write_text(json.dumps(flags, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _write_entry_report_run_metadata(cache_path: Path, summary: dict[str, Any]) -> None:
+    if not cache_path.exists():
+        return
+    marker_start = "<!-- historical_ml_run_metadata:start -->"
+    marker_end = "<!-- historical_ml_run_metadata:end -->"
+    block_lines = [
+        marker_start,
+        "## Run Metadata",
+        "",
+        f"- auto_label 样本数：{summary.get('auto_label_sample_count', 0)}",
+        f"- 自动预填样本数：{summary.get('auto_prefilled_rows', 0)}",
+        f"- 高置信采纳数：{summary.get('accepted_high_confidence_rows', 0)}",
+        f"- 人工修正数：{summary.get('human_corrected_rows', 0)}",
+        f"- 有效人工标注数：{summary.get('valid_manual_label_rows', 0)}",
+        f"- 是否包含 missed_big_winner 分析：{'是' if (summary.get('missed_winner_count') or summary.get('missed_big_winner_total')) else '否'}",
+        f"- missed_big_winner 人工采纳数：{summary.get('adopted_missed_winner_rows', 0)}",
+        f"- 是否命中缓存：{'是' if summary.get('used_cache') else '否'}",
+        f"- input_fingerprint：{summary.get('input_fingerprint', '')}",
+        f"- 生成时间：{format_datetime_shanghai(datetime.now(ZoneInfo('Asia/Shanghai')))}",
+        "",
+        marker_end,
+        "",
+    ]
+    text = cache_path.read_text(encoding="utf-8", errors="ignore")
+    if marker_start in text and marker_end in text:
+        before = text.split(marker_start, 1)[0]
+        after = text.split(marker_end, 1)[1].lstrip("\n")
+        text = before + "\n".join(block_lines) + after
+    else:
+        text = "\n".join(block_lines) + text
+    cache_path.write_text(text, encoding="utf-8")
+
+
 def _manual_label_stats(path: Path, auto_label_sample_count: int = 0, artifacts_dir: Path | None = None) -> dict[str, Any]:
-    effective_path = path if path.exists() else (artifacts_dir / "manual_review_queue_labeled.csv" if artifacts_dir else path)
+    effective_path = path if path.exists() else (_effective_manual_label_path(artifacts_dir) if artifacts_dir else path)
     if not effective_path.exists():
         return _empty_manual_label_stats(auto_label_sample_count)
     try:
@@ -935,6 +1574,27 @@ def _manual_label_stats(path: Path, auto_label_sample_count: int = 0, artifacts_
     return stats
 
 
+def _effective_manual_label_path(artifacts_dir: Path | None) -> Path:
+    candidates: list[Path] = []
+    if artifacts_dir:
+        latest_return = _historical_latest_return_file(artifacts_dir)
+        if latest_return:
+            candidates.append(latest_return)
+        candidates.extend(
+            [
+                _historical_to_review_path(artifacts_dir, "manual_review_labeled.csv"),
+                _historical_to_review_path(artifacts_dir, "manual_review_accepted.csv"),
+                _historical_to_review_path(artifacts_dir, "manual_review_queue_labeled.csv"),
+                artifacts_dir / "manual_review_queue_labeled.csv",
+            ]
+        )
+    candidates.append(OUTPUT_DIR / "historical_ml_manual_labels_imported.csv")
+    existing = [path for path in candidates if path.exists()]
+    if not existing:
+        return candidates[0] if candidates else Path("__missing_manual_labels__.csv")
+    return max(existing, key=lambda path: path.stat().st_mtime_ns)
+
+
 def _empty_manual_label_stats(auto_label_sample_count: int = 0) -> dict[str, Any]:
     return {
         "used_manual_labels": False,
@@ -942,6 +1602,7 @@ def _empty_manual_label_stats(auto_label_sample_count: int = 0) -> dict[str, Any
         "valid_manual_label_rows": 0,
         "empty_manual_label_rows": 0,
         "invalid_rows": 0,
+        "accepted_high_confidence_rows": 0,
         "auto_label_sample_count": int(auto_label_sample_count or 0),
         "manual_label_coverage": 0.0,
         "adopted_failure_rows": 0,
@@ -953,7 +1614,9 @@ def _empty_manual_label_stats(auto_label_sample_count: int = 0) -> dict[str, Any
 
 
 def _manual_prefill_stats(artifacts_dir: Path) -> dict[str, Any]:
-    prefilled_path = artifacts_dir / "manual_review_queue_prefilled.csv"
+    prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_prefilled.csv")
+    if not prefilled_path.exists():
+        prefilled_path = _historical_existing_review_path(artifacts_dir, "manual_review_queue_prefilled.csv")
     if not prefilled_path.exists():
         return {
             "auto_prefilled_rows": 0,
@@ -998,7 +1661,7 @@ def _manual_prefill_stats(artifacts_dir: Path) -> dict[str, Any]:
     manual_label = df.get("manual_label", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
     suggested_label = df.get("suggested_manual_label", pd.Series("", index=df.index)).fillna("").astype(str).str.strip()
     corrected = manual_label.ne("") & manual_label.ne(suggested_label)
-    labeled_path = artifacts_dir / "manual_review_queue_labeled.csv"
+    labeled_path = _effective_manual_label_path(artifacts_dir)
     final_rows = 0
     if labeled_path.exists():
         try:
@@ -1029,19 +1692,24 @@ def _manual_prefill_stats(artifacts_dir: Path) -> dict[str, Any]:
 
 
 def _preferred_manual_review_source(artifacts_dir: Path) -> Path:
-    labeled = artifacts_dir / "manual_review_queue_labeled.csv"
-    if labeled.exists():
-        return labeled
-    return artifacts_dir / "manual_review_queue_prefilled.csv"
+    for filename in ["manual_review_accepted.csv", "manual_review_labeled.csv", "manual_review_queue_labeled.csv"]:
+        path = _historical_existing_review_path(artifacts_dir, filename)
+        if path.exists():
+            return path
+    path = _historical_existing_review_path(artifacts_dir, "manual_review_prefilled.csv")
+    if path.exists():
+        return path
+    return _historical_existing_review_path(artifacts_dir, "manual_review_queue_prefilled.csv")
 
 
 def _manual_label_stats_from_frame(df: pd.DataFrame) -> dict[str, Any]:
-    manual_cols = ["manual_label", "manual_failure_reason", "manual_review_note", "manual_action"]
+    manual_cols = ["manual_label", "manual_failure_reason", "manual_action", "manual_confidence", "manual_review_note"]
     if "manual_label" not in df.columns:
         return {
             "valid_manual_label_rows": 0,
             "empty_manual_label_rows": int(len(df)),
             "invalid_rows": 0,
+            "accepted_high_confidence_rows": 0,
             "adopted_failure_rows": 0,
             "adopted_missed_winner_rows": 0,
             "pending_failure_rows": 0,
@@ -1057,11 +1725,16 @@ def _manual_label_stats_from_frame(df: pd.DataFrame) -> dict[str, Any]:
     invalid = label.eq("") & other_filled
     failure = _review_reason_mask(df, {"large_loss_entry", "quick_failure_entry", "bought_and_knocked_out"})
     missed = _review_reason_mask(df, {"missed_big_winner"})
+    if "suggested_confidence" in df.columns:
+        high_confidence = df["suggested_confidence"].fillna("").astype(str).eq("high")
+    else:
+        high_confidence = df.get("manual_review_note", pd.Series("", index=df.index)).fillna("").astype(str).str.contains("auto_adopted_high_confidence", regex=False)
     warning = "当前人工标注覆盖偏向失败类样本，敢买类样本覆盖不足。" if int(missed.sum()) and int((valid & missed).sum()) == 0 else ""
     return {
         "valid_manual_label_rows": int(valid.sum()),
         "empty_manual_label_rows": int((~valid).sum()),
         "invalid_rows": int(invalid.sum()),
+        "accepted_high_confidence_rows": int((valid & high_confidence).sum()),
         "adopted_failure_rows": int((valid & failure).sum()),
         "adopted_missed_winner_rows": int((valid & missed).sum()),
         "pending_failure_rows": int((~valid & failure).sum()),
